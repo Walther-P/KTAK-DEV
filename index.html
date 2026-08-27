@@ -458,7 +458,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV · Google Maps 底圖測試版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV2 · Google Maps 成本保護版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -1132,7 +1132,7 @@ $("recoverRoomBtn").onclick=async()=>{
 $("leaveBtn").onclick=async()=>{try{if(roomChannel&&sb)await sb.removeChannel(roomChannel)}catch{}sessionStorage.removeItem("ktak.v16.roomUuid");sessionStorage.removeItem("ktak.v16.room");location.reload()};
 
 /* navigation */
-$$('.navBtn').forEach(b=>b.onclick=()=>{if(b.id==="permissionTab"&&!can("permission"))return;$$('.navBtn').forEach(x=>x.classList.toggle('active',x===b));$$('.page').forEach(p=>p.classList.toggle('active',p.id===b.dataset.page));if(b.dataset.page==='mapPage')setTimeout(()=>{map.invalidateSize();syncGoogleMap()},60);if(b.dataset.page==='boardPage')setTimeout(renderBoard,30);if(b.dataset.page==='chatPage')renderChat();if(b.dataset.page==='permissionPage')renderPermissions()});
+$$('.navBtn').forEach(b=>b.onclick=()=>{if(b.id==="permissionTab"&&!can("permission"))return;$$('.navBtn').forEach(x=>x.classList.toggle('active',x===b));$$('.page').forEach(p=>p.classList.toggle('active',p.id===b.dataset.page));if(b.dataset.page==='mapPage')setTimeout(async()=>{map.invalidateSize();if(!googleMapsReady&&!googleMapGateDenied)await initGoogleBasemap();syncGoogleMap()},60);if(b.dataset.page==='boardPage')setTimeout(renderBoard,30);if(b.dataset.page==='chatPage')renderChat();if(b.dataset.page==='permissionPage')renderPermissions()});
 
 /* brief */
 const briefIds=["missionTime","caseType","situationSummary","riskLevel","suspectCount","suspectBackground","executionMode","executionOther","executionLocation","executionWeather","civilianCount","teamComposition","missionNotes"];
@@ -1287,7 +1287,7 @@ $("briefSaveBtn").onclick=()=>{
 };
 
 /* export import */
-$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev1",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
+$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev2",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{
     const x=JSON.parse(await f.text()),incoming=x.state||x;
@@ -1549,6 +1549,14 @@ let googleMap=null;
 let googleMapsReady=false;
 let googleMapsLoadPromise=null;
 
+// V2.1 DEV2 Google Maps app-level cost gate.
+// Dynamic Maps currently has a 10,000/month free usage cap.
+// KTAK intentionally stops at 8,000 to keep a safety buffer.
+const GOOGLE_MAPS_MONTHLY_SAFE_LIMIT=8000;
+let googleMapSlotClaimed=false;
+let googleMapGateDenied=false;
+let googleMapGateInfo=null;
+
 function setProviderBadge(text){$("mapProviderBadge").textContent=text}
 
 function syncGoogleMap(){
@@ -1568,7 +1576,7 @@ function applyBasemapState(){
     googleMap.setMapTypeId(satelliteOn?'satellite':'roadmap');
     $("mapProviderBtn").textContent='🆓 切換 OSM';
     $("mapLayerBtn").textContent=satelliteOn?'🗺 道路圖':'🛰 衛星';
-    setProviderBadge('底圖：Google Maps');
+    setProviderBadge(`底圖：Google Maps ${googleGateStatusText()}`);
     syncGoogleMap()
   }else{
     if(satelliteOn){
@@ -1582,6 +1590,46 @@ function applyBasemapState(){
     $("mapLayerBtn").textContent=satelliteOn?'🗺 道路圖':'🛰 衛星';
     setProviderBadge(googleMapsConfigured&&!googleMapsReady?'底圖：OSM（Google 載入失敗）':'底圖：OpenStreetMap')
   }
+}
+
+async function claimGoogleMapLoadSlot(){
+  if(googleMapSlotClaimed)return true;
+  if(googleMapGateDenied)return false;
+  if(!sb||!currentUserId){
+    googleMapGateDenied=true;
+    googleMapGateInfo={used:null,limit:GOOGLE_MAPS_MONTHLY_SAFE_LIMIT,reason:"尚未登入"};
+    return false
+  }
+  try{
+    const {data,error}=await sb.rpc("ktak_claim_google_map_load",{p_limit:GOOGLE_MAPS_MONTHLY_SAFE_LIMIT});
+    if(error)throw error;
+    const row=Array.isArray(data)?data[0]:data;
+    if(!row)throw new Error("成本保護服務沒有回傳結果");
+    googleMapGateInfo={
+      used:Number(row.used_count??row.used??0),
+      limit:Number(row.limit_count??row.limit_value??GOOGLE_MAPS_MONTHLY_SAFE_LIMIT),
+      month:row.billing_month||row.month_start||""
+    };
+    if(row.allowed){
+      googleMapSlotClaimed=true;
+      return true
+    }
+    googleMapGateDenied=true;
+    return false
+  }catch(err){
+    console.warn("Google Maps cost gate failed closed",err);
+    // Fail closed: if we cannot verify budget, do not instantiate Google Maps.
+    googleMapGateDenied=true;
+    googleMapGateInfo={used:null,limit:GOOGLE_MAPS_MONTHLY_SAFE_LIMIT,reason:err.message||"額度檢查失敗"};
+    return false
+  }
+}
+
+function googleGateStatusText(){
+  const g=googleMapGateInfo;
+  if(!g)return "";
+  if(Number.isFinite(g.used))return `（${g.used}/${g.limit}）`;
+  return g.reason?`（${g.reason}）`:""
 }
 
 function loadGoogleMaps(){
@@ -1607,7 +1655,20 @@ async function initGoogleBasemap(){
   if(!googleMapsConfigured){
     mapProvider='osm';applyBasemapState();return
   }
-  setProviderBadge('底圖：正在載入 Google Maps…');
+  if(googleMapGateDenied){
+    mapProvider='osm';applyBasemapState();
+    setProviderBadge(`底圖：OpenStreetMap · Google 安全額度停用 ${googleGateStatusText()}`);
+    return
+  }
+  setProviderBadge('底圖：正在檢查 Google Maps 安全額度…');
+  const allowed=await claimGoogleMapLoadSlot();
+  if(!allowed){
+    mapProvider='osm';applyBasemapState();
+    setProviderBadge(`底圖：OpenStreetMap · Google 安全額度停用 ${googleGateStatusText()}`);
+    toast(`Google Maps 已由成本保護切回 OSM ${googleGateStatusText()}`);
+    return
+  }
+  setProviderBadge(`底圖：正在載入 Google Maps… ${googleGateStatusText()}`);
   try{
     const maps=await loadGoogleMaps();
     const c=map.getCenter();
@@ -1635,6 +1696,10 @@ $("mapProviderBtn").onclick=async()=>{
   if(mapProvider==='google'){
     mapProvider='osm';applyBasemapState();return
   }
+  if(googleMapGateDenied){
+    toast(`Google Maps 本月已由成本保護停用 ${googleGateStatusText()}`);
+    return
+  }
   if(!googleMapsReady){
     try{await initGoogleBasemap()}catch{}
     return
@@ -1648,7 +1713,8 @@ $("mapLayerBtn").onclick=()=>{
 };
 
 map.on('move zoom',syncGoogleMap);
-setTimeout(initGoogleBasemap,100);
+// V2.1 DEV2: Google Maps is NOT instantiated at app startup.
+// A billable map load is only attempted when an authenticated room member opens the map tab.
 
 const mapLayer=L.layerGroup().addTo(map);
 const fanLayer=L.layerGroup().addTo(map);

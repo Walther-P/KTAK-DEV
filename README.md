@@ -1,15 +1,14 @@
-# KTAK V2.1 DEV1 — Google Maps 底圖
+# KTAK V2.1 DEV2 — Google Maps 成本保護
 
-此版只做地圖引擎第一階段，不改其他 V2.0 功能。
+本版在 V2.1 DEV1 基礎上新增：
 
-架構：
-- Google Maps JavaScript API：視覺底圖
-- Leaflet：保留現有 KTAK 戰術圖樣、線條、方形、圓形、自由畫、照片、拖曳、備註、方向扇形
-- Google 載入失敗：自動切回 OpenStreetMap
-- 使用者可手動在 Google / OSM 間切換
-- 道路圖 / 衛星圖切換在兩個底圖引擎都保留
+- Google Maps 不再於網站啟動時載入。
+- 只有已登入房間的成員第一次打開「任務地圖」時，才嘗試建立 Google Map。
+- Supabase RPC 會先取得當月一個 Google Map load 安全額度。
+- KTAK 目前保守限制為每個 Google billing month 8,000 次。
+- 達到 8,000 後自動使用 OpenStreetMap。
+- 安全額度 RPC 發生錯誤時採 fail-closed：直接使用 OSM，不建立 Google Map。
+- Google / OSM 手動切換仍保留；同一頁已建立的 Google Map 不重複計數。
 
 注意：
-- config.js 必須已有 GOOGLE_MAPS_API_KEY
-- 這一版尚未加入每月 Google Maps 自訂使用量硬限制；那會在下一階段用 DEV Supabase 做 server-side usage gate
-- 地址搜尋目前仍沿用原本 Nominatim，避免同時再新增 Geocoding API 造成變更範圍過大
+這是 KTAK 應用程式層的保護，不是 Google Cloud Billing 的官方硬停用功能。
