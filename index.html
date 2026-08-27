@@ -1,0 +1,2685 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="theme-color" content="#0b1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KTAK">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<title>KTAK Mission Room V2.0 Security</title>
+<style>
+:root{--bg:#0a1014;--panel:#111a20;--panel2:#17232b;--line:#30424d;--text:#eff6f8;--muted:#98aab4;--blue:#45aff2;--green:#55d572;--yellow:#ffc650;--red:#f25c5c;--orange:#ff944c;--safe:env(safe-area-inset-bottom,0px);--safeTop:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer;color:#fff;background:#1b2a33;border:1px solid #38505e;border-radius:10px;font-weight:750;padding:9px 11px}button:hover{filter:brightness(1.08)}
+input,textarea,select{width:100%;background:#0d151a;color:#fff;border:1px solid #344954;border-radius:9px;padding:9px 10px;outline:none}textarea{min-height:90px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:var(--blue)}
+.primary{background:#106fa8;border-color:#208ccf}.danger{background:#6b2b2b;border-color:#994141}.good{background:#245e34}.warn{background:#73531b}.hidden{display:none!important}.disabled{opacity:.45;pointer-events:none}
+#app{height:100%;display:grid;grid-template-rows:auto auto 1fr}
+header{min-height:54px;padding:calc(8px + var(--safeTop)) 12px 8px;background:#0d151a;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:50}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}.logo{width:35px;height:35px;border-radius:10px;display:grid;place-items:center;background:#173548;border:1px solid #38749b;font-weight:900}.brandText b{display:block;font-size:14px}.brandText small{color:var(--muted);font-size:11px}.roomStatus{display:flex;align-items:center;gap:7px;font-size:12px;color:#c7d6dd;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px #55d57288}
+nav{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:7px 10px;background:#10191f;border-bottom:1px solid var(--line);z-index:45}nav button{padding:10px 5px;font-size:12px;background:#151f26}nav button.active{background:#164058;border-color:#2a82b3;outline:1px solid var(--blue)}
+main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:100%;overflow:auto}.page.active{display:block}.shell{max-width:1200px;margin:0 auto;padding:14px}.card{background:#121d24;border:1px solid var(--line);border-radius:13px;padding:13px;margin-bottom:12px;box-shadow:0 4px 14px #0003}.card h2{font-size:15px;margin:0 0 10px}.card h3{font-size:13px;margin:0 0 8px;color:#d4e4ec}.muted{color:var(--muted);font-size:11px;line-height:1.5}.row{display:flex;gap:8px}.row>*{min-width:0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.label{font-size:11px;color:#b5c6cf;margin:2px 0 5px}.valueBox{background:#0c1419;border:1px solid #2d414c;border-radius:9px;padding:10px;min-height:39px;white-space:pre-wrap}.sectionTitle{font-weight:850;font-size:18px;margin:4px 0 14px}.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#1a2a32;border:1px solid #3a4f5a;font-size:11px;color:#cedce2}.flexBetween{display:flex;align-items:center;justify-content:space-between;gap:8px}.roleBadge{font-size:10px;border-radius:999px;padding:3px 7px;background:#173348;border:1px solid #2d6688}
+/* map */
+#mapPage{overflow:hidden}.mapLayout{height:100%;display:grid;grid-template-columns:340px 1fr}.mapSidebar{background:#10191f;border-right:1px solid var(--line);padding:10px;overflow:auto}#map{height:100%;width:100%;background:#0e1519}.toolGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.toolGrid button.active{outline:2px solid var(--blue);background:#19445c}.iconGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.iconGrid button{font-size:11px;padding:8px 6px}.iconGrid button.active{outline:2px solid var(--yellow)}.searchRow{display:grid;grid-template-columns:1fr auto;gap:6px}.leaflet-container{font-family:inherit}.leaflet-control-zoom a{background:#142027!important;color:white!important;border-color:#30414b!important}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#121d24;color:#eef5f8}.tac-icon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#152129;border:2px solid white;box-shadow:0 3px 10px #000a;font-size:18px}.tac-inner{display:grid;place-items:center;width:100%;height:100%;transform-origin:center}.photoPin{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:#2b2236;border:2px solid #fff;box-shadow:0 3px 10px #000a;font-size:18px}.photoThumb{max-width:240px;max-height:180px;border-radius:8px;display:block;margin-top:7px}#mapHint{font-size:11px;color:var(--muted);line-height:1.45;margin-top:8px}.mapTopMobile{display:none}.palette{display:flex;gap:6px;flex-wrap:wrap}.colorDot{width:30px;height:30px;border-radius:50%;border:2px solid #fff;padding:0}.colorDot.active{outline:3px solid var(--blue);outline-offset:2px}.objectEditor{border:1px solid #496171;background:#0e181e}.objectEditor .row button{flex:1}.mapPopupActions{display:flex;gap:5px;margin-top:7px}.mapPopupActions button{font-size:11px;padding:5px 7px}.customIconPreview{font-size:25px;text-align:center;padding:6px}
+/* board */
+#boardPage{overflow:hidden}.boardLayout{height:100%;display:grid;grid-template-columns:310px 1fr}.boardSidebar{background:#10191f;border-right:1px solid var(--line);padding:10px;overflow:auto}.boardStage{height:100%;display:grid;place-items:center;background:#080d10;overflow:auto;padding:14px}#boardWrap{position:relative;background:#f7f7f4;box-shadow:0 6px 24px #0009;max-width:100%}#boardCanvas{display:block;max-width:100%;height:auto;touch-action:none}.boardToolGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.boardToolGrid button{font-size:11px;padding:8px 5px}.boardToolGrid button.active{outline:2px solid var(--blue);background:#19445c}.floorControls{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center}.selectedBoardEditor{border:1px solid #496171;background:#0e181e}.selectedBoardEditor .grid3 button{padding:7px 4px;font-size:11px}
+/* chat */
+.chatShell{height:100%;max-width:900px;margin:0 auto;padding:12px;display:grid;grid-template-rows:auto 1fr auto;gap:8px}.chatInfo{display:flex;justify-content:space-between;align-items:center;gap:8px}#chatLog{overflow:auto;background:#0c1317;border:1px solid #293c47;border-radius:12px;padding:10px}.chatMsg{max-width:82%;padding:8px 10px;border-radius:11px;background:#192831;margin-bottom:7px;font-size:13px;line-height:1.4;position:relative}.chatMsg.me{margin-left:auto;background:#15405a}.chatMsg .meta{font-size:10px;color:#9eb0ba;margin-bottom:3px}.chatMsg .deleteChat{position:absolute;right:5px;top:5px;background:#572727;padding:3px 6px;font-size:10px}.chatInput{display:grid;grid-template-columns:1fr auto;gap:7px}.memberList{display:flex;gap:5px;flex-wrap:wrap}
+/* permission */
+.permissionRow{display:grid;grid-template-columns:1fr 180px auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #263741}.permissionRow:last-child{border-bottom:0}.permissionUser small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+/* entry overlay */
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(3,7,9,.92);display:grid;place-items:center;padding:18px}.entryCard{width:min(500px,100%);background:#111b21;border:1px solid #37505e;border-radius:16px;padding:18px;box-shadow:0 14px 50px #000c}.entryCard h1{font-size:20px;margin:0 0 6px}.entryCard p{font-size:12px;color:var(--muted);line-height:1.5}.entryActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.entryActions button{min-height:72px;font-size:15px}.stack{display:grid;gap:8px;margin-top:14px}.formTitle{font-weight:850;margin-bottom:6px}
+#toast{position:fixed;z-index:120;left:50%;bottom:calc(18px + var(--safe));transform:translateX(-50%);background:#10191f;border:1px solid #3a505d;border-radius:10px;padding:9px 12px;box-shadow:0 7px 24px #000a;font-size:12px;opacity:0;pointer-events:none;transition:.2s;max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#toast.show{opacity:1}
+
+/* V1.3 contextual manipulation */
+.contextMenu{
+  position:fixed;z-index:5000;min-width:230px;max-width:min(320px,calc(100vw - 18px));
+  background:rgba(13,21,26,.98);border:1px solid #45606f;border-radius:12px;
+  box-shadow:0 12px 34px #000d;padding:9px;display:none;backdrop-filter:blur(10px)
+}
+.contextMenu.open{display:block}
+.contextMenu .ctxTitle{font-size:12px;font-weight:850;margin:1px 3px 8px;color:#dceaf0}
+.contextMenu .ctxGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.contextMenu button{font-size:11px;padding:8px 6px}
+.contextMenu .danger{background:#6b2b2b}
+.contextMenu .ctxHint{font-size:10px;color:var(--muted);line-height:1.4;margin-top:7px}
+.map-symbol-shell{
+  width:40px;height:40px;display:grid;place-items:center;
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.7))
+}
+.map-symbol-shell svg{width:36px;height:36px;overflow:visible}
+.map-shape-selected{filter:drop-shadow(0 0 5px rgba(69,175,242,.9))}
+.boardPaperArea{display:flex;flex-direction:column;align-items:center;gap:9px;max-width:100%}
+.floorTabs{
+  width:min(1200px,100%);display:flex;gap:6px;flex-wrap:wrap;justify-content:center;
+  padding:7px 8px;background:#10191f;border:1px solid #314550;border-radius:11px
+}
+.floorTab{font-size:11px;padding:7px 10px}
+.floorTab.active{background:#164058;outline:1px solid var(--blue)}
+
+@media(max-width:820px){header{padding-left:9px;padding-right:9px}.brandText small{display:none}.roomStatus{font-size:10px}nav{padding:6px;gap:4px;overflow-x:auto;grid-template-columns:repeat(5,minmax(90px,1fr))}nav button{font-size:10px;padding:9px 2px}.grid2,.grid3{grid-template-columns:1fr}.mapLayout,.boardLayout{grid-template-columns:1fr}.mapSidebar,.boardSidebar{position:absolute;z-index:1400;left:8px;right:8px;bottom:8px;max-height:66%;border:1px solid #344955;border-radius:13px;background:rgba(15,24,30,.98);box-shadow:0 8px 30px #000b;display:none}.mapSidebar.open,.boardSidebar.open{display:block}.mapTopMobile{display:flex;position:absolute;z-index:1500;top:8px;right:8px;gap:6px}.boardStage{padding:8px}.chatShell{padding:8px}.permissionRow{grid-template-columns:1fr}.entryActions{grid-template-columns:1fr 1fr}}
+
+/* V1.3 direct manipulation */
+.map-select-frame{
+  stroke:#45aff2!important;
+  stroke-width:2!important;
+  stroke-dasharray:7 5!important;
+  fill:rgba(69,175,242,.035)!important;
+  pointer-events:none!important;
+}
+.map-transform-handle{
+  width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;background:#0f74ad;color:#fff;
+  border:2px solid #fff;box-shadow:0 4px 14px #000a;
+  font-size:18px;font-weight:900;touch-action:none;user-select:none;
+}
+.map-selected-glow{filter:drop-shadow(0 0 6px rgba(69,175,242,.95))}
+.boardHandleLabel{font-size:10px;color:#c7dce7;margin-top:5px}
+@media(max-width:820px){
+  .mapSidebar,.boardSidebar{z-index:10020!important}
+  .mapTopMobile{z-index:10030!important}
+  .leaflet-control-container{z-index:900!important}
+}
+
+
+/* V1.4 board pinch zoom + custom symbol library */
+.customSymbolLibrary{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  margin-top:7px;
+}
+.customSymbolChoice{
+  min-height:48px;
+  padding:5px!important;
+  display:grid;
+  place-items:center;
+  background:#121d24;
+}
+.customSymbolChoice svg{width:31px;height:31px;display:block}
+.customSymbolChoice.active{
+  outline:2px solid var(--yellow);
+  background:#243039;
+}
+.customSymbolPreview{
+  display:grid;
+  grid-template-columns:52px 1fr;
+  gap:9px;
+  align-items:center;
+  margin-top:8px;
+  padding:8px;
+  border:1px solid #344955;
+  border-radius:10px;
+  background:#0e171c;
+}
+#customIconPreviewBox{
+  width:48px;height:48px;
+  display:grid;place-items:center;
+  border:1px solid #435a67;
+  border-radius:9px;
+  background:#121e25;
+}
+#customIconPreviewBox svg{width:38px;height:38px}
+.boardZoomBadge{
+  position:absolute;
+  z-index:1600;
+  top:8px;
+  left:8px;
+  padding:7px 9px;
+  border-radius:9px;
+  border:1px solid #344955;
+  background:rgba(15,24,30,.94);
+  color:#d8e8ef;
+  font-size:11px;
+  box-shadow:0 4px 14px #0008;
+  pointer-events:none;
+}
+#boardWrap{
+  transform-origin:top left;
+  flex:0 0 auto;
+}
+#boardCanvas{
+  max-width:none!important;
+}
+.boardStage{
+  touch-action:none;
+  -webkit-overflow-scrolling:touch;
+}
+@media(max-width:820px){
+  .customSymbolLibrary{grid-template-columns:repeat(6,1fr)}
+  .customSymbolChoice{min-height:45px}
+}
+
+
+/* V1.5 */
+.mapQuickTooltip{
+  background:rgba(10,17,22,.96)!important;
+  color:#eef6f9!important;
+  border:1px solid #496575!important;
+  border-radius:9px!important;
+  box-shadow:0 6px 18px #0009!important;
+  padding:7px 9px!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+}
+.mapQuickTooltip:before{display:none!important}
+.floorSideList{display:grid;gap:6px;margin-top:8px}
+.floorSideBtn{
+  width:100%;text-align:left;padding:9px 10px;
+  background:#132027;border-color:#344b58;
+}
+.floorSideBtn.active{
+  background:#17425a;border-color:#3597ce;outline:1px solid var(--blue)
+}
+.boardCanvasMeta{
+  display:flex;gap:6px;align-items:center;justify-content:space-between;
+  color:var(--muted);font-size:10px;margin-top:7px
+}
+#expandCanvasBtn{padding:7px 8px;font-size:10px}
+@media(min-width:821px){
+  .boardStage{
+    display:block!important;
+    padding:0!important;
+    overflow:auto!important;
+    background:#080d10!important;
+  }
+  .boardPaperArea{
+    align-items:flex-start!important;
+    min-width:max-content;
+    min-height:max-content;
+    gap:0!important;
+  }
+  #boardWrap{
+    margin:0!important;
+    box-shadow:none!important;
+    border:none!important;
+  }
+  #floorTabs{display:none!important}
+  .boardZoomBadge{
+    position:sticky!important;
+    top:8px!important;
+    left:8px!important;
+    width:max-content;
+    margin:8px 0 0 8px;
+    z-index:1700!important;
+  }
+}
+@media(max-width:820px){
+  .floorSideList{display:none}
+}
+
+
+/* V1.6 Online - chat photo only UI addition */
+.chatInput{grid-template-columns:auto 1fr auto}
+.chatPhotoBtn{min-width:44px;padding:8px 10px}
+.chatPhotoPreview{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 9px;border:1px solid #344955;border-radius:10px;
+  background:#101a20;margin-bottom:7px
+}
+.chatPhotoPreview img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #435762}
+.chatPhotoPreview .photoInfo{flex:1;min-width:0}
+.chatPhotoPreview .photoName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+.chatPhoto{
+  display:block;max-width:min(100%,420px);max-height:420px;
+  margin-top:7px;border-radius:10px;border:1px solid #3d5360;
+  object-fit:contain;background:#081014;cursor:pointer
+}
+.chatText:empty{display:none}
+.onlineOk{color:#6fda8a}
+.onlineBad{color:#ff7b7b}
+.onlineWait{color:#ffc650}
+
+
+/* V1.7 iOS board interaction fix */
+#boardStage,#boardWrap,#boardCanvas{
+  -webkit-touch-callout:none!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+#boardCanvas{
+  touch-action:none!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.roomDangerBox{
+  border:1px solid #7c3737!important;
+  background:linear-gradient(180deg,#211416,#171013)!important;
+}
+.roomDangerBox p{color:#cbb9bb;font-size:11px;line-height:1.55;margin:6px 0 10px}
+
+/* V1.8 */
+.equipQuick{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.equipQuick button{font-size:10px;padding:6px 8px}
+.equipQuick button.active{background:#174b67;border-color:#49aee6;outline:1px solid #49aee6}
+.equipSelected{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.equipChip{display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;background:#182832;border:1px solid #395361;font-size:10px}
+.equipChip button{padding:0 3px;border:0;background:transparent;color:#ff8f8f}
+.boardToolTextInput{margin-top:7px}
+#boardObjectTooltip{position:fixed;z-index:6200;max-width:min(300px,calc(100vw - 24px));padding:8px 10px;border-radius:9px;background:rgba(10,17,22,.97);border:1px solid #496575;color:#eef6f9;box-shadow:0 6px 18px #0009;font-size:11px;line-height:1.45;pointer-events:none;display:none}
+#boardObjectTooltip.show{display:block}
+.ctxGrid3{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+
+/* V1.8.1 vehicle/equipment quantity editor */
+.qtyQuickList{display:grid;gap:7px;margin-top:8px}
+.qtyQuickRow{
+  display:grid;grid-template-columns:minmax(115px,1fr) 82px 34px;
+  gap:7px;align-items:center;padding:7px;border:1px solid #304651;
+  border-radius:10px;background:#0d171c
+}
+.qtyQuickRow button{font-size:11px;text-align:left;padding:8px}
+.qtyQuickRow button.active{background:#164f6d;border-color:#45aff2;outline:1px solid #45aff2}
+.qtyQuickRow input{padding:8px;text-align:center}
+.qtyUnit{font-size:11px;color:#c8d7de;text-align:center}
+.qtyCustomRow{
+  display:grid;grid-template-columns:minmax(120px,1fr) 74px 62px auto;
+  gap:6px;align-items:center;margin-top:8px
+}
+.qtySelected{display:grid;gap:5px;margin-top:8px}
+.qtyChip{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:7px 9px;border:1px solid #395361;border-radius:9px;background:#15242c;
+  font-size:11px
+}
+.qtyChip button{padding:3px 7px;background:#5b2929;border-color:#834040}
+@media(max-width:600px){
+  .qtyQuickRow{grid-template-columns:minmax(105px,1fr) 72px 28px}
+  .qtyCustomRow{grid-template-columns:1fr 70px 58px}
+  .qtyCustomRow button{grid-column:1/-1}
+}
+
+
+/* V1.8.2 in-app object viewer */
+.objectViewer{
+  position:fixed;inset:0;z-index:9000;background:rgba(2,6,8,.82);
+  display:none;align-items:center;justify-content:center;padding:16px;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)
+}
+.objectViewer.open{display:flex}
+.objectViewerCard{
+  width:min(980px,96vw);max-height:94vh;overflow:auto;
+  background:#0f191f;border:1px solid #486371;border-radius:16px;
+  box-shadow:0 18px 60px #000d;padding:14px
+}
+.objectViewerHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.objectViewerTitle{font-size:16px;font-weight:900;color:#f1f7fa}
+.objectViewerClose{width:40px;height:40px;padding:0;font-size:20px}
+.objectViewerMeta{
+  border:1px solid #314852;background:#0b1419;border-radius:10px;
+  padding:9px 10px;margin-bottom:10px;font-size:12px;line-height:1.6;color:#d7e3e8
+}
+.objectViewerImageWrap{
+  display:flex;align-items:center;justify-content:center;
+  min-height:180px;background:#070c0f;border:1px solid #273a44;border-radius:12px;
+  overflow:hidden
+}
+.objectViewerImage{
+  display:block;max-width:100%;max-height:82vh;width:auto;height:auto;object-fit:contain;
+  cursor:zoom-in;transition:transform .12s ease
+}
+.objectViewerImage.zoomed{
+  max-width:none;max-height:none;width:auto;height:auto;cursor:zoom-out
+}
+.objectViewerImageWrap.zoomed{
+  display:block;overflow:auto;max-height:82vh
+}
+.objectViewerEmpty{padding:30px 12px;color:#879ca7;text-align:center;font-size:12px}
+.uploadPerfHint{font-size:10px;color:#8fa6b1;margin-top:5px}
+
+
+/* V1.9.1 compact info cards */
+.quickInfoCard{
+  min-width:180px;max-width:280px;font-size:11px;line-height:1.45;
+  color:#eef6f9
+}
+.quickInfoCard .qiTitle{font-weight:900;font-size:12px;margin-bottom:4px}
+.quickInfoCard .qiNote{white-space:pre-wrap;margin:3px 0;color:#d8e5ea}
+.quickInfoCard .qiOwner{font-size:10px;color:#8fa5af;margin-top:5px}
+.quickInfoCard .qiThumb{
+  display:block;width:100%;max-height:150px;object-fit:contain;
+  margin-top:7px;border-radius:8px;border:1px solid #38505c;background:#071014
+}
+.boardInfoPopover{
+  position:fixed;z-index:7200;display:none;
+  width:min(300px,calc(100vw - 24px));padding:10px 11px;
+  border-radius:11px;background:rgba(10,17,22,.98);
+  border:1px solid #4a6675;box-shadow:0 8px 25px #000a;color:#eef6f9
+}
+.boardInfoPopover.open{display:block}
+.boardInfoPopover .qiThumb{max-height:170px}
+
+
+/* V1.9.2 — map quick info matches board dark card */
+.leaflet-tooltip.ktakQuickInfo{
+  background:rgba(10,17,22,.98)!important;
+  color:#eef6f9!important;
+  border:1px solid #4a6675!important;
+  border-radius:11px!important;
+  box-shadow:0 8px 25px rgba(0,0,0,.66)!important;
+  padding:10px 11px!important;
+}
+.leaflet-tooltip.ktakQuickInfo::before{
+  border-top-color:#4a6675!important;
+}
+.leaflet-tooltip-bottom.ktakQuickInfo::before{
+  border-bottom-color:#4a6675!important;
+  border-top-color:transparent!important;
+}
+.leaflet-tooltip-left.ktakQuickInfo::before{
+  border-left-color:#4a6675!important;
+  border-top-color:transparent!important;
+}
+.leaflet-tooltip-right.ktakQuickInfo::before{
+  border-right-color:#4a6675!important;
+  border-top-color:transparent!important;
+}
+.leaflet-tooltip.ktakQuickInfo .quickInfoCard{
+  min-width:180px;
+  max-width:280px;
+  color:#eef6f9!important;
+}
+.leaflet-tooltip.ktakQuickInfo .qiTitle{
+  color:#f4fafc!important;
+}
+.leaflet-tooltip.ktakQuickInfo .qiNote{
+  color:#d9e5ea!important;
+}
+.leaflet-tooltip.ktakQuickInfo .qiOwner{
+  color:#9db1bb!important;
+}
+.leaflet-tooltip.ktakQuickInfo .qiThumb{
+  background:#071014!important;
+  border-color:#38505c!important;
+}
+
+
+/* V2.0 Security */
+.securityBox{
+  border:1px solid #34515e;background:#0c171c;border-radius:12px;padding:10px
+}
+.securityGood{color:#83d6a2}
+.securityWarn{color:#ffd27d}
+.securityBad{color:#ff8d8d}
+.pendingBadge,.approvedBadge{
+  display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;
+  font-size:9px;font-weight:800;margin-left:5px
+}
+.pendingBadge{background:#5d4518;color:#ffd784;border:1px solid #8c6d28}
+.approvedBadge{background:#163d2a;color:#8ce1ad;border:1px solid #2d6b4b}
+.permissionActions{display:flex;gap:5px;flex-wrap:wrap}
+#turnstileBox{min-height:68px;display:flex;align-items:center;justify-content:center;margin-top:10px}
+.securityModal{
+  position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,.82);
+  display:none;align-items:center;justify-content:center;padding:16px
+}
+.securityModal.open{display:flex}
+.securityModalCard{
+  width:min(560px,96vw);background:#0e181e;border:1px solid #496575;
+  border-radius:15px;padding:16px;box-shadow:0 20px 70px #000d
+}
+.recoveryCode{
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all;
+  background:#071014;border:1px solid #37505c;border-radius:10px;padding:12px;
+  font-size:16px;letter-spacing:.6px;margin:10px 0
+}
+.pendingOverlay{
+  position:fixed;inset:0;z-index:9700;background:rgba(4,9,12,.96);
+  display:none;align-items:center;justify-content:center;padding:18px
+}
+.pendingOverlay.open{display:flex}
+.pendingCard{width:min(520px,96vw);background:#0e181e;border:1px solid #496575;border-radius:15px;padding:18px;text-align:center}
+.auditList{display:grid;gap:6px;max-height:320px;overflow:auto}
+.auditRow{padding:8px;border:1px solid #2e444f;border-radius:9px;background:#0b151a;font-size:10px;line-height:1.45}
+.auditRow b{font-size:11px}
+
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.0 · Security Production</small></div></div>
+  <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
+</header>
+<nav>
+  <button class="navBtn active" data-page="briefPage">📋 任務簡報</button>
+  <button class="navBtn" data-page="mapPage">🗺️ 任務地圖</button>
+  <button class="navBtn" data-page="boardPage">🧭 戰術板</button>
+  <button class="navBtn" data-page="chatPage">💬 聊天室</button>
+  <button class="navBtn" id="permissionTab" data-page="permissionPage">🔐 權限</button>
+</nav>
+<main>
+<section id="briefPage" class="page active"><div class="shell">
+  <div class="flexBetween"><div><div class="sectionTitle">任務簡報</div><div class="muted">任務簡報由指揮官權限人員維護，其餘人員依權限觀看。</div></div><div class="row"><button id="briefEditBtn">編輯</button><button id="briefSaveBtn" class="primary hidden">儲存</button></div></div>
+  <div class="card"><h2>時間</h2>
+    <div>
+      <div class="label">任務時間</div>
+      <input class="briefInput" id="missionTime" placeholder="例如：2026/08/26 20:00 集合、21:00 執行">
+      <div class="valueBox briefView hidden" id="missionTimeView"></div>
+    </div>
+  </div>
+
+  <div class="card"><h2>案情摘要</h2>
+    <div class="grid2">
+      <div>
+        <div class="label">案類</div>
+        <input class="briefInput" id="caseType" placeholder="例如：挾持、武裝嫌疑、重大刑案">
+        <div class="valueBox briefView hidden" id="caseTypeView"></div>
+      </div>
+      <div>
+        <div class="label">任務執行方式</div>
+        <select class="briefInput" id="executionMode">
+          <option value="包圍消耗">包圍消耗</option>
+          <option value="搜索攻堅">搜索攻堅</option>
+          <option value="高風險突入">高風險突入</option>
+          <option value="其他">其他</option>
+        </select>
+        <div class="valueBox briefView hidden" id="executionModeView"></div>
+      </div>
+    </div>
+
+    <div id="executionOtherWrap" style="margin-top:10px">
+      <div class="label">其他任務執行方式</div>
+      <input class="briefInput" id="executionOther" placeholder="自行輸入">
+      <div class="valueBox briefView hidden" id="executionOtherView"></div>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="label">案情摘要／現場目前情況</div>
+      <textarea class="briefInput" id="situationSummary" placeholder="案情經過、現場目前狀況、嫌疑人動向、封鎖情形、已知風險等"></textarea>
+      <div class="valueBox briefView hidden" id="situationSummaryView"></div>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="label">補充任務內容</div>
+      <textarea class="briefInput" id="missionNotes" placeholder="任務目標、限制事項、集合方式、其他重要資訊"></textarea>
+      <div class="valueBox briefView hidden" id="missionNotesView"></div>
+    </div>
+  </div>
+
+  <div class="card"><h2>敵情</h2>
+    <div class="grid2">
+      <div>
+        <div class="label">敵情風險</div>
+        <select class="briefInput" id="riskLevel">
+          <option value="低">低</option>
+          <option value="中" selected>中</option>
+          <option value="高">高</option>
+        </select>
+        <div class="valueBox briefView hidden" id="riskLevelView"></div>
+      </div>
+      <div>
+        <div class="label">嫌疑人數量</div>
+        <input class="briefInput" id="suspectCount" type="number" min="0" placeholder="0">
+        <div class="valueBox briefView hidden" id="suspectCountView"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="label">嫌疑人背景／已知資訊</div>
+      <textarea class="briefInput" id="suspectBackground" placeholder="身分、已知行為、武器資訊、情緒、前科或其他已知背景"></textarea>
+      <div class="valueBox briefView hidden" id="suspectBackgroundView"></div>
+    </div>
+  </div>
+
+  <div class="card"><h2>執行地點</h2>
+    <div>
+      <div class="label">執行地點／目標位置</div>
+      <textarea class="briefInput" id="executionLocation" placeholder="地址、建物名稱、樓層、區域、集合點或其他位置資訊"></textarea>
+      <div class="valueBox briefView hidden" id="executionLocationView"></div>
+    </div>
+  </div>
+
+  <div class="card"><h2>執行天氣</h2>
+    <div>
+      <div class="label">天候／環境狀況</div>
+      <textarea class="briefInput" id="executionWeather" placeholder="例如：多雲、降雨、溫度、風勢、能見度、地面濕滑等"></textarea>
+      <div class="valueBox briefView hidden" id="executionWeatherView"></div>
+    </div>
+  </div>
+
+  <div class="card"><h2>現場人員</h2>
+    <div class="grid2">
+      <div>
+        <div class="label">平民數量</div>
+        <input class="briefInput" id="civilianCount" type="number" min="0" placeholder="0">
+        <div class="valueBox briefView hidden" id="civilianCountView"></div>
+      </div>
+      <div>
+        <div class="label">攻堅隊伍組成</div>
+        <textarea class="briefInput" id="teamComposition" placeholder="例如：指揮官、A組、B組、醫療、封鎖、偵查等"></textarea>
+        <div class="valueBox briefView hidden" id="teamCompositionView"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><h2>攜帶裝備</h2>
+    <div>
+      <div class="label">本次出動車輛</div>
+      <div id="vehicleEditor" class="briefInput">
+        <div class="muted">點選車種即可加入，再直接輸入台數。</div>
+        <div id="vehicleQuick" class="qtyQuickList"></div>
+        <div class="qtyCustomRow">
+          <input id="vehicleCustomName" placeholder="其他車輛名稱">
+          <input id="vehicleCustomQty" type="number" min="1" value="1" inputmode="numeric">
+          <input id="vehicleCustomUnit" value="台" placeholder="單位">
+          <button id="vehicleAddBtn">＋ 新增</button>
+        </div>
+        <div id="vehicleCustomSelected" class="qtySelected"></div>
+      </div>
+      <div class="valueBox briefView hidden" id="vehiclesView"></div>
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="label">本次裝備</div>
+      <div id="equipmentEditor" class="briefInput">
+        <div class="muted">點選裝備即可加入，右側直接輸入數量。</div>
+        <div id="equipmentQuick" class="qtyQuickList"></div>
+        <div class="qtyCustomRow">
+          <input id="equipmentCustomName" placeholder="其他裝備名稱">
+          <input id="equipmentCustomQty" type="number" min="1" value="1" inputmode="numeric">
+          <input id="equipmentCustomUnit" value="件" placeholder="單位">
+          <button id="equipmentAddBtn">＋ 新增</button>
+        </div>
+        <div id="equipmentCustomSelected" class="qtySelected"></div>
+      </div>
+      <div class="valueBox briefView hidden" id="equipmentView"></div>
+    </div>
+  </div>
+  <div class="card"><div class="flexBetween"><div><h3>任務資料備份</h3><div class="muted">匯出 / 匯入整個房間資料。</div></div><div class="row"><button id="exportMissionBtn">匯出</button><button id="importMissionBtn">匯入</button><input id="importMissionFile" type="file" accept=".json,application/json" class="hidden"></div></div></div>
+</div></section>
+
+<section id="mapPage" class="page"><div class="mapLayout">
+<aside class="mapSidebar" id="mapSidebar">
+  <div class="card"><h3>地址搜尋</h3><div class="searchRow"><input id="mapSearch" placeholder="例如：台南市永康區中華路34號"><button id="mapSearchBtn">搜尋</button></div><div class="row" style="margin-top:7px"><button id="googleAddressBtn" style="flex:1">G Google 搜尋</button><button id="streetViewBtn" style="flex:1">👁 Google 街景</button><button id="mapLayerBtn" style="flex:1">🛰 衛星</button></div><div class="muted" id="searchStatus" style="margin-top:6px">門牌會先拆解為台灣地址格式並做多組搜尋；若 OSM 缺門牌資料，可直接用 Google 搜尋。</div></div>
+  <div class="card"><h3>地圖操作</h3><div class="toolGrid"><button class="mapTool active" data-tool="pan">✋ 拖曳</button><button class="mapTool" data-tool="line">╱ 直線</button><button class="mapTool" data-tool="rect">□ 方形</button><button class="mapTool" data-tool="circle">○ 圓形</button><button class="mapTool" data-tool="free">✎ 隨意畫筆</button><button id="mapUndoBtn">↶ 復原</button></div><div class="label" style="margin-top:9px">繪圖顏色</div><div class="palette" id="mapPalette"></div><div id="mapHint">目前：拖曳地圖。</div></div>
+  <div class="card"><h3>快速圖樣</h3><div class="iconGrid" id="quickIcons"></div><div class="muted" style="margin-top:7px">拖曳可移動；按住 1 秒會顯示調整框與 ↻ 把手。電腦右鍵、手機輕觸可開啟刪除／方向選單。</div></div>
+  <div class="card">
+    <h3>＋ 自訂快速圖樣</h3>
+    <div class="muted">從圖案庫挑一個外型，再自己命名。例：選「車輛」後命名為「嫌疑車 A」；選「友軍」後命名為「A 組盾牌手」。</div>
+    <div class="customSymbolLibrary" id="customIconLibrary"></div>
+    <div class="customSymbolPreview">
+      <div id="customIconPreviewBox"></div>
+      <div>
+        <div class="label">自訂名稱</div>
+        <input id="customIconLabel" placeholder="例如：嫌疑車 A、A組盾牌手、破門器材">
+      </div>
+    </div>
+    <button id="customIconBtn" class="primary" style="width:100%;margin-top:7px">＋ 使用此自訂圖樣並放置</button>
+  </div>
+  <div class="card"><h3>照片標示</h3><input type="file" id="photoInput" accept="image/*"><input id="photoLabel" placeholder="照片標示，例如：後門、二樓窗戶" style="margin-top:6px"><button id="photoPlaceBtn" style="width:100%;margin-top:6px">📷 選取後點地圖放置</button><div class="muted" style="margin-top:6px">照片與其他地圖物件使用相同操作：拖曳、長按選取、↻ 把手旋轉縮放、右鍵／輕觸刪除或設定方向。</div></div>
+</aside>
+<div style="position:relative;min-width:0;z-index:1"><div class="mapTopMobile"><button id="mapToolsMobile">☰ 工具</button></div><div id="map"></div></div>
+</div></section>
+
+<section id="boardPage" class="page"><div class="boardLayout">
+<aside class="boardSidebar" id="boardSidebar">
+  <div class="card"><h3>樓層 / 頁面</h3><div class="floorControls"><button id="prevFloorBtn">‹</button><input id="floorName" value="1F" placeholder="例如 1F、大廳、頂樓"><button id="nextFloorBtn">›</button></div><div class="row" style="margin-top:7px"><button id="addFloorBtn" style="flex:1">＋ 新增樓層</button><button id="deleteFloorBtn" class="danger">刪除</button></div><div class="muted" id="floorCountText" style="margin-top:6px"></div><div id="floorSideList" class="floorSideList"></div><div class="boardCanvasMeta"><span id="canvasSizeText">畫布</span><button id="expandCanvasBtn">＋ 擴大畫布</button></div></div><div class="valueBox" style="margin-top:7px">選取重疊物件時會優先抓取友軍／敵軍／門／樓梯／文字；要調整建築外框，請點方形或圓形中沒有其他圖樣覆蓋的位置。</div>
+  <div class="card"><h3>畫筆 / 物件</h3><div class="boardToolGrid"><button class="boardTool active" data-board-tool="select">☝ 選取 / 移動</button><button class="boardTool" data-board-tool="free">✎ 隨意畫</button><button class="boardTool" data-board-tool="line">╱ 直線</button><button class="boardTool" data-board-tool="rect">□ 方形</button><button class="boardTool" data-board-tool="circle">○ 圓形</button><button class="boardTool" data-board-tool="stairsUp">▤ 樓梯↑</button><button class="boardTool" data-board-tool="stairsDown">▤ 樓梯↓</button><button class="boardTool" data-board-tool="door">▮ 門</button><button class="boardTool" data-board-tool="text">T 文字</button><button class="boardTool" data-board-tool="friendly">友軍</button><button class="boardTool" data-board-tool="enemy">敵人</button><button class="boardTool" data-board-tool="eraser">⌫ 部分橡皮擦</button><button id="boardUndoBtn">↶ 復原</button></div></div>
+  <div class="card"><h3>畫筆設定</h3><div class="row"><input id="boardColor" type="color" value="#111111" style="height:42px;padding:4px"><select id="boardWidth"><option value="2">細</option><option value="4" selected>中</option><option value="7">粗</option><option value="26">橡皮擦</option></select></div><input id="boardTextInput" class="boardToolTextInput" placeholder="文字工具內容，例如：客廳、主臥、A入口"><button id="clearBoardBtn" class="danger" style="width:100%;margin-top:7px">清空本頁</button></div>
+  <div class="muted">選取模式：拖曳物件移動；按住 1 秒顯示調整框，拖曳右下角 ↻ 把手旋轉／縮放；電腦右鍵、手機輕觸可刪除。手機戰術板可直接用兩隻手指捏合放大／縮小。</div>
+</aside>
+<div class="boardStage" id="boardStage"><div class="boardZoomBadge" id="boardZoomBadge">戰術板 100% · 雙指縮放</div><div class="mapTopMobile" style="top:8px;right:8px"><button id="boardToolsMobile">☰ 工具</button></div><div class="boardPaperArea"><div id="boardWrap"><canvas id="boardCanvas" width="2000" height="1400"></canvas></div><div id="floorTabs" class="floorTabs"></div></div></div>
+</div></section>
+
+<section id="chatPage" class="page"><div class="chatShell"><div class="chatInfo"><div><b>聊天室</b><div class="muted">觀察員僅能觀看；其他角色可發言。指揮官可刪除房間內訊息。可傳送文字或照片。</div></div><div class="memberList" id="memberList"></div></div><div id="chatLog"></div><div><div id="chatPhotoPreview" class="chatPhotoPreview hidden"><img id="chatPhotoPreviewImg"><div class="photoInfo"><div class="label">待傳送照片</div><div id="chatPhotoName" class="photoName"></div></div><button id="chatPhotoClearBtn" class="danger">移除</button></div><div class="chatInput"><input id="chatPhotoInput" class="hidden" type="file" accept="image/*"><button id="chatPhotoBtn" class="chatPhotoBtn" title="插入照片">📷</button><input id="chatInput" placeholder="輸入訊息…"><button id="chatSendBtn" class="primary">送出</button></div></div></div></section>
+
+<section id="permissionPage" class="page"><div class="shell"><div class="sectionTitle">房間權限</div>
+<div class="card"><h2>安全權限規則</h2><div class="grid2"><div class="valueBox">新加入者：先待核准，核准前無法讀取任務資料。</div><div class="valueBox">指揮官：可核准／移除成員、調整權限、編輯全房內容。</div><div class="valueBox">特勤／偵查：可建立與修改自己的地圖／戰術板物件與聊天內容。</div><div class="valueBox">觀察員：只能觀看；戰術板樓層、畫布大小與清空整頁僅限指揮官。</div></div></div>
+<div class="card"><h2>成員核准與權限</h2><div id="permissionList"></div></div>
+<div id="securityAdminCard" class="card hidden"><h2>安全管理</h2>
+  <div id="roomExpiryInfo" class="valueBox"></div>
+  <div class="label" style="margin-top:10px">更換房間密碼</div>
+  <div class="row"><input id="newRoomPassword" type="password" minlength="8" maxlength="72" placeholder="新密碼（至少 8 碼）"><button id="changeRoomPasswordBtn">更新密碼</button></div>
+</div>
+<div id="roomAdminCard" class="card roomDangerBox hidden"><h2>建立者管理</h2><p>恢復金鑰只應由房間建立者保存。可隨時輪替；舊金鑰會立即失效。</p><div class="row"><button id="rotateRecoveryBtn" style="flex:1">🔑 產生新的恢復金鑰</button><button id="deleteRoomBtn" class="danger" style="flex:1">刪除整個房間</button></div></div>
+<div class="card"><h2>安全稽核紀錄</h2><div class="muted">顯示最近的房間管理、核准、角色變更、移除與恢復操作。</div><div id="auditList" class="auditList" style="margin-top:8px"></div></div>
+</div></section>
+</main>
+</div>
+
+<div class="overlay" id="entryOverlay"><div class="entryCard">
+  <div id="entryHome"><h1>KTAK 任務房間</h1><p>安全版：建立、加入或恢復任務房間。新加入者須由指揮官核准後才能查看任務內容。</p><div class="entryActions"><button id="showCreateBtn" class="primary">＋ 創建房間</button><button id="showJoinBtn">→ 加入房間</button><button id="showRecoverBtn">🔑 恢復指揮官</button></div><div class="muted" style="margin-top:12px"><span id="onlineStatus">正在檢查線上服務…</span></div></div>
+  <div id="createForm" class="hidden"><div class="formTitle">創建安全房間</div><div class="stack"><input id="createRoom" placeholder="設定房號，例如 A102"><input id="createPassword" type="password" minlength="8" maxlength="72" placeholder="房間密碼（至少 8 碼）"><input id="createNick" placeholder="你的暱稱"><select id="createRetention"><option value="1">保存 1 天</option><option value="7" selected>保存 7 天</option><option value="30">保存 30 天</option></select><div class="muted">到期後房間會停止存取，並由清理程序移除資料與照片。</div><div class="row"><button class="backEntry">返回</button><button id="createRoomBtn" class="primary" style="flex:1">創建並進入</button></div></div></div>
+  <div id="joinForm" class="hidden"><div class="formTitle">申請加入房間</div><div class="stack"><input id="joinRoom" placeholder="房號"><input id="joinPassword" type="password" placeholder="房間密碼"><input id="joinNick" placeholder="你的暱稱"><select id="joinRole"><option value="tactical">申請：特勤人員</option><option value="recon">申請：偵查隊</option><option value="observer">申請：觀察員</option></select><div class="muted">送出後先進入待核准狀態；指揮官核准前看不到任務內容。</div><div class="row"><button class="backEntry">返回</button><button id="joinRoomBtn" class="primary" style="flex:1">送出加入申請</button></div></div></div>
+  <div id="recoverForm" class="hidden"><div class="formTitle">恢復指揮官</div><div class="stack"><input id="recoverRoom" placeholder="房號"><input id="recoverCode" type="password" placeholder="指揮官恢復金鑰"><input id="recoverNick" placeholder="恢復後顯示的暱稱"><div class="muted">恢復成功後舊金鑰會立即失效，系統會產生一組新金鑰。</div><div class="row"><button class="backEntry">返回</button><button id="recoverRoomBtn" class="primary" style="flex:1">恢復控制權</button></div></div></div>
+  <div id="turnstileBox"></div>
+</div></div>
+
+<div id="mapContextMenu" class="contextMenu">
+  <div id="mapCtxTitle" class="ctxTitle">地圖物件</div>
+  <div class="ctxGrid3">
+    <button id="mapCtxNote">編輯備註</button>
+    <button id="mapCtxPhoto">加入／更換照片</button>
+    <button id="mapCtxViewPhoto">查看照片（大圖）</button>
+    <button id="mapCtxDirection">方向／觀察扇形</button>
+    <button id="mapCtxDirectionClear">清除方向</button>
+    <button id="mapCtxDelete" class="danger">刪除物件</button>
+  </div>
+  <div class="row" style="margin-top:7px">
+    <select id="mapCtxFanAngle">
+      <option value="30">扇形 30°</option>
+      <option value="45">扇形 45°</option>
+      <option value="60" selected>扇形 60°</option>
+      <option value="90">扇形 90°</option>
+    </select>
+  </div>
+  <div class="ctxHint">拖曳物件＝移動；按住物件 1 秒＝進入／完成調整；選取後拖曳右下角 ↻ 把手，可同時旋轉與縮放。電腦右鍵、手機輕觸會出現此選單。</div>
+</div>
+
+<input id="mapObjectPhotoInput" type="file" accept="image/*" class="hidden">
+<div id="boardContextMenu" class="contextMenu">
+  <div id="boardCtxTitle" class="ctxTitle">戰術板物件</div>
+  <div class="ctxGrid3">
+    <button id="boardCtxInfo">查看資訊</button>
+    <button id="boardCtxDone">完成調整</button>
+    <button id="boardCtxNote">編輯備註</button>
+    <button id="boardCtxPhoto">加入／更換照片</button>
+    <button id="boardCtxViewPhoto">查看照片（大圖）</button>
+    <button id="boardCtxDelete" class="danger">刪除物件</button>
+  </div>
+  <div class="ctxHint">拖曳物件＝移動；按住 1 秒＝顯示／關閉調整框；拖曳右下角 ↻ 把手可同時旋轉與縮放。</div>
+</div>
+
+<input id="boardObjectPhotoInput" type="file" accept="image/*" class="hidden">
+<div id="boardObjectTooltip"></div>
+
+
+<div id="boardInfoPopover" class="boardInfoPopover"></div>
+
+<div id="objectViewer" class="objectViewer" aria-hidden="true">
+  <div class="objectViewerCard">
+    <div class="objectViewerHead">
+      <div id="objectViewerTitle" class="objectViewerTitle">資訊</div>
+      <button id="objectViewerClose" class="objectViewerClose" aria-label="關閉">×</button>
+    </div>
+    <div id="objectViewerMeta" class="objectViewerMeta"></div>
+    <div id="objectViewerImageWrap" class="objectViewerImageWrap">
+      <div id="objectViewerEmpty" class="objectViewerEmpty">沒有照片</div>
+      <img id="objectViewerImage" class="objectViewerImage hidden" alt="物件照片">
+    </div>
+  </div>
+</div>
+
+
+<div id="pendingOverlay" class="pendingOverlay">
+  <div class="pendingCard">
+    <h2>等待指揮官核准</h2>
+    <p id="pendingText">加入申請已送出。</p>
+    <div class="muted">核准前不會下載任務簡報、地圖、戰術板或聊天室內容。</div>
+    <button id="cancelPendingBtn" style="margin-top:12px;width:100%">取消並離開</button>
+  </div>
+</div>
+
+<div id="securityModal" class="securityModal">
+  <div class="securityModalCard">
+    <h2 id="securityModalTitle">指揮官恢復金鑰</h2>
+    <p id="securityModalText">請把這組金鑰保存在安全的位置。伺服器只保存雜湊值，無法替你找回原字串。</p>
+    <div id="securityRecoveryCode" class="recoveryCode"></div>
+    <div class="row"><button id="copyRecoveryBtn" class="primary" style="flex:1">複製金鑰</button><button id="closeSecurityModal" style="flex:1">我已保存</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+/* V1.9: this app requires a live backend, so stale offline HTML is more harmful than useful.
+   Retire old KTAK service workers/caches once V1.9 itself has loaded. */
+(async()=>{
+  try{
+    if("serviceWorker" in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r=>r.unregister()));
+    }
+    if("caches" in window){
+      const keys=await caches.keys();
+      await Promise.all(keys.filter(k=>k.startsWith("ktak-")).map(k=>caches.delete(k)));
+    }
+  }catch(e){console.warn("KTAK cache retirement",e)}
+})();
+</script>
+
+<script>
+(() => {
+"use strict";
+const $=id=>document.getElementById(id), $$=sel=>Array.from(document.querySelectorAll(sel));
+const uid=()=>crypto.randomUUID?crypto.randomUUID():"10000000-1000-4000-8000-100000000000".replace(/[018]/g,c=>(+c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>+c/4).toString(16)), now=()=>new Date().toISOString(), clone=o=>JSON.parse(JSON.stringify(o));
+const roles={commander:"指揮官權限",tactical:"特勤人員",recon:"偵查隊",observer:"觀察員"};
+const defaultBrief=()=>({missionTime:"",caseType:"",situationSummary:"",riskLevel:"中",suspectCount:"",suspectBackground:"",executionMode:"包圍消耗",executionOther:"",executionLocation:"",executionWeather:"",civilianCount:"",teamComposition:"",vehicles:[],equipment:[],missionNotes:""});
+const defaultBoard=()=>({pages:[],active:0,canvasW:2000,canvasH:1400});
+let roomId="",currentRoomUuid="",currentUserId="",presence={},state=null;
+let sb=null,roomChannel=null,onlineReady=false,syncChain=Promise.resolve(),syncSnapshot={brief:null,map:null,board:null};
+let refreshTimers={};
+const cfg=window.KTAK_CONFIG||{};
+const configReady=!!(cfg.SUPABASE_URL&&cfg.SUPABASE_PUBLISHABLE_KEY&&!String(cfg.SUPABASE_URL).includes("YOUR_")&&!String(cfg.SUPABASE_PUBLISHABLE_KEY).includes("YOUR_"));
+const turnstileConfigured=!!(cfg.TURNSTILE_SITE_KEY&&!String(cfg.TURNSTILE_SITE_KEY).includes("YOUR_"));
+let turnstileToken="",turnstileWidgetId=null,pendingPoll=null;
+
+function blankState(room,creatorId=""){return {schema:4,meta:{room,roomUuid:"",creatorId,createdAt:now(),expiresAt:""},users:{},brief:defaultBrief(),map:{items:[]},board:defaultBoard(),chat:[],updatedAt:now()}}
+function user(){return state?.users?.[currentUserId]||null}
+function role(){return user()?.role||"observer"}
+function displayName(u=user()){
+  if(!u)return "未登入";
+  if(u.id===state?.meta?.creatorId)return `特勤指揮官・${u.nick}`;
+  if(u.role==="commander")return `指揮官・${u.nick}`;
+  return `${roles[u.role]||"成員"}・${u.nick}`
+}
+function can(action){
+  const r=role();
+  if(r==="commander")return true;
+  if(action==="map"||action==="board"||action==="chat")return r==="tactical"||r==="recon";
+  return false
+}
+function canEditItem(item){return role()==="commander"||item.ownerId===currentUserId}
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").classList.remove("show"),2200)}
+function storageKey(room=roomId){return `ktak.v16.cache.${room}`}
+function save(){if(!state)return;state.updatedAt=now();try{localStorage.setItem(storageKey(),JSON.stringify(state))}catch{}}
+function jsonSame(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+function validUuid(s){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s||""))}
+function safeUuid(){if(crypto.randomUUID)return crypto.randomUUID();return "10000000-1000-4000-8000-100000000000".replace(/[018]/g,c=>(+c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>+c/4).toString(16))}
+function ensureObjectUuid(obj){if(!validUuid(obj.id))obj.id=safeUuid();return obj}
+function onlineStatus(text,kind="wait"){const el=$("onlineStatus");if(!el)return;el.textContent=text;el.className=kind==="ok"?"onlineOk":kind==="bad"?"onlineBad":"onlineWait"}
+
+async function initBackend(){
+  if(!configReady){onlineStatus("尚未設定 Supabase","bad");return false}
+  if(!turnstileConfigured){onlineStatus("安全版尚未設定 Cloudflare Turnstile Site Key","bad");return false}
+  if(!window.supabase?.createClient){onlineStatus("Supabase 程式庫載入失敗","bad");return false}
+  try{
+    sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_PUBLISHABLE_KEY,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
+    });
+
+    // V2.0 security migration: force one clean authentication after upgrading
+    // from the prototype, so all future anonymous sessions pass Turnstile.
+    if(localStorage.getItem("ktak.v2.auth-reset")!=="done"){
+      try{await sb.auth.signOut({scope:"local"})}catch{}
+      Object.keys(localStorage).filter(k=>k.startsWith("ktak.v16.cache.")).forEach(k=>localStorage.removeItem(k));
+      sessionStorage.removeItem("ktak.v16.roomUuid");
+      sessionStorage.removeItem("ktak.v16.room");
+      localStorage.setItem("ktak.v2.auth-reset","done")
+    }
+
+    onlineStatus("Security backend ready","ok");
+    initTurnstile();
+    return true
+  }catch(e){console.error(e);onlineStatus("Supabase 初始化失敗","bad");return false}
+}
+function initTurnstile(){
+  if(!turnstileConfigured)return;
+  if(!window.turnstile){setTimeout(initTurnstile,250);return}
+  if(turnstileWidgetId!==null)return;
+  try{
+    turnstileWidgetId=window.turnstile.render("#turnstileBox",{
+      sitekey:cfg.TURNSTILE_SITE_KEY,
+      callback:t=>{turnstileToken=t;onlineStatus("安全驗證完成","ok")},
+      "expired-callback":()=>{turnstileToken="";onlineStatus("安全驗證已過期，請重新驗證","wait")},
+      "error-callback":()=>{turnstileToken="";onlineStatus("安全驗證載入失敗","bad")}
+    })
+  }catch(e){console.warn("Turnstile render",e)}
+}
+function resetTurnstile(){
+  turnstileToken="";
+  try{if(window.turnstile&&turnstileWidgetId!==null)window.turnstile.reset(turnstileWidgetId)}catch{}
+}
+async function ensureAuth(){
+  if(!sb&&!(await initBackend()))throw new Error("尚未設定安全線上服務");
+  const {data:{session},error:sErr}=await sb.auth.getSession();
+  if(sErr)throw sErr;
+  if(session?.user){currentUserId=session.user.id;return session.user}
+  if(!turnstileToken)throw new Error("請先完成 Cloudflare 安全驗證");
+  const {data,error}=await sb.auth.signInAnonymously({options:{captchaToken:turnstileToken}});
+  resetTurnstile();
+  if(error)throw error;
+  currentUserId=data.user.id;
+  return data.user
+}
+function mapDbRow(r){const d=clone(r.data||{});d.id=r.id;d.ownerId=r.owner_id;return d}
+function boardDbObject(r){const d=clone(r.data||{});d.id=r.id;d.ownerId=r.owner_id;return d}
+function chatDbRow(r){return {id:r.id,senderId:r.sender_id,senderName:r.sender_name||"成員",text:r.text||"",imagePath:r.image_path||null,ts:r.created_at}}
+
+async function fetchMembers(){
+  const {data,error}=await sb.from("ktak_room_members").select("user_id,nick,role,requested_role,approved,approved_at,joined_at").eq("room_id",currentRoomUuid).order("joined_at");
+  if(error)throw error;
+  state.users={};
+  (data||[]).forEach(m=>state.users[m.user_id]={id:m.user_id,nick:m.nick,role:m.role,requestedRole:m.requested_role||"observer",approved:m.approved!==false,approvedAt:m.approved_at,joinedAt:m.joined_at});
+}
+async function fetchBrief(){
+  const {data,error}=await sb.from("ktak_brief").select("data").eq("room_id",currentRoomUuid).single();
+  if(error)throw error;
+  state.brief={...defaultBrief(),...(data?.data||{})};
+  syncSnapshot.brief=clone(state.brief)
+}
+async function fetchMap(){
+  const {data,error}=await sb.from("ktak_map_items").select("id,owner_id,data").eq("room_id",currentRoomUuid);
+  if(error)throw error;
+  state.map={items:(data||[]).map(mapDbRow)};
+  syncSnapshot.map=clone(state.map)
+}
+async function fetchBoard(){
+  const keepActive=state?.board?.active||0;
+  const [settingsRes,pagesRes,objectsRes]=await Promise.all([
+    sb.from("ktak_board_settings").select("canvas_w,canvas_h").eq("room_id",currentRoomUuid).single(),
+    sb.from("ktak_board_pages").select("id,name,sort_index").eq("room_id",currentRoomUuid).order("sort_index"),
+    sb.from("ktak_board_objects").select("id,page_id,owner_id,data").eq("room_id",currentRoomUuid)
+  ]);
+  if(settingsRes.error)throw settingsRes.error;if(pagesRes.error)throw pagesRes.error;if(objectsRes.error)throw objectsRes.error;
+  const objByPage={};
+  (objectsRes.data||[]).forEach(r=>(objByPage[r.page_id]??=[]).push(boardDbObject(r)));
+  const pages=(pagesRes.data||[]).map(p=>({id:p.id,name:p.name,objects:objByPage[p.id]||[]}));
+  state.board={pages,active:Math.max(0,Math.min(keepActive,pages.length-1)),canvasW:settingsRes.data?.canvas_w||2000,canvasH:settingsRes.data?.canvas_h||1400};
+  syncSnapshot.board=clone({...state.board,active:0})
+}
+async function fetchChat(){
+  const {data,error}=await sb.from("ktak_chat_messages").select("id,sender_id,sender_name,text,image_path,created_at").eq("room_id",currentRoomUuid).order("created_at",{ascending:true}).limit(300);
+  if(error)throw error;
+  state.chat=(data||[]).map(chatDbRow)
+}
+async function loadOnlineRoom(roomUuid){
+  currentRoomUuid=roomUuid;
+  const {data:room,error}=await sb.from("ktak_rooms").select("id,code,creator_user_id,created_at").eq("id",roomUuid).single();
+  if(error)throw error;
+  roomId=room.code;
+  state=blankState(room.code,room.creator_user_id);
+  state.meta.roomUuid=room.id;state.meta.createdAt=room.created_at;state.meta.expiresAt=room.expires_at||"";
+  await Promise.all([fetchMembers(),fetchBrief(),fetchMap(),fetchBoard(),fetchChat()]);
+  save()
+}
+
+function collectionById(items){const m=new Map();(items||[]).forEach(x=>m.set(x.id,x));return m}
+async function syncMap(target){
+  const old=syncSnapshot.map||{items:[]},oldM=collectionById(old.items),newM=collectionById(target.items);
+  const up=[];
+  for(const item0 of target.items){
+    const item=ensureObjectUuid(clone(item0));
+    if(!item.ownerId)item.ownerId=currentUserId;
+    const prev=oldM.get(item.id);
+    if(!prev||!jsonSame(prev,item))up.push({id:item.id,room_id:currentRoomUuid,owner_id:item.ownerId,data:item,updated_by:currentUserId})
+  }
+  const removed=[...oldM.keys()].filter(id=>!newM.has(id));
+  if(up.length){const {error}=await sb.from("ktak_map_items").upsert(up,{onConflict:"id"});if(error)throw error}
+  if(removed.length){const {error}=await sb.from("ktak_map_items").delete().eq("room_id",currentRoomUuid).in("id",removed);if(error)throw error}
+  syncSnapshot.map=clone(target)
+}
+function flattenBoardObjects(board){
+  const out=[];(board.pages||[]).forEach(p=>(p.objects||[]).forEach(o=>out.push({pageId:p.id,obj:o})));return out
+}
+async function syncBoard(target0){
+  const target=clone(target0),old=syncSnapshot.board||{pages:[],canvasW:2000,canvasH:1400};
+  if(old.canvasW!==target.canvasW||old.canvasH!==target.canvasH){
+    const {error}=await sb.from("ktak_board_settings").update({canvas_w:target.canvasW,canvas_h:target.canvasH,updated_by:currentUserId}).eq("room_id",currentRoomUuid);
+    if(error)throw error
+  }
+  const oldPages=collectionById(old.pages),newPages=collectionById(target.pages),pageUp=[];
+  target.pages.forEach((p,i)=>{
+    ensureObjectUuid(p);
+    const prev=oldPages.get(p.id);
+    if(!prev||prev.name!==p.name||old.pages.findIndex(x=>x.id===p.id)!==i)pageUp.push({id:p.id,room_id:currentRoomUuid,name:p.name||`${i+1}F`,sort_index:i,updated_by:currentUserId})
+  });
+  const removedPages=[...oldPages.keys()].filter(id=>!newPages.has(id));
+  if(pageUp.length){const {error}=await sb.from("ktak_board_pages").upsert(pageUp,{onConflict:"id"});if(error)throw error}
+  if(removedPages.length){const {error}=await sb.from("ktak_board_pages").delete().eq("room_id",currentRoomUuid).in("id",removedPages);if(error)throw error}
+
+  const oldObjs=flattenBoardObjects(old),newObjs=flattenBoardObjects(target),oldO=new Map(oldObjs.map(x=>[x.obj.id,x])),newO=new Map(newObjs.map(x=>[x.obj.id,x])),objUp=[];
+  for(const entry of newObjs){
+    const o=ensureObjectUuid(clone(entry.obj));if(!o.ownerId)o.ownerId=currentUserId;
+    const prev=oldO.get(o.id);
+    if(!prev||prev.pageId!==entry.pageId||!jsonSame(prev.obj,o))objUp.push({id:o.id,room_id:currentRoomUuid,page_id:entry.pageId,owner_id:o.ownerId,data:o,updated_by:currentUserId})
+  }
+  const removedObjs=[...oldO.keys()].filter(id=>!newO.has(id));
+  if(objUp.length){const {error}=await sb.from("ktak_board_objects").upsert(objUp,{onConflict:"id"});if(error)throw error}
+  if(removedObjs.length){const {error}=await sb.from("ktak_board_objects").delete().eq("room_id",currentRoomUuid).in("id",removedObjs);if(error)throw error}
+  syncSnapshot.board=clone({...target,active:0})
+}
+async function syncBrief(target){
+  const {error}=await sb.from("ktak_brief").update({data:target,updated_by:currentUserId}).eq("room_id",currentRoomUuid);
+  if(error)throw error;syncSnapshot.brief=clone(target)
+}
+function publish(){
+  save();
+  if(!onlineReady||!sb||!currentRoomUuid)return;
+  const target={brief:clone(state.brief),map:clone(state.map),board:clone({...state.board,active:0})};
+  syncChain=syncChain.then(async()=>{
+    if(can("brief")&&!jsonSame(syncSnapshot.brief,target.brief))await syncBrief(target.brief);
+    if(can("map")&&!jsonSame(syncSnapshot.map,target.map))await syncMap(target.map);
+    if(can("board")&&!jsonSame(syncSnapshot.board,target.board))await syncBoard(target.board)
+  }).catch(err=>{console.error("sync",err);toast("同步失敗："+(err.message||"未知錯誤"))})
+}
+function scheduleRefresh(kind,fn){
+  clearTimeout(refreshTimers[kind]);refreshTimers[kind]=setTimeout(async()=>{try{await fn();save();if(kind==="members"){
+      if(!state.users[currentUserId]){
+        try{if(roomChannel)await sb.removeChannel(roomChannel)}catch{}
+        sessionStorage.removeItem("ktak.v16.roomUuid");sessionStorage.removeItem("ktak.v16.room");
+        alert("你的房間存取權限已被移除。");location.reload();return
+      }
+      renderPermissions();applyRoleUI();renderMembers();$("headerNick").textContent=displayName();$("headerRole").textContent=roles[role()]
+    }else if(kind==="brief"){fillBrief()}else if(kind==="map"){renderMapItems()}else if(kind==="board"){renderBoard()}else if(kind==="chat"){renderChat()}}catch(e){console.error(e)}},80)
+}
+async function setupRealtime(){
+  if(roomChannel)await sb.removeChannel(roomChannel);
+  await sb.realtime.setAuth();
+  roomChannel=sb.channel(`ktak:${currentRoomUuid}`,{config:{private:true,presence:{key:currentUserId}}})
+    .on("presence",{event:"sync"},()=>{
+      presence={};const ps=roomChannel.presenceState();
+      Object.values(ps).flat().forEach(p=>{if(p?.userId)presence[p.userId]={name:p.name||"成員",role:p.role||"",ts:Date.now()}});
+      renderMembers()
+    })
+    .on("postgres_changes",{event:"*",schema:"public",table:"ktak_room_members",filter:`room_id=eq.${currentRoomUuid}`},()=>scheduleRefresh("members",fetchMembers))
+    .on("postgres_changes",{event:"*",schema:"public",table:"ktak_brief",filter:`room_id=eq.${currentRoomUuid}`},()=>scheduleRefresh("brief",fetchBrief))
+    .on("postgres_changes",{event:"*",schema:"public",table:"ktak_map_items",filter:`room_id=eq.${currentRoomUuid}`},()=>scheduleRefresh("map",fetchMap))
+    .on("postgres_changes",{event:"*",schema:"public",table:"ktak_board_settings",filter:`room_id=eq.${currentRoomUuid}`},()=>scheduleRefresh("board",fetchBoard))
+    .on("postgres_changes",{event:"*",schema:"public",table:"ktak_board_pages",filter:`room_id=eq.${currentRoomUuid}`},()=>scheduleRefresh("board",fetchBoard))
+    .on("postgres_changes",{event:"*",schema:"public",table:"ktak_board_objects",filter:`room_id=eq.${currentRoomUuid}`},()=>scheduleRefresh("board",fetchBoard))
+    .on("postgres_changes",{event:"*",schema:"public",table:"ktak_chat_messages",filter:`room_id=eq.${currentRoomUuid}`},()=>scheduleRefresh("chat",fetchChat))
+    .subscribe(async status=>{
+      if(status==="SUBSCRIBED"){
+        onlineReady=true;
+        await roomChannel.track({userId:currentUserId,name:displayName(),role:role(),onlineAt:now()});
+        toast("線上房間已連線")
+      }
+      if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")toast("即時連線異常，正在重試")
+    })
+}
+async function enterRoom(){
+  sessionStorage.setItem("ktak.v16.roomUuid",currentRoomUuid);
+  sessionStorage.setItem("ktak.v16.room",roomId);
+  $("entryOverlay").classList.add("hidden");
+  renderAll();
+  await setupRealtime()
+}
+function showEntry(which){
+  $("entryHome").classList.toggle("hidden",which!=="home");
+  $("createForm").classList.toggle("hidden",which!=="create");
+  $("joinForm").classList.toggle("hidden",which!=="join");
+  $("recoverForm").classList.toggle("hidden",which!=="recover");
+  initTurnstile()
+}
+$("showCreateBtn").onclick=()=>showEntry("create");
+$("showJoinBtn").onclick=()=>showEntry("join");
+$("showRecoverBtn").onclick=()=>showEntry("recover");
+$$(".backEntry").forEach(b=>b.onclick=()=>showEntry("home"));
+
+
+function showRecoveryCode(code,title="指揮官恢復金鑰"){
+  $("securityModalTitle").textContent=title;
+  $("securityRecoveryCode").textContent=code||"";
+  $("securityModal").classList.add("open")
+}
+$("copyRecoveryBtn").onclick=async()=>{
+  const code=$("securityRecoveryCode").textContent;
+  try{await navigator.clipboard.writeText(code);toast("恢復金鑰已複製")}catch{toast("無法自動複製，請手動選取")}
+};
+$("closeSecurityModal").onclick=()=>$("securityModal").classList.remove("open");
+
+async function waitForApproval(roomUuid,roomCode,nick){
+  currentRoomUuid=roomUuid;roomId=roomCode;
+  sessionStorage.setItem("ktak.v16.roomUuid",roomUuid);
+  sessionStorage.setItem("ktak.v16.room",roomCode);
+  $("entryOverlay").classList.add("hidden");
+  $("pendingText").textContent=`${nick} 已申請加入 ${roomCode}，等待指揮官核准。`;
+  $("pendingOverlay").classList.add("open");
+  clearInterval(pendingPoll);
+  const check=async()=>{
+    try{
+      const {data,error}=await sb.from("ktak_room_members")
+        .select("approved,role").eq("room_id",roomUuid).eq("user_id",currentUserId).maybeSingle();
+      if(error)return;
+      if(!data){
+        clearInterval(pendingPoll);$("pendingOverlay").classList.remove("open");
+        sessionStorage.removeItem("ktak.v16.roomUuid");sessionStorage.removeItem("ktak.v16.room");
+        alert("加入申請已被移除。");location.reload();return
+      }
+      if(data.approved){
+        clearInterval(pendingPoll);$("pendingOverlay").classList.remove("open");
+        await loadOnlineRoom(roomUuid);await enterRoom()
+      }
+    }catch(e){console.warn("approval poll",e)}
+  };
+  await check();pendingPoll=setInterval(check,2000)
+}
+$("cancelPendingBtn").onclick=async()=>{
+  clearInterval(pendingPoll);
+  try{await sb.rpc("ktak_cancel_join_request",{p_room_id:currentRoomUuid})}catch{}
+  sessionStorage.removeItem("ktak.v16.roomUuid");sessionStorage.removeItem("ktak.v16.room");
+  location.reload()
+};
+
+$("createRoomBtn").onclick=async()=>{
+  const r=$("createRoom").value.trim().toUpperCase(),nick=$("createNick").value.trim(),pass=$("createPassword").value;
+  const retention=Number($("createRetention").value);
+  if(!r||!nick){toast("請輸入房號與暱稱");return}
+  if(pass.length<8||pass.length>72){toast("安全版房間密碼需 8～72 碼");return}
+  try{
+    $("createRoomBtn").disabled=true;await ensureAuth();
+    const {data,error}=await sb.rpc("ktak_create_room",{p_code:r,p_password:pass,p_nick:nick,p_retention_days:retention});
+    if(error)throw error;
+    const row=Array.isArray(data)?data[0]:data;if(!row?.room_id)throw new Error("建立房間失敗");
+    if(row.recovery_code)showRecoveryCode(row.recovery_code,"請保存指揮官恢復金鑰");
+    await loadOnlineRoom(row.room_id);await enterRoom()
+  }catch(e){
+    console.error(e);const msg=String(e.message||"");
+    if(msg.includes("ROOM_EXISTS"))toast("這個房號已存在");
+    else if(msg.includes("ROOM_CREATE_LIMIT"))toast("建立房間次數過多，請稍後再試");
+    else toast("建立失敗："+msg)
+  }finally{$("createRoomBtn").disabled=false;initTurnstile()}
+};
+
+$("joinRoomBtn").onclick=async()=>{
+  const r=$("joinRoom").value.trim().toUpperCase(),nick=$("joinNick").value.trim(),pass=$("joinPassword").value,requested=$("joinRole").value;
+  if(!r||!nick||!pass){toast("請輸入房號、密碼與暱稱");return}
+  try{
+    $("joinRoomBtn").disabled=true;await ensureAuth();
+    const {data,error}=await sb.rpc("ktak_join_room",{p_code:r,p_password:pass,p_nick:nick,p_requested_role:requested});
+    if(error)throw error;
+    const row=Array.isArray(data)?data[0]:data;
+    if(!row)throw new Error("加入房間失敗");
+    if(row.status==="RATE_LIMITED"){toast("嘗試次數過多，10 分鐘後再試");return}
+    if(row.status!=="OK"||!row.room_id){toast("房號或密碼錯誤");return}
+    if(row.approved){await loadOnlineRoom(row.room_id);await enterRoom()}
+    else await waitForApproval(row.room_id,row.room_code,nick)
+  }catch(e){
+    console.error(e);toast("加入失敗："+String(e.message||"未知錯誤"))
+  }finally{$("joinRoomBtn").disabled=false;initTurnstile()}
+};
+
+$("recoverRoomBtn").onclick=async()=>{
+  const r=$("recoverRoom").value.trim().toUpperCase(),code=$("recoverCode").value.trim(),nick=$("recoverNick").value.trim();
+  if(!r||!code||!nick){toast("請輸入房號、恢復金鑰與暱稱");return}
+  try{
+    $("recoverRoomBtn").disabled=true;await ensureAuth();
+    const {data,error}=await sb.rpc("ktak_recover_commander",{p_code:r,p_recovery_code:code,p_nick:nick});
+    if(error)throw error;
+    const row=Array.isArray(data)?data[0]:data;
+    if(!row||row.status!=="OK"){toast(row?.status==="RATE_LIMITED"?"恢復嘗試過多，請稍後再試":"房號或恢復金鑰錯誤");return}
+    if(row.recovery_code)showRecoveryCode(row.recovery_code,"恢復成功：請保存新的恢復金鑰");
+    await loadOnlineRoom(row.room_id);await enterRoom()
+  }catch(e){console.error(e);toast("恢復失敗："+String(e.message||"未知錯誤"))}
+  finally{$("recoverRoomBtn").disabled=false;initTurnstile()}
+};
+
+$("leaveBtn").onclick=async()=>{try{if(roomChannel&&sb)await sb.removeChannel(roomChannel)}catch{}sessionStorage.removeItem("ktak.v16.roomUuid");sessionStorage.removeItem("ktak.v16.room");location.reload()};
+
+/* navigation */
+$$('.navBtn').forEach(b=>b.onclick=()=>{if(b.id==="permissionTab"&&!can("permission"))return;$$('.navBtn').forEach(x=>x.classList.toggle('active',x===b));$$('.page').forEach(p=>p.classList.toggle('active',p.id===b.dataset.page));if(b.dataset.page==='mapPage')setTimeout(()=>map.invalidateSize(),60);if(b.dataset.page==='boardPage')setTimeout(renderBoard,30);if(b.dataset.page==='chatPage')renderChat();if(b.dataset.page==='permissionPage')renderPermissions()});
+
+/* brief */
+const briefIds=["missionTime","caseType","situationSummary","riskLevel","suspectCount","suspectBackground","executionMode","executionOther","executionLocation","executionWeather","civilianCount","teamComposition","missionNotes"];
+
+const vehicleOptions=[
+  {name:"巡邏車",unit:"台"},
+  {name:"偵防車",unit:"台"},
+  {name:"警備車",unit:"台"}
+];
+
+const equipmentOptions=[
+  {name:"III級盾牌",unit:"面"},
+  {name:"IIIA級盾牌",unit:"面"},
+  {name:"步槍",unit:"支"},
+  {name:"衝鋒槍",unit:"支"},
+  {name:"狙擊槍",unit:"支"},
+  {name:"9MM子彈",unit:"發"},
+  {name:"5.56步槍彈",unit:"發"},
+  {name:"7.62步槍彈",unit:"發"},
+  {name:"無線電",unit:"台"},
+  {name:"MPolice",unit:"台"},
+  {name:"電驅油壓破門器",unit:"組"},
+  {name:"電驅破壞剪",unit:"組"},
+  {name:"背負式破門器材組",unit:"組"}
+];
+
+let briefEditing=false,vehicleDraft=[],equipmentDraft=[];
+
+function optionUnit(name,options,fallback="件"){
+  return options.find(x=>x.name===name)?.unit||fallback
+}
+function normalizeQtyList(raw,options,fallbackUnit){
+  if(Array.isArray(raw)){
+    return raw.map(x=>{
+      if(typeof x==="string")return {name:x,qty:1,unit:optionUnit(x,options,fallbackUnit)};
+      if(x&&typeof x==="object"){
+        const name=String(x.name||x.label||"").trim();
+        if(!name)return null;
+        return {name,qty:Math.max(1,Number(x.qty||x.count||1)||1),unit:String(x.unit||optionUnit(name,options,fallbackUnit)).trim()||fallbackUnit}
+      }
+      return null
+    }).filter(Boolean)
+  }
+  if(typeof raw==="string"&&raw.trim()){
+    return raw.split(/[\n、,，]+/).map(s=>s.trim()).filter(Boolean)
+      .map(name=>({name,qty:1,unit:optionUnit(name,options,fallbackUnit)}))
+  }
+  return []
+}
+function qtyText(list){
+  return list.length?list.map(x=>`${x.name} ${x.qty}${x.unit}`).join("、"):"—"
+}
+function getDraftItem(list,name){return list.find(x=>x.name===name)}
+function setDraftItem(list,name,qty,unit){
+  const i=list.findIndex(x=>x.name===name);
+  const item={name,qty:Math.max(1,Number(qty)||1),unit};
+  if(i>=0)list[i]=item;else list.push(item)
+}
+function removeDraftItem(list,name){
+  const i=list.findIndex(x=>x.name===name);if(i>=0)list.splice(i,1)
+}
+function renderQtyQuick(containerId,list,options,rerender){
+  const root=$(containerId);root.innerHTML="";
+  options.forEach(opt=>{
+    const current=getDraftItem(list,opt.name);
+    const row=document.createElement("div");row.className="qtyQuickRow";
+
+    const toggle=document.createElement("button");
+    toggle.type="button";toggle.textContent=opt.name;toggle.classList.toggle("active",!!current);
+    toggle.onclick=()=>{
+      if(getDraftItem(list,opt.name))removeDraftItem(list,opt.name);
+      else setDraftItem(list,opt.name,1,opt.unit);
+      rerender()
+    };
+
+    const qty=document.createElement("input");
+    qty.type="number";qty.min="1";qty.inputMode="numeric";
+    qty.value=current?.qty||1;qty.disabled=!current;
+    qty.onchange=()=>{
+      if(!getDraftItem(list,opt.name))return;
+      setDraftItem(list,opt.name,qty.value,opt.unit);rerender()
+    };
+    qty.oninput=()=>{
+      const it=getDraftItem(list,opt.name);
+      if(it)it.qty=Math.max(1,Number(qty.value)||1)
+    };
+
+    const unit=document.createElement("div");unit.className="qtyUnit";unit.textContent=opt.unit;
+    row.append(toggle,qty,unit);root.appendChild(row)
+  })
+}
+function renderCustomItems(containerId,list,options,rerender){
+  const root=$(containerId);root.innerHTML="";
+  list.filter(x=>!options.some(o=>o.name===x.name)).forEach(item=>{
+    const row=document.createElement("div");row.className="qtyChip";
+    const text=document.createElement("span");text.textContent=`${item.name} ${item.qty}${item.unit}`;
+    const del=document.createElement("button");del.type="button";del.textContent="刪除";
+    del.onclick=()=>{removeDraftItem(list,item.name);rerender()};
+    row.append(text,del);root.appendChild(row)
+  })
+}
+function renderVehicleEditor(){
+  renderQtyQuick("vehicleQuick",vehicleDraft,vehicleOptions,renderVehicleEditor);
+  renderCustomItems("vehicleCustomSelected",vehicleDraft,vehicleOptions,renderVehicleEditor)
+}
+function renderEquipmentEditor(){
+  renderQtyQuick("equipmentQuick",equipmentDraft,equipmentOptions,renderEquipmentEditor);
+  renderCustomItems("equipmentCustomSelected",equipmentDraft,equipmentOptions,renderEquipmentEditor)
+}
+$("vehicleAddBtn").onclick=()=>{
+  const name=$("vehicleCustomName").value.trim();if(!name)return;
+  const qty=Math.max(1,Number($("vehicleCustomQty").value)||1);
+  const unit=$("vehicleCustomUnit").value.trim()||"台";
+  setDraftItem(vehicleDraft,name,qty,unit);
+  $("vehicleCustomName").value="";$("vehicleCustomQty").value="1";renderVehicleEditor()
+};
+$("equipmentAddBtn").onclick=()=>{
+  const name=$("equipmentCustomName").value.trim();if(!name)return;
+  const qty=Math.max(1,Number($("equipmentCustomQty").value)||1);
+  const unit=$("equipmentCustomUnit").value.trim()||"件";
+  setDraftItem(equipmentDraft,name,qty,unit);
+  $("equipmentCustomName").value="";$("equipmentCustomQty").value="1";renderEquipmentEditor()
+};
+$("vehicleCustomName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("vehicleAddBtn").click()}});
+$("equipmentCustomName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("equipmentAddBtn").click()}});
+
+function fillBrief(){
+  briefIds.forEach(id=>{$(id).value=state.brief[id]??"";$(id+"View").textContent=state.brief[id]||"—"});
+  vehicleDraft=normalizeQtyList(state.brief.vehicles,vehicleOptions,"台");
+  equipmentDraft=normalizeQtyList(state.brief.equipment,equipmentOptions,"件");
+  renderVehicleEditor();renderEquipmentEditor();
+  $("vehiclesView").textContent=qtyText(vehicleDraft);
+  $("equipmentView").textContent=qtyText(equipmentDraft);
+  $("executionOtherWrap").classList.toggle("hidden",state.brief.executionMode!=="其他"&&!briefEditing)
+}
+function setBriefEdit(on){
+  if(on&&!can("brief")){toast("只有指揮官權限可編輯任務簡報");return}
+  briefEditing=on;
+  $$('.briefInput').forEach(x=>x.classList.toggle('hidden',!on));
+  $$('.briefView').forEach(x=>x.classList.toggle('hidden',on));
+  $("briefEditBtn").classList.toggle('hidden',on||!can("brief"));
+  $("briefSaveBtn").classList.toggle('hidden',!on);
+  $("executionOtherWrap").classList.toggle('hidden',!on&&state.brief.executionMode!=="其他")
+}
+$("executionMode").onchange=()=>$("executionOtherWrap").classList.toggle("hidden",$("executionMode").value!=="其他");
+$("briefEditBtn").onclick=()=>setBriefEdit(true);
+$("briefSaveBtn").onclick=()=>{
+  briefIds.forEach(id=>state.brief[id]=$(id).value);
+  state.brief.vehicles=vehicleDraft.map(x=>({...x}));
+  state.brief.equipment=equipmentDraft.map(x=>({...x}));
+  fillBrief();setBriefEdit(false);publish();toast("任務簡報已儲存")
+};
+
+/* export import */
+$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.0",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const x=JSON.parse(await f.text()),incoming=x.state||x;
+    if(!incoming||!incoming.brief||!incoming.map||!incoming.board)throw new Error("格式不相容");
+    // 線上版只匯入任務內容；目前房間、成員身分、聊天室保持不變。
+    state.brief={...defaultBrief(),...clone(incoming.brief)};
+    state.map=clone(incoming.map);
+    state.board=clone(incoming.board);
+    (state.map.items||[]).forEach(item=>{ensureObjectUuid(item);if(!item.ownerId)item.ownerId=currentUserId});
+    (state.board.pages||[]).forEach(pg=>{ensureObjectUuid(pg);(pg.objects||[]).forEach(o=>{ensureObjectUuid(o);if(!o.ownerId)o.ownerId=currentUserId})});
+    save();publish();renderAll();toast("任務內容已匯入並同步")
+  }catch(err){alert("匯入失敗："+err.message)}
+  e.target.value=""
+};
+
+/* in-app object viewer */
+function closeObjectViewer(){
+  const v=$("objectViewer");v.classList.remove("open");v.setAttribute("aria-hidden","true");
+  $("objectViewerImage").classList.add("hidden");$("objectViewerImage").classList.remove("zoomed");$("objectViewerImage").removeAttribute("src");
+  $("objectViewerImageWrap").classList.remove("zoomed");$("objectViewerEmpty").classList.remove("hidden")
+}
+async function openObjectViewer({title="資訊",note="",owner="",photoUrl="",photoPath="",mode="info"}){
+  $("objectViewerTitle").textContent=title;
+  const bits=[];
+  if(note)bits.push(`<b>備註</b><br>${escapeHtml(note)}`);
+  else if(mode==="info")bits.push(`<span style="color:#8ea1aa">無備註</span>`);
+  if(owner)bits.push(`<small>建立者：${escapeHtml(owner)}</small>`);
+  $("objectViewerMeta").innerHTML=bits.join("<br>");
+  const img=$("objectViewerImage"),empty=$("objectViewerEmpty");
+  img.classList.add("hidden");img.classList.remove("zoomed");$("objectViewerImageWrap").classList.remove("zoomed");img.removeAttribute("src");empty.classList.remove("hidden");
+  try{
+    let u=photoUrl||"";
+    if(!u&&photoPath)u=await signedObjectMediaUrl(photoPath);
+    if(u){
+      img.src=u;img.classList.remove("hidden");empty.classList.add("hidden")
+    }else{
+      empty.textContent="此物件沒有附加照片"
+    }
+  }catch(err){
+    console.error(err);empty.textContent="照片讀取失敗";toast("照片讀取失敗："+(err.message||"未知錯誤"))
+  }
+  const v=$("objectViewer");v.classList.add("open");v.setAttribute("aria-hidden","false")
+}
+$("objectViewerImage").onclick=()=>{
+  const img=$("objectViewerImage"),wrap=$("objectViewerImageWrap");
+  const z=!img.classList.contains("zoomed");
+  img.classList.toggle("zoomed",z);wrap.classList.toggle("zoomed",z)
+};
+$("objectViewerClose").onclick=closeObjectViewer;
+$("objectViewer").addEventListener("click",e=>{if(e.target===$("objectViewer"))closeObjectViewer()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeObjectViewer()});
+
+/* V1.9 adaptive photo compression
+   Desktop:
+   1. Use an object URL only to read dimensions.
+   2. Ask createImageBitmap to decode directly near the target size.
+   3. Canvas -> JPEG.
+   This avoids creating an unnecessary Base64 copy and reduces memory work for large Windows photos.
+   iOS/Safari keeps a conservative Image fallback. */
+function isIOSLike(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1)
+}
+function fmtBytes(n){
+  if(!Number.isFinite(n))return "";
+  if(n<1024)return `${n} B`;
+  if(n<1024*1024)return `${(n/1024).toFixed(0)} KB`;
+  return `${(n/1024/1024).toFixed(1)} MB`
+}
+async function imageDimensionsFromObjectUrl(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((resolve,reject)=>{
+      const i=new Image();
+      i.onload=()=>resolve(i);
+      i.onerror=()=>reject(new Error("照片尺寸讀取失敗"));
+      i.src=url
+    });
+    return {width:img.naturalWidth||img.width,height:img.naturalHeight||img.height}
+  }finally{
+    URL.revokeObjectURL(url)
+  }
+}
+async function decodeDesktopResized(file,targetW,targetH){
+  if(!("createImageBitmap" in window))return null;
+  try{
+    const bitmap=await createImageBitmap(file,{
+      resizeWidth:targetW,
+      resizeHeight:targetH,
+      resizeQuality:"high"
+    });
+    return {source:bitmap,width:bitmap.width,height:bitmap.height,close:()=>bitmap.close?.()}
+  }catch(err){
+    console.warn("direct resized createImageBitmap fallback",err);
+    return null
+  }
+}
+async function decodeImageFallback(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((resolve,reject)=>{
+      const i=new Image();
+      i.onload=()=>resolve(i);
+      i.onerror=()=>reject(new Error("照片解析失敗"));
+      i.src=url
+    });
+    return {source:img,width:img.naturalWidth||img.width,height:img.naturalHeight||img.height,close:()=>{}}
+  }finally{
+    // Object URL must stay alive until Image loaded; after onload it is safe to revoke.
+    URL.revokeObjectURL(url)
+  }
+}
+async function compressImageFile(file,max=1600,quality=.78){
+  const started=performance.now();
+  const dims=await imageDimensionsFromObjectUrl(file);
+  const scale=Math.min(1,max/dims.width,max/dims.height);
+  const targetW=Math.max(1,Math.round(dims.width*scale));
+  const targetH=Math.max(1,Math.round(dims.height*scale));
+
+  let decoded=null;
+  if(!isIOSLike())decoded=await decodeDesktopResized(file,targetW,targetH);
+  if(!decoded)decoded=await decodeImageFallback(file);
+
+  try{
+    const c=document.createElement("canvas");
+    c.width=targetW;c.height=targetH;
+    const cx=c.getContext("2d",{alpha:false,desynchronized:true});
+    cx.drawImage(decoded.source,0,0,targetW,targetH);
+    const blob=await new Promise((resolve,reject)=>
+      c.toBlob(b=>b?resolve(b):reject(new Error("照片壓縮失敗")),"image/jpeg",quality)
+    );
+    return {
+      blob,
+      originalBytes:file.size,
+      compressedBytes:blob.size,
+      originalWidth:dims.width,
+      originalHeight:dims.height,
+      width:targetW,
+      height:targetH,
+      ms:Math.round(performance.now()-started)
+    }
+  }finally{
+    decoded.close?.()
+  }
+}
+async function compressChatPhoto(file){
+  const r=await compressImageFile(file,1600,.78);
+  return r.blob
+}
+
+/* object media */
+let objectMediaUrlCache=new Map();
+
+async function signedObjectMediaUrl(path){
+  if(!path)return null;
+  const c=objectMediaUrlCache.get(path);
+  if(c&&c.expires>Date.now()+60000)return c.url;
+  const {data,error}=await sb.storage.from("ktak-object-media").createSignedUrl(path,3600);
+  if(error)throw error;
+  objectMediaUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+3500000});
+  return data.signedUrl
+}
+async function uploadObjectMedia(file,ownerId=currentUserId){
+  if(!file?.type?.startsWith("image/"))throw new Error("請選擇圖片");
+  if(file.size>20*1024*1024)throw new Error("原始照片請小於 20MB");
+
+  const totalStart=performance.now();
+  toast(`照片處理中… 原始 ${fmtBytes(file.size)}`);
+  const packed=await compressImageFile(file,1600,.78);
+  toast(`已壓縮 ${fmtBytes(packed.originalBytes)} → ${fmtBytes(packed.compressedBytes)}（${packed.ms} ms），正在上傳…`);
+
+  const path=`${currentRoomUuid}/${ownerId||currentUserId}/${safeUuid()}.jpg`;
+  const uploadStart=performance.now();
+  const {error}=await sb.storage.from("ktak-object-media").upload(
+    path,packed.blob,{contentType:"image/jpeg",cacheControl:"3600",upsert:false}
+  );
+  if(error)throw error;
+
+  return {
+    path,
+    originalBytes:packed.originalBytes,
+    compressedBytes:packed.compressedBytes,
+    compressMs:packed.ms,
+    uploadMs:Math.round(performance.now()-uploadStart),
+    totalMs:Math.round(performance.now()-totalStart)
+  }
+}
+async function removeObjectMedia(path){
+  if(!path)return;
+  const {error}=await sb.storage.from("ktak-object-media").remove([path]);
+  if(error)console.warn("remove object media",error)
+}
+function mapItemTypeName(item){
+  if(item.type==="symbol")return item.label||allIconDefs[item.icon]?.[1]||"圖樣";
+  if(item.type==="photo")return item.label||"照片標示";
+  return item.type==="line"?"直線":
+         item.type==="rect"?"方形":
+         item.type==="circle"?"圓形":
+         item.type==="free"?"隨意畫筆":"地圖物件"
+}
+
+/* V1.9.1 quick info helpers */
+async function mapInfoHtml(item){
+  let photoUrl="";
+  try{
+    if(item.type==='photo'&&item.dataUrl)photoUrl=item.dataUrl;
+    else if(item.photoPath)photoUrl=await signedObjectMediaUrl(item.photoPath)
+  }catch(e){console.warn("map quick photo",e)}
+  return `<div class="quickInfoCard">
+    <div class="qiTitle">${escapeHtml(mapItemTypeName(item))}</div>
+    <div class="qiNote">${item.note?escapeHtml(item.note):'<span style="color:#91a4ad">無備註</span>'}</div>
+    ${photoUrl?`<img class="qiThumb" src="${photoUrl}" alt="物件照片">`:''}
+    <div class="qiOwner">建立者：${escapeHtml(item.ownerName||'未知')}</div>
+  </div>`
+}
+async function showMapQuickInfo(layer,item,{sticky=false}={}){
+  try{
+    const html=await mapInfoHtml(item);
+    layer.unbindTooltip?.();
+    layer.bindTooltip(html,{
+      permanent:false,
+      sticky:!coarsePointer,
+      direction:"top",
+      opacity:.98,
+      className:"ktakQuickInfo",
+      interactive:false
+    });
+    layer.openTooltip?.();
+    if(sticky)setTimeout(()=>layer.closeTooltip?.(),3200)
+  }catch(e){console.warn("show map quick info",e)}
+}
+async function showBoardCompactInfo(o,clientX,clientY){
+  const p=$("boardInfoPopover");
+  let photoUrl="";
+  try{if(o.photoPath)photoUrl=await signedObjectMediaUrl(o.photoPath)}catch(e){console.warn("board info photo",e)}
+  p.innerHTML=`<div class="quickInfoCard">
+    <div class="qiTitle">${escapeHtml(boardTypeName(o))}</div>
+    <div class="qiNote">${o.note?escapeHtml(o.note):'<span style="color:#91a4ad">無備註</span>'}</div>
+    ${photoUrl?`<img class="qiThumb" src="${photoUrl}" alt="物件照片">`:''}
+    <div class="qiOwner">建立者：${escapeHtml(o.ownerName||'未知')}</div>
+  </div>`;
+  p.style.left=Math.max(8,Math.min(clientX+10,innerWidth-320))+"px";
+  p.style.top=Math.max(8,Math.min(clientY+10,innerHeight-260))+"px";
+  p.classList.add("open")
+}
+function hideBoardCompactInfo(){$("boardInfoPopover").classList.remove("open")}
+document.addEventListener("pointerdown",e=>{
+  if(!$("boardInfoPopover").contains(e.target))hideBoardCompactInfo()
+},{capture:true});
+
+/* map */
+const map=L.map('map',{zoomControl:true,preferCanvas:false}).setView([23.003,120.215],15);
+const road=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'});
+let satelliteOn=false;
+$("mapLayerBtn").onclick=()=>{satelliteOn=!satelliteOn;if(satelliteOn){map.removeLayer(road);sat.addTo(map);$("mapLayerBtn").textContent='🗺 道路圖'}else{map.removeLayer(sat);road.addTo(map);$("mapLayerBtn").textContent='🛰 衛星'}};
+
+const mapLayer=L.layerGroup().addTo(map);
+const fanLayer=L.layerGroup().addTo(map);
+const selectionLayer=L.layerGroup().addTo(map);
+let mapTool='pan',mapIcon=null,currentColor='#45aff2',mapHistory=[],drawStart=null,preview=null,freePoints=[],freeDrawing=false,pendingPhoto=null,selectedMapId=null,fanTargetId=null,mapTapMemory={id:null,at:0,timer:null};
+const coarsePointer=matchMedia('(pointer:coarse)').matches;
+
+/* professional tactical symbols */
+const tacticalSvg={
+ entry:`<svg viewBox="0 0 40 40"><rect x="6" y="4" width="18" height="32" rx="1" fill="#253139" stroke="#fff" stroke-width="2"/><path d="M14 20h20m-8-8 8 8-8 8" fill="none" stroke="#ffb84d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+ standby:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#162129" stroke="#ffc650" stroke-width="3"/><path d="M14 12v16M26 12v16" stroke="#ffc650" stroke-width="4"/></svg>`,
+ ambush:`<svg viewBox="0 0 40 40"><path d="M3 20s7-11 17-11 17 11 17 11-7 11-17 11S3 20 3 20Z" fill="#17232b" stroke="#dce9ef" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#ffc650"/></svg>`,
+ sniper:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="#131b20" stroke="#e85d5d" stroke-width="2.5"/><circle cx="20" cy="20" r="3" fill="#e85d5d"/><path d="M20 1v12M20 27v12M1 20h12M27 20h12" stroke="#e85d5d" stroke-width="2.5"/></svg>`,
+ friendly:`<svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" rx="2" fill="#176aa0" stroke="#fff" stroke-width="2"/><text x="20" y="25" text-anchor="middle" fill="#fff" font-size="13" font-family="sans-serif" font-weight="800">F</text></svg>`,
+ enemy:`<svg viewBox="0 0 40 40"><path d="M20 3 37 20 20 37 3 20Z" fill="#9d2d2d" stroke="#fff" stroke-width="2"/><text x="20" y="25" text-anchor="middle" fill="#fff" font-size="13" font-family="sans-serif" font-weight="800">E</text></svg>`,
+ medical:`<svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" rx="4" fill="#26703d" stroke="#fff" stroke-width="2"/><path d="M17 10h6v7h7v6h-7v7h-6v-7h-7v-6h7Z" fill="#fff"/></svg>`,
+ civilian:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#59656d" stroke="#fff" stroke-width="2"/><circle cx="20" cy="14" r="4" fill="#fff"/><path d="M12 30c1-7 4-10 8-10s7 3 8 10" fill="#fff"/></svg>`,
+ command:`<svg viewBox="0 0 40 40"><path d="M20 3 35 12v16l-15 9-15-9V12Z" fill="#66521b" stroke="#ffc650" stroke-width="2"/><text x="20" y="24" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="800">CMD</text></svg>`,
+ gun:`<svg viewBox="0 0 48 40">
+   <path d="M4 14h8l5-5 5 2 4 3h17v5H27l-2 4 6 3-3 5-8-5-4 10h-6l4-13H4Z" fill="#20282d" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+   <path d="M30 14h14v-3h3v8h-3" fill="none" stroke="#fff" stroke-width="1.5"/>
+   <path d="M17 20l7 1-4 8" fill="#343e44" stroke="#fff" stroke-width="1.2"/>
+  </svg>`,
+ policecar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#176aa0" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#26343c" stroke="#fff"/><rect x="15" y="6" width="10" height="3" fill="#e85d5d"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
+ civilcar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#68747b" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#39464d" stroke="#fff"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
+ enemycar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#8d3030" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#452a2a" stroke="#fff"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
+ van:`<svg viewBox="0 0 40 40"><rect x="5" y="12" width="30" height="18" rx="4" fill="#59656d" stroke="#fff" stroke-width="2"/><rect x="9" y="15" width="11" height="7" fill="#b8d0dc"/><circle cx="12" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
+ motorcycle:`<svg viewBox="0 0 40 40"><circle cx="10" cy="28" r="6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="30" cy="28" r="6" fill="none" stroke="#fff" stroke-width="2"/><path d="M10 28 17 17h7l6 11M17 17l-4-5m11 5 5-6" fill="none" stroke="#dce9ef" stroke-width="2"/></svg>`,
+ drone:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="5" fill="#d9e6ec"/><path d="M8 8l8 8m16-8-8 8M8 32l8-8m16 8-8-8" stroke="#d9e6ec" stroke-width="2"/><circle cx="7" cy="7" r="5" fill="none" stroke="#fff"/><circle cx="33" cy="7" r="5" fill="none" stroke="#fff"/><circle cx="7" cy="33" r="5" fill="none" stroke="#fff"/><circle cx="33" cy="33" r="5" fill="none" stroke="#fff"/></svg>`,
+ camera:`<svg viewBox="0 0 40 40"><rect x="5" y="12" width="23" height="18" rx="3" fill="#26343c" stroke="#fff" stroke-width="2"/><path d="M28 17 36 13v16l-8-4Z" fill="#26343c" stroke="#fff" stroke-width="2"/><circle cx="16" cy="21" r="5" fill="#45aff2"/></svg>`,
+ barricade:`<svg viewBox="0 0 40 40"><path d="M7 11h26v8H7ZM7 23h26v8H7Z" fill="#ff944c" stroke="#fff"/><path d="M12 31 9 37m19-6 3 6" stroke="#fff" stroke-width="2"/></svg>`,
+ shield:`<svg viewBox="0 0 40 40"><path d="M20 4 33 9v10c0 9-5 14-13 17C12 33 7 28 7 19V9Z" fill="#26343c" stroke="#fff" stroke-width="2"/><path d="M20 9v21" stroke="#45aff2" stroke-width="3"/></svg>`,
+ radio:`<svg viewBox="0 0 40 40"><rect x="10" y="8" width="22" height="28" rx="3" fill="#26343c" stroke="#fff" stroke-width="2"/><path d="M14 8 11 2" stroke="#fff" stroke-width="2"/><rect x="14" y="13" width="14" height="8" fill="#45aff2"/><circle cx="17" cy="28" r="3" fill="#fff"/></svg>`,
+ hazard:`<svg viewBox="0 0 40 40"><path d="M20 4 37 35H3Z" fill="#8b641c" stroke="#ffc650" stroke-width="2"/><text x="20" y="29" text-anchor="middle" fill="#fff" font-size="20" font-family="sans-serif" font-weight="900">!</text></svg>`,
+ fire:`<svg viewBox="0 0 40 40"><path d="M21 4c3 8-3 9 2 15 2-4 5-5 6-9 5 7 6 14 2 20-5 8-18 7-22-1-4-8 2-14 7-19 0 5 1 7 5 9-2-6 2-9 0-15Z" fill="#e05a2c" stroke="#fff" stroke-width="1.5"/></svg>`,
+ eye:`<svg viewBox="0 0 40 40"><path d="M3 20s7-10 17-10 17 10 17 10-7 10-17 10S3 20 3 20Z" fill="#18252c" stroke="#fff" stroke-width="2"/><circle cx="20" cy="20" r="6" fill="#45aff2"/><circle cx="20" cy="20" r="2" fill="#fff"/></svg>`,
+ person:`<svg viewBox="0 0 40 40"><circle cx="20" cy="10" r="5" fill="#dce8ee"/><path d="M20 16v12m-8-5h16M20 28l-8 9m8-9 8 9" stroke="#dce8ee" stroke-width="3" stroke-linecap="round"/></svg>`,
+ group:`<svg viewBox="0 0 40 40"><circle cx="14" cy="12" r="4" fill="#fff"/><circle cx="26" cy="12" r="4" fill="#fff"/><path d="M6 31c1-8 4-12 8-12s7 4 8 12M18 31c1-8 4-12 8-12s7 4 8 12" fill="#59656d" stroke="#fff" stroke-width="1.5"/></svg>`,
+ building:`<svg viewBox="0 0 40 40"><rect x="7" y="6" width="26" height="30" fill="#3a4b55" stroke="#fff" stroke-width="2"/><path d="M12 12h5v5h-5zm11 0h5v5h-5zM12 21h5v5h-5zm11 0h5v5h-5zM18 29h5v7h-5z" fill="#9ed2ef"/></svg>`,
+ house:`<svg viewBox="0 0 40 40"><path d="M5 19 20 6l15 13v17H5Z" fill="#5d4b3c" stroke="#fff" stroke-width="2"/><rect x="16" y="25" width="8" height="11" fill="#d9c5a8"/></svg>`,
+ warehouse:`<svg viewBox="0 0 40 40"><path d="M4 16 20 7l16 9v20H4Z" fill="#46545b" stroke="#fff" stroke-width="2"/><path d="M9 22h22v14H9Z" fill="#273238" stroke="#fff"/><path d="M9 27h22M9 32h22" stroke="#788a94"/></svg>`,
+ school:`<svg viewBox="0 0 40 40"><path d="M4 15 20 6l16 9-16 9Z" fill="#546774" stroke="#fff" stroke-width="2"/><rect x="9" y="22" width="22" height="14" fill="#384952" stroke="#fff"/><path d="M20 22v14" stroke="#fff"/></svg>`,
+ hospital:`<svg viewBox="0 0 40 40"><rect x="6" y="5" width="28" height="31" rx="2" fill="#2d7047" stroke="#fff" stroke-width="2"/><path d="M17 10h6v7h7v6h-7v7h-6v-7h-7v-6h7Z" fill="#fff"/></svg>`,
+ checkpoint:`<svg viewBox="0 0 40 40"><path d="M7 6v28M33 6v28" stroke="#fff" stroke-width="3"/><rect x="7" y="14" width="26" height="12" fill="#8b641c" stroke="#ffc650" stroke-width="2"/><path d="M10 17l6 6m2-6 6 6m2-6 4 4" stroke="#fff" stroke-width="2"/></svg>`,
+ roadblock:`<svg viewBox="0 0 40 40"><path d="M5 10h30v8H5zm0 15h30v8H5z" fill="#8b641c" stroke="#fff"/><path d="M10 10l8 8m5-8 8 8M10 25l8 8m5-8 8 8" stroke="#ffc650" stroke-width="2"/></svg>`,
+ cone:`<svg viewBox="0 0 40 40"><path d="M17 5h6l8 28H9Z" fill="#ff7f2a" stroke="#fff" stroke-width="2"/><path d="M13 23h14" stroke="#fff" stroke-width="3"/><rect x="5" y="33" width="30" height="4" rx="1" fill="#fff"/></svg>`,
+ flag:`<svg viewBox="0 0 40 40"><path d="M10 4v33" stroke="#fff" stroke-width="3"/><path d="M12 7h20l-6 7 6 7H12Z" fill="#e85d5d" stroke="#fff" stroke-width="1.5"/></svg>`,
+ target:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="none" stroke="#fff" stroke-width="2"/><circle cx="20" cy="20" r="9" fill="none" stroke="#e85d5d" stroke-width="2"/><circle cx="20" cy="20" r="3" fill="#e85d5d"/></svg>`,
+ warning:`<svg viewBox="0 0 40 40"><path d="M20 4 37 35H3Z" fill="#9b6a1f" stroke="#ffc650" stroke-width="2"/><path d="M20 13v10" stroke="#fff" stroke-width="3"/><circle cx="20" cy="28" r="2" fill="#fff"/></svg>`,
+ package:`<svg viewBox="0 0 40 40"><path d="M7 11 20 5l13 6v20l-13 6-13-6Z" fill="#6c5438" stroke="#fff" stroke-width="2"/><path d="m7 11 13 6 13-6M20 17v20" stroke="#d9c5a8" stroke-width="2"/></svg>`,
+ key:`<svg viewBox="0 0 40 40"><circle cx="13" cy="14" r="8" fill="none" stroke="#ffc650" stroke-width="3"/><path d="m19 20 16 16m-7-7 4-4m-9-1 4-4" stroke="#ffc650" stroke-width="3"/></svg>`,
+ phone:`<svg viewBox="0 0 40 40"><rect x="11" y="4" width="18" height="32" rx="3" fill="#27343b" stroke="#fff" stroke-width="2"/><rect x="14" y="8" width="12" height="21" fill="#45aff2"/><circle cx="20" cy="33" r="1.7" fill="#fff"/></svg>`,
+ laptop:`<svg viewBox="0 0 40 40"><rect x="8" y="7" width="24" height="19" rx="2" fill="#27343b" stroke="#fff" stroke-width="2"/><rect x="11" y="10" width="18" height="13" fill="#45aff2"/><path d="M4 29h32l-3 5H7Z" fill="#59656d" stroke="#fff"/></svg>`,
+ antenna:`<svg viewBox="0 0 40 40"><path d="M20 34V19m-7 15h14M16 19l4-12 4 12Z" fill="#59656d" stroke="#fff" stroke-width="2"/><path d="M11 12c-5 5-5 11 0 16m18-16c5 5 5 11 0 16" fill="none" stroke="#45aff2" stroke-width="2"/></svg>`,
+ helicopter:`<svg viewBox="0 0 40 40"><path d="M8 23c0-7 6-11 13-11h7l5 7v8H12Z" fill="#45565f" stroke="#fff" stroke-width="1.5"/><path d="M18 12V6m-11 0h24M33 22h5m-25 8h15" stroke="#fff" stroke-width="2"/><circle cx="15" cy="29" r="3" fill="#111"/><circle cx="28" cy="29" r="3" fill="#111"/></svg>`,
+ boat:`<svg viewBox="0 0 40 40"><path d="M7 17h26l-4 14H11Z" fill="#2d617a" stroke="#fff" stroke-width="2"/><path d="M14 17V9h10l5 8" fill="#465a65" stroke="#fff" stroke-width="2"/><path d="M4 34c4 2 8 2 12 0 4 2 8 2 12 0 4 2 6 2 9 0" fill="none" stroke="#45aff2" stroke-width="2"/></svg>`,
+ truck:`<svg viewBox="0 0 40 40"><rect x="4" y="12" width="21" height="16" fill="#55636a" stroke="#fff" stroke-width="2"/><path d="M25 17h7l4 6v5H25Z" fill="#46545b" stroke="#fff" stroke-width="2"/><circle cx="11" cy="31" r="4" fill="#111"/><circle cx="30" cy="31" r="4" fill="#111"/></svg>`,
+ bus:`<svg viewBox="0 0 40 40"><rect x="5" y="7" width="30" height="25" rx="4" fill="#59656d" stroke="#fff" stroke-width="2"/><rect x="9" y="11" width="22" height="9" fill="#a9d5eb"/><circle cx="12" cy="32" r="3" fill="#111"/><circle cx="28" cy="32" r="3" fill="#111"/></svg>`,
+ dog:`<svg viewBox="0 0 40 40"><path d="M10 18 6 8l9 5h10l9-5-4 11v12H12Z" fill="#685443" stroke="#fff" stroke-width="2"/><circle cx="16" cy="20" r="2" fill="#fff"/><circle cx="25" cy="20" r="2" fill="#fff"/><path d="M18 27h5" stroke="#fff" stroke-width="2"/></svg>`,
+ search:`<svg viewBox="0 0 40 40"><circle cx="17" cy="17" r="10" fill="none" stroke="#fff" stroke-width="3"/><path d="m25 25 11 11" stroke="#45aff2" stroke-width="4"/></svg>`,
+ lock:`<svg viewBox="0 0 40 40"><rect x="8" y="17" width="24" height="19" rx="3" fill="#374750" stroke="#fff" stroke-width="2"/><path d="M13 17v-5a7 7 0 0 1 14 0v5" fill="none" stroke="#ffc650" stroke-width="3"/></svg>`,
+ pin:`<svg viewBox="0 0 40 40"><path d="M20 4c-8 0-13 5-13 12 0 10 13 21 13 21s13-11 13-21C33 9 28 4 20 4Z" fill="#8d3030" stroke="#fff" stroke-width="2"/><circle cx="20" cy="16" r="5" fill="#fff"/></svg>`
+};
+const iconDefs={
+ entry:['entry','進入點'],standby:['standby','待命點'],ambush:['ambush','埋伏點'],sniper:['sniper','狙擊點'],
+ friendly:['friendly','友軍'],enemy:['enemy','敵軍'],medical:['medical','醫療'],civilian:['civilian','平民'],
+ command:['command','指揮點'],gun:['gun','槍械'],policecar:['policecar','警車'],civilcar:['civilcar','民車'],
+ enemycar:['enemycar','敵方車輛'],van:['van','廂型車'],motorcycle:['motorcycle','機車'],drone:['drone','無人機'],
+ camera:['camera','攝影機'],barricade:['barricade','封鎖／路障'],shield:['shield','盾牌'],radio:['radio','通訊'],hazard:['hazard','危險'],fire:['fire','火源']
+};
+const customExtraDefs={
+ eye:['eye','觀察'],person:['person','人物'],group:['group','多人／群眾'],building:['building','建築物'],house:['house','住宅'],
+ warehouse:['warehouse','倉庫'],school:['school','學校／機關'],hospital:['hospital','醫療院所'],checkpoint:['checkpoint','檢查點'],
+ roadblock:['roadblock','道路封鎖'],cone:['cone','交通錐'],flag:['flag','旗標'],target:['target','目標'],warning:['warning','警告'],
+ package:['package','包裹／物品'],key:['key','鑰匙'],phone:['phone','手機'],laptop:['laptop','電腦'],antenna:['antenna','基地台／天線'],
+ helicopter:['helicopter','直升機'],boat:['boat','船艇'],truck:['truck','卡車'],bus:['bus','巴士'],dog:['dog','警犬／犬隻'],
+ search:['search','搜索點'],lock:['lock','上鎖／管制'],pin:['pin','一般標記']
+};
+const allIconDefs={...iconDefs,...customExtraDefs};
+$("quickIcons").innerHTML='';
+$("customIconLibrary").innerHTML='';
+let customIconKey='friendly';
+Object.entries(iconDefs).forEach(([key,v])=>{
+  const b=document.createElement('button');b.className='mapIconTool';b.dataset.icon=key;
+  b.innerHTML=`<span style="display:inline-block;width:22px;vertical-align:middle">${tacticalSvg[v[0]]}</span> ${v[1]}`;
+  $("quickIcons").appendChild(b)
+});
+Object.entries(allIconDefs).forEach(([key,v])=>{
+  const c=document.createElement('button');
+  c.className='customSymbolChoice'+(key===customIconKey?' active':'');
+  c.dataset.customIcon=key;c.title=v[1];c.setAttribute('aria-label',v[1]);c.innerHTML=tacticalSvg[v[0]];
+  c.onclick=()=>{
+    customIconKey=key;
+    $$('.customSymbolChoice').forEach(x=>x.classList.toggle('active',x===c));
+    $("customIconPreviewBox").innerHTML=tacticalSvg[allIconDefs[customIconKey][0]]
+  };
+  $("customIconLibrary").appendChild(c)
+});
+$("customIconPreviewBox").innerHTML=tacticalSvg[allIconDefs[customIconKey][0]];
+const colors=['#45aff2','#f25c5c','#55d572','#ffc650','#111111','#ffffff','#ff944c','#9b59b6'];
+$("mapPalette").innerHTML='';
+colors.forEach(c=>{const b=document.createElement('button');b.className='colorDot'+(c===currentColor?' active':'');b.style.background=c;b.title=c;b.onclick=()=>{currentColor=c;$$('.colorDot').forEach(x=>x.classList.toggle('active',x===b))};$("mapPalette").appendChild(b)});
+
+function itemById(id){return state.map.items.find(x=>x.id===id)}
+function pushMapHistory(){mapHistory.push(clone(state.map.items));if(mapHistory.length>40)mapHistory.shift()}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function makeIcon(item){
+  const svg=item.type==='photo'
+    ? `<svg viewBox="0 0 40 40"><rect x="5" y="8" width="30" height="25" rx="3" fill="#2d3440" stroke="#fff" stroke-width="2"/><circle cx="20" cy="20" r="7" fill="#45aff2"/><rect x="12" y="5" width="9" height="5" rx="1" fill="#fff"/></svg>`
+    : (tacticalSvg[item.icon]||tacticalSvg.friendly);
+  return L.divIcon({className:'',html:`<div class="map-symbol-shell${item.id===selectedMapId?' map-selected-glow':''}"><div class="tac-inner" style="transform:rotate(${item.rotation||0}deg) scale(${item.scale||1})">${svg}</div></div>`,iconSize:[40,40],iconAnchor:[20,20]})
+}
+function destination(lat,lng,bearingDeg,d){const R=6371000,br=bearingDeg*Math.PI/180,la1=lat*Math.PI/180,lo1=lng*Math.PI/180,dr=d/R;const la2=Math.asin(Math.sin(la1)*Math.cos(dr)+Math.cos(la1)*Math.sin(dr)*Math.cos(br));const lo2=lo1+Math.atan2(Math.sin(br)*Math.sin(dr)*Math.cos(la1),Math.cos(dr)-Math.sin(la1)*Math.sin(la2));return [la2*180/Math.PI,lo2*180/Math.PI]}
+function bearing(a,b){const la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180,dl=(b.lng-a.lng)*Math.PI/180;return (Math.atan2(Math.sin(dl)*Math.cos(la2),Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dl))*180/Math.PI+360)%360}
+function normalizeRect(item){if(item.type==='rect'&&!item.points&&item.bounds){const a=item.bounds[0],b=item.bounds[1];item.points=[[a[0],a[1]],[a[0],b[1]],[b[0],b[1]],[b[0],a[1]]];delete item.bounds}}
+function mapItemCenter(item){
+  normalizeRect(item);
+  if(item.type==='circle')return L.latLng(item.center[0],item.center[1]);
+  if(item.type==='symbol'||item.type==='photo')return L.latLng(item.lat,item.lng);
+  const pts=item.points||[];if(!pts.length)return map.getCenter();
+  return L.latLng(pts.reduce((s,p)=>s+p[0],0)/pts.length,pts.reduce((s,p)=>s+p[1],0)/pts.length)
+}
+function fanPolygon(item){
+  if(!item.fan||!item.fan.radius)return null;
+  const c=mapItemCenter(item),pts=[[c.lat,c.lng]],a=item.fan.angle||60,b=item.fan.bearing||0,steps=18;
+  for(let i=0;i<=steps;i++){const br=b-a/2+a*i/steps;pts.push(destination(c.lat,c.lng,br,item.fan.radius))}
+  return pts
+}
+function renderFansOnly(){fanLayer.clearLayers();state.map.items.forEach(item=>{const p=fanPolygon(item);if(p)L.polygon(p,{color:'#ffc650',weight:1.5,fillColor:'#ffc650',fillOpacity:.20,interactive:false}).addTo(fanLayer)})}
+function rotateLatLngPoint(p,c,deg){const z=map.getZoom(),pp=map.project(L.latLng(p[0],p[1]),z),cp=map.project(c,z),r=deg*Math.PI/180,dx=pp.x-cp.x,dy=pp.y-cp.y;return map.unproject([cp.x+dx*Math.cos(r)-dy*Math.sin(r),cp.y+dx*Math.sin(r)+dy*Math.cos(r)],z)}
+function scaleLatLngPoint(p,c,f){const z=map.getZoom(),pp=map.project(L.latLng(p[0],p[1]),z),cp=map.project(c,z);return map.unproject([cp.x+(pp.x-cp.x)*f,cp.y+(pp.y-cp.y)*f],z)}
+function translateMapItem(item,dlat,dlng,base=null){
+  const src=base||item;normalizeRect(src);
+  if(item.type==='symbol'||item.type==='photo'){item.lat=src.lat+dlat;item.lng=src.lng+dlng}
+  else if(item.type==='circle'){item.center=[src.center[0]+dlat,src.center[1]+dlng]}
+  else item.points=(src.points||[]).map(p=>[p[0]+dlat,p[1]+dlng])
+}
+function applyMapTransform(item,base,deltaDeg,factor){
+  const c=mapItemCenter(base);
+  if(item.type==='symbol'||item.type==='photo'){
+    item.rotation=(base.rotation||0)+deltaDeg;
+    item.scale=Math.max(.35,Math.min(5,(base.scale||1)*factor))
+  }else if(item.type==='circle'){
+    item.radius=Math.max(2,base.radius*factor);
+    item.rotation=(base.rotation||0)+deltaDeg
+  }else{
+    normalizeRect(base);
+    item.points=(base.points||[]).map(p=>{
+      const scaled=scaleLatLngPoint(p,c,factor);
+      const rotated=rotateLatLngPoint([scaled.lat,scaled.lng],c,deltaDeg);
+      return [rotated.lat,rotated.lng]
+    });
+    item.rotation=(base.rotation||0)+deltaDeg
+  }
+  if(base.fan)item.fan={...base.fan,bearing:(base.fan.bearing||0)+deltaDeg}
+}
+function mapItemBounds(item){
+  normalizeRect(item);
+  if(item.type==='symbol'||item.type==='photo'){
+    const c=L.latLng(item.lat,item.lng),cp=map.latLngToLayerPoint(c),pad=28*(item.scale||1);
+    return L.latLngBounds(map.layerPointToLatLng([cp.x-pad,cp.y-pad]),map.layerPointToLatLng([cp.x+pad,cp.y+pad]))
+  }
+  if(item.type==='circle'){
+    const c=L.latLng(item.center[0],item.center[1]);
+    return L.latLngBounds(destination(c.lat,c.lng,315,item.radius*1.42),destination(c.lat,c.lng,135,item.radius*1.42))
+  }
+  return L.latLngBounds((item.points||[]).map(p=>L.latLng(p[0],p[1])))
+}
+function updateLeafletLayer(layer,item){
+  if(item.type==='symbol'||item.type==='photo'){layer.setLatLng([item.lat,item.lng]);layer.setIcon(makeIcon(item))}
+  else if(item.type==='circle'){layer.setLatLng(item.center);layer.setRadius(item.radius)}
+  else layer.setLatLngs(item.points)
+}
+function showMapMenu(item,clientX,clientY){
+  selectedMapId=item.id;renderMapSelection();
+  const menu=$("mapContextMenu");
+  $("mapCtxTitle").textContent=item.type==='photo'?`📷 ${item.label||'照片'}`:(item.label||allIconDefs[item.icon]?.[1]||item.type);
+  const editable=canEditItem(item);
+  $("mapCtxDirection").disabled=!editable;
+  $("mapCtxDirectionClear").disabled=!editable||!item.fan;
+  $("mapCtxNote").disabled=!editable;$("mapCtxPhoto").disabled=!editable||item.type==='photo';
+  $("mapCtxViewPhoto").disabled=!(item.photoPath||(item.type==='photo'&&item.dataUrl));
+  $("mapCtxDelete").disabled=!editable;
+  if(item.fan)$("mapCtxFanAngle").value=String(item.fan.angle||60);
+  menu.classList.add("open");
+  const w=270,h=260,x=Math.min(clientX+6,innerWidth-w-8),y=Math.min(clientY+6,innerHeight-h-8);
+  menu.style.left=Math.max(8,x)+"px";menu.style.top=Math.max(8,y)+"px"
+}
+function hideMapMenu(){$("mapContextMenu").classList.remove("open")}
+$("mapCtxDelete").onclick=async()=>{
+  const item=itemById(selectedMapId);if(!item||!canEditItem(item))return;pushMapHistory();const photoPath=item.photoPath;
+  state.map.items=state.map.items.filter(x=>x.id!==item.id);selectedMapId=null;hideMapMenu();publish();renderMapItems();if(photoPath)await removeObjectMedia(photoPath)
+};
+$("mapCtxNote").onclick=()=>{
+  const item=itemById(selectedMapId);if(!item||!canEditItem(item))return;
+  const v=prompt(`編輯「${mapItemTypeName(item)}」備註：`,item.note||"");if(v===null)return;
+  pushMapHistory();item.note=v.trim();hideMapMenu();publish();renderMapItems();toast("備註已更新")
+};
+let mapObjectPhotoTargetId=null;
+$("mapCtxPhoto").onclick=()=>{const item=itemById(selectedMapId);if(!item||!canEditItem(item)||item.type==='photo')return;mapObjectPhotoTargetId=item.id;$("mapObjectPhotoInput").value='';$("mapObjectPhotoInput").click()};
+$("mapObjectPhotoInput").onchange=async e=>{
+  const file=e.target.files?.[0],item=itemById(mapObjectPhotoTargetId);if(!file||!item)return;
+  try{const old=item.photoPath,res=await uploadObjectMedia(file,item.ownerId||currentUserId);pushMapHistory();item.photoPath=res.path;publish();renderMapItems();hideMapMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片已加入：${fmtBytes(res.compressedBytes)}，總耗時 ${(res.totalMs/1000).toFixed(1)} 秒`)}
+  catch(err){toast("照片上傳失敗："+err.message)}finally{mapObjectPhotoTargetId=null;e.target.value=''}
+};
+$("mapCtxViewPhoto").onclick=async()=>{
+  const item=itemById(selectedMapId);if(!item)return;
+  hideMapMenu();
+  await openObjectViewer({
+    title:`${mapItemTypeName(item)} · 大圖`,
+    note:item.note||"",
+    owner:item.ownerName||"",
+    photoUrl:item.type==='photo'&&item.dataUrl?item.dataUrl:"",
+    photoPath:item.photoPath||"",
+    mode:"photo"
+  })
+};
+
+$("mapCtxDirectionClear").onclick=()=>{
+  const item=itemById(selectedMapId);if(!item||!canEditItem(item))return;
+  pushMapHistory();item.fan=null;hideMapMenu();publish();renderMapItems()
+};
+$("mapCtxFanAngle").onchange=()=>{
+  const item=itemById(selectedMapId);if(item&&canEditItem(item)&&item.fan){item.fan.angle=+$("mapCtxFanAngle").value||60;publish();renderFansOnly()}
+};
+$("mapCtxDirection").onclick=()=>{
+  const item=itemById(selectedMapId);if(!item||!canEditItem(item))return;
+  pushMapHistory();fanTargetId=item.id;hideMapMenu();map.getContainer().style.cursor='crosshair';toast('從物件位置朝觀察／拍攝方向拖曳')
+};
+
+
+function renderMapSelection(){
+  selectionLayer.clearLayers();
+  const item=itemById(selectedMapId);if(!item)return;
+  const bounds=mapItemBounds(item);if(!bounds.isValid())return;
+  L.rectangle(bounds,{className:'map-select-frame',color:'#45aff2',weight:2,dashArray:'7,5',fill:false,interactive:false}).addTo(selectionLayer);
+  const handleIcon=L.divIcon({className:'',html:'<div class="map-transform-handle">↻</div>',iconSize:[34,34],iconAnchor:[17,17]});
+  const handle=L.marker(bounds.getSouthEast(),{icon:handleIcon,keyboard:false,zIndexOffset:5000});
+  handle.on('add',()=>{
+    const el=handle.getElement();if(!el)return;
+    el.addEventListener('pointerdown',e=>{
+      const target=itemById(selectedMapId);if(!target||!canEditItem(target))return;
+      e.preventDefault();e.stopPropagation();map.dragging.disable();pushMapHistory();
+      const base=clone(target),center=mapItemCenter(base),cp=map.latLngToLayerPoint(center),sp=map.mouseEventToLayerPoint(e);
+      const startAngle=Math.atan2(sp.y-cp.y,sp.x-cp.x),startDist=Math.max(12,Math.hypot(sp.x-cp.x,sp.y-cp.y));
+      const move=ev=>{
+        const p=map.mouseEventToLayerPoint(ev),ang=Math.atan2(p.y-cp.y,p.x-cp.x),dist=Math.max(8,Math.hypot(p.x-cp.x,p.y-cp.y));
+        const delta=(ang-startAngle)*180/Math.PI,factor=Math.max(.2,Math.min(5,dist/startDist));
+        applyMapTransform(target,base,delta,factor);renderMapItems();ev.preventDefault()
+      };
+      const up=()=>{document.removeEventListener('pointermove',move);map.dragging.enable();publish();renderMapItems()};
+      document.addEventListener('pointermove',move,{passive:false});document.addEventListener('pointerup',up,{once:true})
+    },{passive:false})
+  });
+  handle.addTo(selectionLayer)
+}
+function toggleMapSelection(item){
+  if(selectedMapId===item.id){selectedMapId=null;toast('已完成物件調整')}
+  else{selectedMapId=item.id;toast('已選取：拖曳右下角 ↻ 可旋轉／縮放')}
+  renderMapItems()
+}
+
+
+function quickInfoHtml(item){return ""}
+function showQuickItemTooltip(layer,item){showMapQuickInfo(layer,item,{sticky:coarsePointer})}
+
+function attachMapItemInteractions(layer,item){
+  layer.once('add',()=>{
+    const el=layer.getElement?.()||layer._path;if(!el)return;
+    let timer=null,start=null,base=null,moved=false,longTriggered=false,historyPushed=false;
+    const cleanup=()=>{clearTimeout(timer);document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);map.dragging.enable()};
+    const down=e=>{
+      if(mapTool!=='pan'||e.button===2)return;
+      start={x:e.clientX,y:e.clientY,ll:map.mouseEventToLatLng(e)};base=clone(item);moved=false;longTriggered=false;historyPushed=false;
+      timer=setTimeout(()=>{if(!moved){longTriggered=true;toggleMapSelection(item)}},1000);
+      document.addEventListener('pointermove',move,{passive:false});document.addEventListener('pointerup',up,{once:true});
+      e.preventDefault();e.stopPropagation()
+    };
+    const move=e=>{
+      if(!start||longTriggered)return;
+      const dist=Math.hypot(e.clientX-start.x,e.clientY-start.y);
+      if(dist<=5)return;
+      clearTimeout(timer);
+      if(!canEditItem(item))return;
+      if(!historyPushed){pushMapHistory();historyPushed=true}
+      moved=true;map.dragging.disable();
+      const ll=map.mouseEventToLatLng(e),dlat=ll.lat-start.ll.lat,dlng=ll.lng-start.ll.lng;
+      translateMapItem(item,dlat,dlng,base);updateLeafletLayer(layer,item);renderFansOnly();if(selectedMapId===item.id)renderMapSelection();e.preventDefault()
+    };
+    const up=e=>{
+      clearTimeout(timer);document.removeEventListener('pointermove',move);map.dragging.enable();
+      if(moved&&canEditItem(item)){
+        publish();renderMapItems()
+      }else if(!longTriggered&&coarsePointer){
+        const now=Date.now();
+        const sameSecondTap=mapTapMemory.id===item.id && now-mapTapMemory.at<=420;
+        if(sameSecondTap){
+          clearTimeout(mapTapMemory.timer);
+          mapTapMemory={id:null,at:0,timer:null};
+          hideMapMenu();
+          showMapQuickInfo(layer,item,{sticky:true})
+        }else{
+          clearTimeout(mapTapMemory.timer);
+          const x=e.clientX,y=e.clientY,id=item.id;
+          mapTapMemory={
+            id,
+            at:now,
+            timer:setTimeout(()=>{
+              if(mapTapMemory.id===id){
+                showMapMenu(item,x,y);
+                mapTapMemory={id:null,at:0,timer:null}
+              }
+            },430)
+          }
+        }
+      }
+      start=null
+    };
+    el.addEventListener('pointerdown',down,{passive:false});
+    el.addEventListener('mouseenter',()=>{if(!coarsePointer)showMapQuickInfo(layer,item)});
+    el.addEventListener('mouseleave',()=>{if(!coarsePointer)layer.closeTooltip?.()});
+    el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showMapMenu(item,e.clientX,e.clientY)})
+  })
+}
+
+function renderMapItems(){
+  mapLayer.clearLayers();renderFansOnly();
+  state.map.items.forEach(item=>{
+    normalizeRect(item);let layer=null;
+    if(item.type==='line'||item.type==='free')layer=L.polyline(item.points,{color:item.color||'#45aff2',weight:4});
+    else if(item.type==='rect')layer=L.polygon(item.points,{color:item.color||'#ffc650',weight:3,fillOpacity:.10});
+    else if(item.type==='circle')layer=L.circle(item.center,{radius:item.radius,color:item.color||'#ffc650',weight:3,fillOpacity:.10});
+    else if(item.type==='symbol'||item.type==='photo'){
+      item.lat??=item.latlng?.[0];item.lng??=item.latlng?.[1];
+      layer=L.marker([item.lat,item.lng],{icon:makeIcon(item),keyboard:false})
+    }
+    if(layer){
+      attachMapItemInteractions(layer,item);
+      layer.addTo(mapLayer)
+    }
+  });
+  renderMapSelection()
+}
+
+function cursorFor(t){if(t==='pan')return 'grab';if(t==='line')return 'crosshair';if(t==='rect')return 'nwse-resize';if(t==='circle')return 'cell';if(t==='free')return 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724%27 height=%2724%27%3E%3Ctext y=%2720%27 font-size=%2720%27%3E✎%3C/text%3E%3C/svg%3E") 2 22, crosshair';return 'copy'}
+function setMapTool(t){
+  if(t!=='pan'&&!can('map')){toast('目前角色只能觀看');return}
+  fanTargetId=null;drawStart=null;clearPreview();mapTool=t;mapIcon=null;pendingPhoto=null;hideMapMenu();
+  $$('.mapTool').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));$$('.mapIconTool').forEach(b=>b.classList.remove('active'));
+  map.getContainer().style.cursor=cursorFor(t);
+  const text={pan:'拖曳地圖；拖曳既有物件可移動，按住物件 1 秒可調整',line:'點起點再點終點畫直線',rect:'點第一角再點對角',circle:'點圓心再點邊界',free:'按住並拖曳自由畫'}[t]||'放置物件';
+  $("mapHint").textContent='目前：'+text+'。'+(coarsePointer?' 快速點同一物件兩下可查看資訊。':'')
+}
+$$('.mapTool').forEach(b=>b.onclick=()=>setMapTool(b.dataset.tool));
+function chooseIcon(key,label=null){
+  if(!can('map')){toast('目前角色只能觀看');return}
+  mapTool='symbol';mapIcon={key,label:label||allIconDefs[key]?.[1]||'自訂'};
+  $$('.mapTool').forEach(x=>x.classList.remove('active'));$$('.mapIconTool').forEach(x=>x.classList.toggle('active',x.dataset.icon===key));
+  map.getContainer().style.cursor='copy';$("mapHint").textContent=`目前：點地圖放置「${mapIcon.label}」。`
+}
+setTimeout(()=>$$('.mapIconTool').forEach(b=>b.onclick=()=>chooseIcon(b.dataset.icon)),0);
+$("customIconBtn").onclick=()=>{
+  const key=customIconKey;
+  const label=$("customIconLabel").value.trim();
+  if(!label){toast('請先輸入自訂圖樣名稱');$("customIconLabel").focus();return}
+  chooseIcon(key,label)
+};
+
+function clearPreview(){if(preview){map.removeLayer(preview);preview=null}}
+map.on('click',async e=>{
+  if(mapTool==='pan'||mapTool==='free'||fanTargetId)return;
+  if(!can('map')){toast('目前角色只能觀看');return}
+  if(mapTool==='symbol'&&mapIcon){
+    pushMapHistory();const note=prompt(`${mapIcon.label}備註（可留空）：`,'')??'';
+    state.map.items.push({id:uid(),type:'symbol',icon:mapIcon.key,label:mapIcon.label,lat:e.latlng.lat,lng:e.latlng.lng,rotation:0,scale:1,fan:null,note,color:currentColor,ownerId:currentUserId,ownerName:displayName()});
+    publish();renderMapItems();setMapTool('pan');return
+  }
+  if(mapTool==='photo'&&pendingPhoto){
+    const file=pendingPhoto,label=$("photoLabel").value.trim(),lat=e.latlng.lat,lng=e.latlng.lng;
+    pendingPhoto=null;$("photoInput").value='';$("photoLabel").value='';
+    map.getContainer().style.cursor='wait';toast("照片壓縮與上傳中…");
+    try{
+      const res=await uploadObjectMedia(file,currentUserId);
+      pushMapHistory();
+      state.map.items.push({id:uid(),type:'photo',lat,lng,photoPath:res.path,label,rotation:0,scale:1,fan:null,note:"",ownerId:currentUserId,ownerName:displayName()});
+      publish();renderMapItems();setMapTool('pan');toast(`照片已放置：${fmtBytes(res.compressedBytes)}，總耗時 ${(res.totalMs/1000).toFixed(1)} 秒`)
+    }catch(err){
+      console.error(err);setMapTool('pan');toast("照片上傳失敗："+(err.message||"未知錯誤"))
+    }
+    return
+  }
+  if(!drawStart){drawStart=e.latlng;toast('已設定起點，再點一次完成');return}
+  pushMapHistory();
+  if(mapTool==='line')state.map.items.push({id:uid(),type:'line',points:[[drawStart.lat,drawStart.lng],[e.latlng.lat,e.latlng.lng]],rotation:0,color:currentColor,ownerId:currentUserId,ownerName:displayName()});
+  if(mapTool==='rect')state.map.items.push({id:uid(),type:'rect',points:[[drawStart.lat,drawStart.lng],[drawStart.lat,e.latlng.lng],[e.latlng.lat,e.latlng.lng],[e.latlng.lat,drawStart.lng]],rotation:0,color:currentColor,ownerId:currentUserId,ownerName:displayName()});
+  if(mapTool==='circle')state.map.items.push({id:uid(),type:'circle',center:[drawStart.lat,drawStart.lng],radius:map.distance(drawStart,e.latlng),rotation:0,color:currentColor,ownerId:currentUserId,ownerName:displayName()});
+  drawStart=null;clearPreview();publish();renderMapItems()
+});
+map.on('mousemove',e=>{
+  if(!drawStart||!['line','rect','circle'].includes(mapTool))return;clearPreview();
+  if(mapTool==='line')preview=L.polyline([[drawStart.lat,drawStart.lng],[e.latlng.lat,e.latlng.lng]],{color:currentColor,dashArray:'5,5'}).addTo(map);
+  if(mapTool==='rect')preview=L.rectangle([[drawStart.lat,drawStart.lng],[e.latlng.lat,e.latlng.lng]],{color:currentColor,dashArray:'5,5',fillOpacity:.04}).addTo(map);
+  if(mapTool==='circle')preview=L.circle([drawStart.lat,drawStart.lng],{radius:map.distance(drawStart,e.latlng),color:currentColor,dashArray:'5,5',fillOpacity:.04}).addTo(map)
+});
+
+/* fan direction drag + freehand */
+map.getContainer().addEventListener('pointerdown',e=>{
+  if(fanTargetId){
+    const item=itemById(fanTargetId);if(!item||!canEditItem(item)){fanTargetId=null;return}
+    e.preventDefault();e.stopPropagation();map.dragging.disable();
+    const c=mapItemCenter(item),move=ev=>{
+      const ll=map.mouseEventToLatLng(ev);item.fan=item.fan||{};item.fan.angle=+$("mapCtxFanAngle").value||60;
+      item.fan.bearing=bearing(c,ll);item.fan.radius=map.distance(c,ll);renderFansOnly();ev.preventDefault()
+    };
+    move(e);
+    const up=()=>{document.removeEventListener('pointermove',move);map.dragging.enable();fanTargetId=null;map.getContainer().style.cursor=cursorFor(mapTool);publish();renderMapItems()};
+    document.addEventListener('pointermove',move,{passive:false});document.addEventListener('pointerup',up,{once:true});return
+  }
+  if(mapTool!=='free')return;
+  freeDrawing=true;freePoints=[];map.dragging.disable();pushMapHistory();const p=map.mouseEventToLatLng(e);freePoints.push([p.lat,p.lng]);preview=L.polyline(freePoints,{color:currentColor,weight:4}).addTo(map);e.preventDefault()
+});
+map.getContainer().addEventListener('pointermove',e=>{if(!freeDrawing)return;const p=map.mouseEventToLatLng(e);freePoints.push([p.lat,p.lng]);preview.setLatLngs(freePoints);e.preventDefault()});
+function endFree(){if(!freeDrawing)return;freeDrawing=false;map.dragging.enable();clearPreview();if(freePoints.length>1){state.map.items.push({id:uid(),type:'free',points:freePoints,rotation:0,color:currentColor,ownerId:currentUserId,ownerName:displayName()});publish();renderMapItems()}}
+map.getContainer().addEventListener('pointerup',endFree);map.getContainer().addEventListener('pointercancel',endFree);
+
+$("mapUndoBtn").onclick=()=>{if(!mapHistory.length){toast('沒有可復原的地圖動作');return}state.map.items=mapHistory.pop();selectedMapId=null;publish();renderMapItems()};
+$("photoInput").onchange=e=>{
+  const f=e.target.files?.[0];if(!f)return;
+  if(!f.type.startsWith("image/")){toast("請選擇圖片");e.target.value="";return}
+  if(f.size>20*1024*1024){toast("原始照片請小於 20MB");e.target.value="";return}
+  pendingPhoto=f;
+  toast(`照片已準備（${(f.size/1024/1024).toFixed(1)} MB），按放置後點地圖`)
+};
+$("photoPlaceBtn").onclick=()=>{if(!can('map')){toast('目前角色只能觀看');return}if(!pendingPhoto){toast('請先選擇照片');return}mapTool='photo';$$('.mapTool,.mapIconTool').forEach(x=>x.classList.remove('active'));map.getContainer().style.cursor='copy';$("mapHint").textContent='目前：點地圖放置照片。'};
+
+/* Restore V1.1 Taiwan address search logic exactly */
+function normalizeAddr(q){return q.replace(/臺/g,'台').replace(/\s+/g,'').trim()}
+function parseTwAddress(q){
+  q=normalizeAddr(q);
+  const county=(q.match(/([^縣市]{1,4}[縣市])/ )||[])[1]||'';
+  const district=(q.match(/([^區鄉鎮市]{1,6}[區鄉鎮市])/g)||[]).find(x=>x!==county)||'';
+  const m=q.match(/(.+?(?:路|街|大道|道|巷))(\d+(?:之\d+|-\d+)?號)/);
+  return {county,district,street:m?m[1].replace(county,'').replace(district,''):'',house:m?m[2].replace('號',''):''}
+}
+async function nominatim(url){const r=await fetch(url,{headers:{'Accept':'application/json','Accept-Language':'zh-TW'}});if(!r.ok)throw new Error('geocode');return await r.json()}
+async function searchAddress(q){
+  const clean=normalizeAddr(q),p=parseTwAddress(clean),base='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=tw&addressdetails=1&accept-language=zh-TW&',urls=[];
+  if(p.street&&p.house)urls.push(base+`street=${encodeURIComponent(p.house+' '+p.street)}&city=${encodeURIComponent(p.district)}&county=${encodeURIComponent(p.county)}`);
+  const variants=[clean,`台灣,${clean}`,clean.replace(/(縣|市|區|鄉|鎮|路|街|號)/g,'$1,'),p.county&&p.district&&p.street?`${p.house} ${p.street}, ${p.district}, ${p.county}, 台灣`:clean];
+  [...new Set(variants)].forEach(v=>urls.push(base+'q='+encodeURIComponent(v)));
+  for(const u of urls){try{const d=await nominatim(u);if(d&&d.length)return d[0]}catch(e){}}
+  return null
+}
+$("mapSearchBtn").onclick=async()=>{
+  const q=$("mapSearch").value.trim();if(!q)return;$("mapSearchBtn").disabled=true;$("mapSearchBtn").textContent='搜尋中';$("searchStatus").textContent='正在嘗試門牌拆解與多組地址搜尋…';
+  try{
+    const x=await searchAddress(q);
+    if(!x){$("searchStatus").textContent='此門牌在 OSM 地址資料中沒有找到。可按「Google 搜尋」直接查完整門牌。';toast('免費地址資料找不到此門牌');return}
+    map.setView([+x.lat,+x.lon],18);$("searchStatus").textContent='已定位：'+x.display_name;
+    L.marker([+x.lat,+x.lon]).addTo(mapLayer).bindPopup(escapeHtml(x.display_name)).openPopup()
+  }finally{$("mapSearchBtn").disabled=false;$("mapSearchBtn").textContent='搜尋'}
+};
+$("mapSearch").addEventListener('keydown',e=>{if(e.key==='Enter')$("mapSearchBtn").click()});
+$("googleAddressBtn").onclick=()=>{const q=$("mapSearch").value.trim();if(!q){toast('先輸入地址');return}window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q),'_blank')};
+$("streetViewBtn").onclick=()=>{const c=map.getCenter();window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${encodeURIComponent(c.lat+','+c.lng)}`,'_blank')};
+$("mapToolsMobile").onclick=e=>{e.preventDefault();e.stopPropagation();$("mapSidebar").classList.toggle('open')};
+
+/* board */
+const canvas=$("boardCanvas"),ctx=canvas.getContext('2d');
+const boardStage=$("boardStage"),boardWrap=$("boardWrap");
+let boardTool='select',boardDrawing=false,boardStart=null,boardCurrent=null,tempPoints=[],selectedBoardId=null,boardHistory=[],boardGesture=null,boardTransformGesture=null,boardTapMemory={id:null,at:0,timer:null};
+let boardUserZoom=1,boardBaseScale=1,boardPointers=new Map(),boardPinch=null,boardPinching=false;
+function boardDisplayScale(){return boardBaseScale*boardUserZoom}
+function ensureBoardCanvasSize(){
+  state.board.canvasW=Math.max(1200,+state.board.canvasW||2000);
+  state.board.canvasH=Math.max(800,+state.board.canvasH||1400);
+  if(canvas.width!==state.board.canvasW)canvas.width=state.board.canvasW;
+  if(canvas.height!==state.board.canvasH)canvas.height=state.board.canvasH;
+  $("canvasSizeText").textContent=`畫布 ${canvas.width} × ${canvas.height}`;
+}
+function updateBoardScale(keepCenter=false,pinchMid=null,beforeScale=null){
+  ensureBoardCanvasSize();
+  const oldScale=beforeScale||boardDisplayScale();
+  const stageRect=boardStage.getBoundingClientRect();
+  const mobile=matchMedia('(max-width:820px)').matches;
+  const usableW=Math.max(280,stageRect.width-16);
+  // 手機沿用 V1.4 的 1200px 視覺基準；桌機固定 1:1，不再自動縮小。
+  boardBaseScale=mobile?Math.min(1,usableW/1200):1;
+  const scale=boardDisplayScale();
+  const oldScrollLeft=boardStage.scrollLeft,oldScrollTop=boardStage.scrollTop;
+  let anchorX=null,anchorY=null;
+  if(keepCenter&&pinchMid){
+    anchorX=(oldScrollLeft+(pinchMid.x-stageRect.left))/Math.max(.01,oldScale);
+    anchorY=(oldScrollTop+(pinchMid.y-stageRect.top))/Math.max(.01,oldScale)
+  }
+  boardWrap.style.width=(canvas.width*scale)+'px';
+  boardWrap.style.height=(canvas.height*scale)+'px';
+  canvas.style.width='100%';canvas.style.height='100%';
+  $("boardZoomBadge").textContent=mobile
+    ?`戰術板 ${Math.round(boardUserZoom*100)}% · 雙指縮放`
+    :`戰術板 100% · 大畫布工作區`;
+  if(anchorX!==null){
+    requestAnimationFrame(()=>{
+      boardStage.scrollLeft=Math.max(0,anchorX*scale-(pinchMid.x-stageRect.left));
+      boardStage.scrollTop=Math.max(0,anchorY*scale-(pinchMid.y-stageRect.top))
+    })
+  }
+}
+function resetBoardZoom(){boardUserZoom=1;updateBoardScale()}
+function floor(){return state.board.pages[state.board.active]}
+function boardItem(id){return floor().objects.find(x=>x.id===id)}
+function pushBoardHistory(){boardHistory.push(clone(floor().objects));if(boardHistory.length>40)boardHistory.shift()}
+function boardPoint(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
+function toLocal(p,o){const s=o.scale||1,r=-(o.rotation||0)*Math.PI/180,dx=(p.x-o.x)/s,dy=(p.y-o.y)/s;return{x:dx*Math.cos(r)-dy*Math.sin(r),y:dx*Math.sin(r)+dy*Math.cos(r)}}
+function toWorld(p,o){const s=o.scale||1,r=(o.rotation||0)*Math.PI/180,x=p.x*s,y=p.y*s;return{x:o.x+x*Math.cos(r)-y*Math.sin(r),y:o.y+x*Math.sin(r)+y*Math.cos(r)}}
+function distSeg(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy;if(!l)return Math.hypot(p.x-a.x,p.y-a.y);let t=((p.x-a.x)*dx+(p.y-a.y)*dy)/l;t=Math.max(0,Math.min(1,t));return Math.hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy))}
+function hitBoard(o,p){
+  if(o.type==='erase')return false;
+  const q=toLocal(p,o),tol=14/(o.scale||1);
+  if(o.type==='free'){for(let i=1;i<o.points.length;i++)if(distSeg(q,o.points[i-1],o.points[i])<tol)return true;return false}
+  if(o.type==='line')return distSeg(q,o.a,o.b)<tol;
+  if(o.type==='rect')return Math.abs(q.x)<=o.w/2+tol&&Math.abs(q.y)<=o.h/2+tol;
+  if(o.type==='circle')return Math.hypot(q.x,q.y)<=o.r+tol;
+  if(['stairsUp','stairsDown','door'].includes(o.type))return Math.abs(q.x)<=65&&Math.abs(q.y)<=65;
+  if(o.type==='text')return Math.abs(q.x)<=((o.textW||120)/2)+tol&&Math.abs(q.y)<=((o.textH||36)/2)+tol;
+  if(o.type==='friendly'||o.type==='enemy')return Math.abs(q.x)<=42&&Math.abs(q.y)<=46;
+  return false
+}
+function findBoardAt(p){
+  const objs=floor().objects||[];
+
+  // V1.9.2:
+  // Large rect/circle objects are usually building structure/background.
+  // Small semantic/tactical objects must win when they overlap.
+  const tacticalTypes=new Set(['friendly','enemy','door','stairsUp','stairsDown','text']);
+  const middleTypes=new Set(['free','line']);
+  const structuralTypes=new Set(['rect','circle']);
+
+  const tactical=[];
+  const middle=[];
+  const structural=[];
+  const other=[];
+
+  for(const o of objs){
+    if(tacticalTypes.has(o.type))tactical.push(o);
+    else if(middleTypes.has(o.type))middle.push(o);
+    else if(structuralTypes.has(o.type))structural.push(o);
+    else other.push(o)
+  }
+
+  // Within the same priority class, the later/topmost object still wins.
+  const groups=[tactical,middle,structural,other];
+  for(const group of groups){
+    for(let i=group.length-1;i>=0;i--){
+      if(hitBoard(group[i],p))return group[i]
+    }
+  }
+  return null
+}
+function drawBoardObject(o){
+  ctx.save();ctx.translate(o.x||0,o.y||0);ctx.rotate((o.rotation||0)*Math.PI/180);ctx.scale(o.scale||1,o.scale||1);
+  ctx.strokeStyle=o.color||'#111';ctx.fillStyle=o.color||'#111';ctx.lineWidth=o.width||4;ctx.lineCap='round';ctx.lineJoin='round';
+  if(o.type==='erase'){
+    ctx.strokeStyle='#f7f7f4';ctx.lineWidth=o.width||28;if(o.points?.length>1){ctx.beginPath();ctx.moveTo(o.points[0].x,o.points[0].y);o.points.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke()}
+  }else if(o.type==='free'){
+    if(o.points.length>1){ctx.beginPath();ctx.moveTo(o.points[0].x,o.points[0].y);o.points.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke()}
+  }else if(o.type==='line'){ctx.beginPath();ctx.moveTo(o.a.x,o.a.y);ctx.lineTo(o.b.x,o.b.y);ctx.stroke()}
+  else if(o.type==='rect')ctx.strokeRect(-o.w/2,-o.h/2,o.w,o.h);
+  else if(o.type==='circle'){ctx.beginPath();ctx.arc(0,0,o.r,0,Math.PI*2);ctx.stroke()}
+  else if(o.type==='stairsUp'||o.type==='stairsDown'){
+    for(let y=-45;y<=45;y+=15){ctx.beginPath();ctx.moveTo(-48,y);ctx.lineTo(48,y);ctx.stroke()}
+    ctx.strokeStyle=o.type==='stairsUp'?'#176aa0':'#8d3030';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=4;
+    const from=o.type==='stairsUp'?45:-45,to=o.type==='stairsUp'?-45:45;
+    ctx.beginPath();ctx.moveTo(0,from);ctx.lineTo(0,to);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,to);ctx.lineTo(-8,to+(o.type==='stairsUp'?14:-14));ctx.lineTo(8,to+(o.type==='stairsUp'?14:-14));ctx.closePath();ctx.fill()
+  }else if(o.type==='door'){
+    ctx.fillStyle='#8a5a2b';ctx.strokeStyle='#4e321b';ctx.lineWidth=2;ctx.fillRect(-55,-10,110,20);ctx.strokeRect(-55,-10,110,20)
+  }else if(o.type==='text'){
+    ctx.fillStyle=o.color||'#111';ctx.font=`700 ${o.fontSize||28}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(o.text||'文字',0,0)
+  }else if(o.type==='friendly'||o.type==='enemy'){
+    const col=o.type==='friendly'?'#176aa0':'#9d2d2d';
+    ctx.fillStyle=col;ctx.strokeStyle='#111';ctx.lineWidth=2;
+    if(o.type==='friendly'){ctx.fillRect(-24,-24,48,48);ctx.strokeRect(-24,-24,48,48)}
+    else{ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(30,0);ctx.lineTo(0,30);ctx.lineTo(-30,0);ctx.closePath();ctx.fill();ctx.stroke()}
+    ctx.fillStyle='#fff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(o.type==='friendly'?'POL':'ENY',0,0)
+  }
+  ctx.restore()
+}
+function bbox(o){
+  if(o.type==='rect')return[-o.w/2,-o.h/2,o.w/2,o.h/2];
+  if(o.type==='circle')return[-o.r,-o.r,o.r,o.r];
+  if(['stairsUp','stairsDown','door'].includes(o.type))return[-65,-65,65,65];
+  if(o.type==='text')return[-(o.textW||120)/2,-(o.textH||36)/2,(o.textW||120)/2,(o.textH||36)/2];
+  if(o.type==='friendly'||o.type==='enemy')return[-45,-50,45,50];
+  const pts=o.type==='line'?[o.a,o.b]:o.points||[{x:-10,y:-10},{x:10,y:10}];
+  return[Math.min(...pts.map(p=>p.x))-8,Math.min(...pts.map(p=>p.y))-8,Math.max(...pts.map(p=>p.x))+8,Math.max(...pts.map(p=>p.y))+8]
+}
+function boardHandlePoint(o){
+  const b=bbox(o);
+  return toWorld({x:b[2]+22/(o.scale||1),y:b[3]+22/(o.scale||1)},o)
+}
+function switchFloor(i){
+  state.board.active=i;selectedBoardId=null;boardHistory=[];renderBoard();
+  if(matchMedia('(min-width:821px)').matches){boardStage.scrollLeft=0;boardStage.scrollTop=0}
+}
+function renderFloorTabs(){
+  const el=$("floorTabs"),side=$("floorSideList");el.innerHTML='';side.innerHTML='';
+  state.board.pages.forEach((p,i)=>{
+    const label=p.name||`${i+1}F`;
+    const b=document.createElement('button');b.className='floorTab'+(i===state.board.active?' active':'');b.textContent=label;b.onclick=()=>switchFloor(i);el.appendChild(b);
+    const s=document.createElement('button');s.className='floorSideBtn'+(i===state.board.active?' active':'');s.textContent=`${i+1}. ${label}`;s.onclick=()=>switchFloor(i);side.appendChild(s)
+  })
+}
+function renderBoard(previewObj=null){
+  ensureBoardCanvasSize();
+  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f7f7f4';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#e4e4de';ctx.lineWidth=1;
+  for(let x=0;x<canvas.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke()}
+  for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke()}
+  floor().objects.forEach(drawBoardObject);if(previewObj)drawBoardObject(previewObj);
+  const sel=boardItem(selectedBoardId);
+  if(sel&&sel.type!=='erase'){
+    const b=bbox(sel),corners=[
+      toWorld({x:b[0]-8/(sel.scale||1),y:b[1]-8/(sel.scale||1)},sel),
+      toWorld({x:b[2]+8/(sel.scale||1),y:b[1]-8/(sel.scale||1)},sel),
+      toWorld({x:b[2]+8/(sel.scale||1),y:b[3]+8/(sel.scale||1)},sel),
+      toWorld({x:b[0]-8/(sel.scale||1),y:b[3]+8/(sel.scale||1)},sel)
+    ];
+    ctx.save();ctx.strokeStyle='#1595df';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(corners[0].x,corners[0].y);corners.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    const h=boardHandlePoint(sel);ctx.fillStyle='#0f74ad';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,15,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↻',h.x,h.y+1);ctx.restore()
+  }
+  $("floorName").value=floor().name;$("floorCountText").textContent=`第 ${state.board.active+1} / ${state.board.pages.length} 頁`;renderFloorTabs();
+  if(!boardWrap.style.width) updateBoardScale()
+}
+function setBoardTool(t){if(t!=='select'&&!can('board')){toast('目前角色只能觀看');return}boardTool=t;selectedBoardId=null;hideBoardMenu();$$('.boardTool').forEach(b=>b.classList.toggle('active',b.dataset.boardTool===t));renderBoard()}
+$$('.boardTool').forEach(b=>b.onclick=()=>setBoardTool(b.dataset.boardTool));
+function createGeom(type,a,b,pts){
+  const cx=(a.x+b.x)/2,cy=(a.y+b.y)/2,base={id:uid(),type,x:cx,y:cy,rotation:0,scale:1,color:$("boardColor").value,width:+$("boardWidth").value,ownerId:currentUserId,ownerName:displayName(),note:""};
+  if(type==='line'){base.a={x:a.x-cx,y:a.y-cy};base.b={x:b.x-cx,y:b.y-cy}}
+  else if(type==='rect'){base.w=Math.abs(b.x-a.x);base.h=Math.abs(b.y-a.y)}
+  else if(type==='circle'){base.x=a.x;base.y=a.y;base.r=Math.hypot(b.x-a.x,b.y-a.y)}
+  else if(type==='free'||type==='erase'){const minx=Math.min(...pts.map(p=>p.x)),maxx=Math.max(...pts.map(p=>p.x)),miny=Math.min(...pts.map(p=>p.y)),maxy=Math.max(...pts.map(p=>p.y));base.x=(minx+maxx)/2;base.y=(miny+maxy)/2;base.points=pts.map(p=>({x:p.x-base.x,y:p.y-base.y}));if(type==='erase')base.width=Math.max(18,+$("boardWidth").value*4)}
+  return base
+}
+function boardTypeName(o){return o.type==='text'?(o.text||'文字'):o.type==='door'?'門':o.type==='stairsUp'?'樓梯↑':o.type==='stairsDown'?'樓梯↓':o.type==='friendly'?'友軍':o.type==='enemy'?'敵人':o.type==='line'?'直線':o.type==='rect'?'方形':o.type==='circle'?'圓形':o.type==='free'?'隨意畫':'物件'}
+function showBoardMenu(o,clientX,clientY){
+  selectedBoardId=o.id;renderBoard();const m=$("boardContextMenu");$("boardCtxTitle").textContent=`${boardTypeName(o)} · ${o.ownerName||'未知'}`;
+  const editable=canEditItem(o);$("boardCtxInfo").disabled=false;$("boardCtxDelete").disabled=!editable;$("boardCtxNote").disabled=!editable;$("boardCtxPhoto").disabled=!editable;$("boardCtxViewPhoto").disabled=!o.photoPath;m.classList.add('open');
+  const w=250,h=210;m.style.left=Math.max(8,Math.min(clientX+6,innerWidth-w-8))+'px';m.style.top=Math.max(8,Math.min(clientY+6,innerHeight-h-8))+'px'
+}
+function hideBoardMenu(){$("boardContextMenu").classList.remove('open')}
+function showBoardTooltip(o,clientX,clientY){
+  const t=$("boardObjectTooltip"),note=(o.note||"").trim();if(!note&&!o.photoPath){t.classList.remove("show");return}
+  t.innerHTML=`<b>${escapeHtml(boardTypeName(o))}</b>${note?`<br>${escapeHtml(note)}`:''}${o.photoPath?'<br>📷 已附照片':''}`;
+  t.style.left=Math.max(8,Math.min(clientX+10,innerWidth-315))+"px";t.style.top=Math.max(8,clientY-70)+"px";t.classList.add("show")
+}
+function hideBoardTooltip(){$("boardObjectTooltip").classList.remove("show")}
+$("boardCtxInfo").onclick=async()=>{
+  const o=boardItem(selectedBoardId);if(!o)return;
+  const rect=$("boardContextMenu").getBoundingClientRect();
+  hideBoardMenu();
+  await showBoardCompactInfo(o,rect.left,rect.bottom)
+};
+$("boardCtxNote").onclick=()=>{const o=boardItem(selectedBoardId);if(!o||!canEditItem(o))return;const v=prompt(`編輯「${boardTypeName(o)}」備註：`,o.note||"");if(v===null)return;pushBoardHistory();o.note=v.trim();hideBoardMenu();publish();renderBoard();toast("備註已更新")};
+let boardObjectPhotoTargetId=null;
+$("boardCtxPhoto").onclick=()=>{const o=boardItem(selectedBoardId);if(!o||!canEditItem(o))return;boardObjectPhotoTargetId=o.id;$("boardObjectPhotoInput").value='';$("boardObjectPhotoInput").click()};
+$("boardObjectPhotoInput").onchange=async e=>{
+  const file=e.target.files?.[0],o=boardItem(boardObjectPhotoTargetId);if(!file||!o)return;
+  try{const old=o.photoPath,res=await uploadObjectMedia(file,o.ownerId||currentUserId);pushBoardHistory();o.photoPath=res.path;publish();renderBoard();hideBoardMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片已加入：${fmtBytes(res.compressedBytes)}，總耗時 ${(res.totalMs/1000).toFixed(1)} 秒`)}
+  catch(err){toast("照片上傳失敗："+err.message)}finally{boardObjectPhotoTargetId=null;e.target.value=''}
+};
+$("boardCtxViewPhoto").onclick=async()=>{
+  const o=boardItem(selectedBoardId);if(!o?.photoPath)return;
+  hideBoardMenu();
+  await openObjectViewer({
+    title:`${boardTypeName(o)} · 大圖`,
+    note:o.note||"",
+    owner:o.ownerName||"",
+    photoPath:o.photoPath,
+    mode:"photo"
+  })
+};
+
+$("boardCtxDone").onclick=()=>{selectedBoardId=null;hideBoardMenu();renderBoard()};
+$("boardCtxDelete").onclick=async()=>{
+  const o=boardItem(selectedBoardId);if(!o||!canEditItem(o))return;pushBoardHistory();const photoPath=o.photoPath;
+  floor().objects=floor().objects.filter(x=>x.id!==o.id);selectedBoardId=null;hideBoardMenu();publish();renderBoard();if(photoPath)await removeObjectMedia(photoPath)
+};
+function toggleBoardSelection(o){
+  if(selectedBoardId===o.id){selectedBoardId=null;toast('已完成物件調整')}
+  else{selectedBoardId=o.id;toast('已選取：拖曳右下角 ↻ 可旋轉／縮放')}
+  renderBoard()
+}
+
+
+function boardPointerMid(){
+  const a=[...boardPointers.values()];
+  if(a.length<2)return null;
+  return {x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2}
+}
+function boardPointerDistance(){
+  const a=[...boardPointers.values()];
+  if(a.length<2)return 0;
+  return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)
+}
+function cancelBoardInteractionForPinch(){
+  if(boardGesture?.timer)clearTimeout(boardGesture.timer);
+  boardGesture=null;
+  boardTransformGesture=null;
+  boardDrawing=false;
+  tempPoints=[];
+}
+canvas.addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='touch')return;
+  boardPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(boardPointers.size===2){
+    cancelBoardInteractionForPinch();
+    boardPinching=true;
+    const mid=boardPointerMid();
+    boardPinch={startDist:Math.max(20,boardPointerDistance()),startZoom:boardUserZoom,mid,startScale:boardDisplayScale()};
+    e.preventDefault();e.stopImmediatePropagation()
+  }
+},{capture:true,passive:false});
+canvas.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='touch'||!boardPointers.has(e.pointerId))return;
+  boardPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(boardPinching&&boardPointers.size>=2&&boardPinch){
+    const dist=Math.max(20,boardPointerDistance());
+    const newZoom=Math.max(.75,Math.min(5,boardPinch.startZoom*(dist/boardPinch.startDist)));
+    const oldScale=boardDisplayScale();
+    boardUserZoom=newZoom;
+    updateBoardScale(true,boardPointerMid()||boardPinch.mid,oldScale);
+    e.preventDefault();e.stopImmediatePropagation()
+  }
+},{capture:true,passive:false});
+function endBoardPointerTracking(e){
+  if(e.pointerType!=='touch')return false;
+  boardPointers.delete(e.pointerId);
+  if(boardPinching&&boardPointers.size<2){
+    boardPinching=false;boardPinch=null;
+    setTimeout(()=>{boardPointers.clear()},0);
+    return true
+  }
+  return false
+}
+canvas.addEventListener('pointerup',e=>{
+  if(endBoardPointerTracking(e)){e.preventDefault();e.stopImmediatePropagation()}
+},{capture:true,passive:false});
+canvas.addEventListener('pointercancel',e=>{
+  if(endBoardPointerTracking(e)){e.preventDefault();e.stopImmediatePropagation()}
+},{capture:true,passive:false});
+
+canvas.addEventListener('selectstart',e=>e.preventDefault());
+canvas.addEventListener('dragstart',e=>e.preventDefault());
+let boardHoverInfoId=null,boardHoverInfoTimer=null;
+canvas.addEventListener('mousemove',e=>{
+  if(coarsePointer||boardTool!=='select'||boardGesture||boardTransformGesture||boardDrawing||boardPinching)return;
+  const o=findBoardAt(boardPoint(e));
+  if(!o){boardHoverInfoId=null;clearTimeout(boardHoverInfoTimer);hideBoardCompactInfo();return}
+  if(boardHoverInfoId!==o.id){
+    boardHoverInfoId=o.id;clearTimeout(boardHoverInfoTimer);
+    boardHoverInfoTimer=setTimeout(()=>showBoardCompactInfo(o,e.clientX,e.clientY),180)
+  }
+});
+canvas.addEventListener('mouseleave',()=>{boardHoverInfoId=null;clearTimeout(boardHoverInfoTimer);hideBoardCompactInfo()});
+canvas.addEventListener('contextmenu',e=>{e.preventDefault();const p=boardPoint(e),o=findBoardAt(p);if(o)showBoardMenu(o,e.clientX,e.clientY)});
+canvas.addEventListener('pointerdown',e=>{
+  if(boardPinching||boardPointers.size>=2)return;
+  const p=boardPoint(e);canvas.setPointerCapture?.(e.pointerId);
+  if(boardTool==='select'){
+    const sel=boardItem(selectedBoardId);
+    if(sel&&canEditItem(sel)){
+      const h=boardHandlePoint(sel);
+      if(Math.hypot(p.x-h.x,p.y-h.y)<=28){
+        pushBoardHistory();
+        const base=clone(sel),startVec={x:p.x-base.x,y:p.y-base.y},startAngle=Math.atan2(startVec.y,startVec.x),startDist=Math.max(12,Math.hypot(startVec.x,startVec.y));
+        boardTransformGesture={id:sel.id,base,startAngle,startDist};e.preventDefault();return
+      }
+    }
+    const o=findBoardAt(p);
+    if(!o){selectedBoardId=null;renderBoard();return}
+    boardGesture={id:o.id,start:p,base:clone(o),moved:false,longTriggered:false,historyPushed:false,
+      timer:setTimeout(()=>{if(boardGesture&&!boardGesture.moved){boardGesture.longTriggered=true;toggleBoardSelection(o)}},1000)};
+    e.preventDefault();return
+  }
+  if(boardTool==='text'){
+    if(!can('board'))return;const txt=$("boardTextInput").value.trim()||(prompt("輸入要放在戰術板上的文字：","")||"").trim();if(!txt)return;pushBoardHistory();
+    ctx.save();ctx.font='700 28px sans-serif';const w=Math.max(50,ctx.measureText(txt).width+20);ctx.restore();
+    floor().objects.push({id:uid(),type:'text',text:txt,textW:w,textH:42,fontSize:28,x:p.x,y:p.y,rotation:0,scale:1,color:$("boardColor").value,width:4,ownerId:currentUserId,ownerName:displayName(),note:""});publish();renderBoard();return
+  }
+  if(['stairsUp','stairsDown','door','friendly','enemy'].includes(boardTool)){
+    if(!can('board'))return;pushBoardHistory();
+    const o={id:uid(),type:boardTool,x:p.x,y:p.y,rotation:0,scale:1,color:$("boardColor").value,width:+$("boardWidth").value,ownerId:currentUserId,ownerName:displayName(),note:""};
+    floor().objects.push(o);publish();renderBoard();return
+  }
+  if(!can('board'))return;boardDrawing=true;boardStart=p;boardCurrent=p;tempPoints=[p];pushBoardHistory();e.preventDefault()
+});
+canvas.addEventListener('pointermove',e=>{
+  if(boardPinching)return;
+  const p=boardPoint(e);
+  if(boardTransformGesture){
+    const o=boardItem(boardTransformGesture.id);if(!o)return;
+    const base=boardTransformGesture.base,vec={x:p.x-base.x,y:p.y-base.y},ang=Math.atan2(vec.y,vec.x),dist=Math.max(8,Math.hypot(vec.x,vec.y));
+    o.rotation=(base.rotation||0)+(ang-boardTransformGesture.startAngle)*180/Math.PI;
+    o.scale=Math.max(.25,Math.min(5,(base.scale||1)*(dist/boardTransformGesture.startDist)));renderBoard();e.preventDefault();return
+  }
+  if(boardGesture){
+    if(boardGesture.longTriggered)return;
+    const d=Math.hypot(p.x-boardGesture.start.x,p.y-boardGesture.start.y);
+    if(d>5){
+      clearTimeout(boardGesture.timer);
+      const o=boardItem(boardGesture.id);if(!o||!canEditItem(o))return;
+      if(!boardGesture.historyPushed){pushBoardHistory();boardGesture.historyPushed=true}
+      boardGesture.moved=true;o.x=boardGesture.base.x+(p.x-boardGesture.start.x);o.y=boardGesture.base.y+(p.y-boardGesture.start.y);renderBoard();e.preventDefault()
+    }
+    return
+  }
+  if(!boardDrawing)return;
+  boardCurrent=p;
+  if(boardTool==='free'||boardTool==='eraser'){tempPoints.push(p);renderBoard(createGeom(boardTool==='eraser'?'erase':'free',boardStart,p,tempPoints))}
+  else renderBoard(createGeom(boardTool,boardStart,p,tempPoints));e.preventDefault()
+});
+function boardEnd(e){
+  if(boardPinching)return;
+  if(boardTransformGesture){boardTransformGesture=null;publish();renderBoard();return}
+  if(boardGesture){
+    clearTimeout(boardGesture.timer);const g=boardGesture,o=boardItem(g.id);boardGesture=null;
+    if(g.moved){
+      publish();renderBoard()
+    }else if(!g.longTriggered&&coarsePointer&&o){
+      const now=Date.now();
+      const sameSecondTap=boardTapMemory.id===o.id && now-boardTapMemory.at<=420;
+      if(sameSecondTap){
+        clearTimeout(boardTapMemory.timer);
+        boardTapMemory={id:null,at:0,timer:null};
+        hideBoardMenu();
+        showBoardCompactInfo(o,e.clientX,e.clientY);
+        setTimeout(()=>hideBoardCompactInfo(),3400)
+      }else{
+        clearTimeout(boardTapMemory.timer);
+        const x=e.clientX,y=e.clientY,id=o.id;
+        boardTapMemory={
+          id,
+          at:now,
+          timer:setTimeout(()=>{
+            if(boardTapMemory.id===id){
+              showBoardMenu(o,x,y);
+              boardTapMemory={id:null,at:0,timer:null}
+            }
+          },430)
+        }
+      }
+    }
+    return
+  }
+  if(!boardDrawing)return;boardDrawing=false;
+  const type=boardTool==='eraser'?'erase':boardTool,o=createGeom(type,boardStart,boardCurrent,tempPoints);
+  floor().objects.push(o);publish();renderBoard()
+}
+canvas.addEventListener('pointerup',boardEnd);canvas.addEventListener('pointercancel',boardEnd);
+$("boardUndoBtn").onclick=()=>{if(!boardHistory.length){toast('沒有可復原動作');return}floor().objects=boardHistory.pop();selectedBoardId=null;publish();renderBoard()};
+$("clearBoardBtn").onclick=()=>{if(!can('board')){toast('目前角色只能觀看');return}if(!confirm('清空目前頁面？'))return;pushBoardHistory();floor().objects=[];publish();renderBoard()};
+$("floorName").onchange=()=>{if(!can('board')){renderBoard();return}floor().name=$("floorName").value.trim()||`${state.board.active+1}F`;publish();renderBoard()};
+$("expandCanvasBtn").onclick=()=>{
+  if(!can('board')){toast('目前角色只能觀看');return}
+  state.board.canvasW=Math.min(5000,(+state.board.canvasW||2000)+500);
+  state.board.canvasH=Math.min(3500,(+state.board.canvasH||1400)+350);
+  ensureBoardCanvasSize();publish();renderBoard();updateBoardScale();
+  toast(`畫布已擴大為 ${state.board.canvasW} × ${state.board.canvasH}`)
+};
+$("prevFloorBtn").onclick=()=>{if(state.board.active>0){state.board.active--;boardHistory=[];selectedBoardId=null;renderBoard()}};
+$("nextFloorBtn").onclick=()=>{if(state.board.active<state.board.pages.length-1){state.board.active++;boardHistory=[];selectedBoardId=null;renderBoard()}};
+$("addFloorBtn").onclick=()=>{if(!can('board')){toast('目前角色只能觀看');return}state.board.pages.push({id:uid(),name:`${state.board.pages.length+1}F`,objects:[]});state.board.active=state.board.pages.length-1;publish();renderBoard()};
+$("deleteFloorBtn").onclick=()=>{if(!can('board')){toast('目前角色只能觀看');return}if(state.board.pages.length===1){toast('至少保留一頁');return}if(!confirm('刪除目前樓層？'))return;state.board.pages.splice(state.board.active,1);state.board.active=Math.max(0,state.board.active-1);publish();renderBoard()};
+$("boardToolsMobile").onclick=e=>{e.preventDefault();e.stopPropagation();$("boardSidebar").classList.toggle('open')};
+window.addEventListener('resize',()=>{if($('boardPage').classList.contains('active'))updateBoardScale()});
+document.addEventListener('pointerdown',e=>{
+  if(!e.target.closest('#mapContextMenu')&&!e.target.closest('.leaflet-marker-icon')&&!e.target.closest('.leaflet-interactive')&&!e.target.closest('.map-transform-handle'))hideMapMenu();
+  if(!e.target.closest('#boardContextMenu')&&e.target!==canvas)hideBoardMenu()
+});
+
+/* chat */
+let pendingChatPhoto=null,chatImageUrlCache=new Map();
+function renderMembers(){
+  if(!state)return;$("memberList").innerHTML='';
+  const vals=Object.values(presence);
+  if(!vals.length&&user())vals.push({name:displayName(),role:role()});
+  vals.forEach(p=>{const s=document.createElement('span');s.className='badge';s.textContent=p.name;$("memberList").appendChild(s)})
+}
+async function signedChatUrl(path){
+  if(!path)return null;const cached=chatImageUrlCache.get(path);
+  if(cached&&cached.expires>Date.now()+60000)return cached.url;
+  const {data,error}=await sb.storage.from("ktak-chat").createSignedUrl(path,3600);
+  if(error)throw error;chatImageUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+3500000});return data.signedUrl
+}
+function renderChat(){
+  $("chatLog").innerHTML='';
+  state.chat.forEach(m=>{
+    const d=document.createElement('div');d.className='chatMsg'+(m.senderId===currentUserId?' me':'');
+    const time=new Date(m.ts).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    const meta=document.createElement('div');meta.className='meta';meta.textContent=`${m.senderName} · ${time}`;d.appendChild(meta);
+    if(m.text){const txt=document.createElement('div');txt.className='chatText';txt.textContent=m.text;d.appendChild(txt)}
+    if(m.imagePath){
+      const img=document.createElement('img');img.className='chatPhoto';img.alt='聊天室照片';img.title='點一下開啟照片';
+      img.src='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="420" height="180"><rect width="100%" height="100%" fill="#111c22"/><text x="50%" y="50%" fill="#9fb2bd" font-family="sans-serif" font-size="16" text-anchor="middle">照片載入中…</text></svg>`);
+      signedChatUrl(m.imagePath).then(url=>{img.src=url;img.onclick=()=>window.open(url,'_blank')}).catch(()=>{img.alt='照片載入失敗'});
+      d.appendChild(img)
+    }
+    if(role()==='commander'||m.senderId===currentUserId){
+      const del=document.createElement('button');del.className='deleteChat';del.textContent='刪除';
+      del.onclick=async()=>{
+        if(!confirm('刪除這則訊息？'))return;
+        try{
+          if(m.imagePath){const {error:se}=await sb.storage.from("ktak-chat").remove([m.imagePath]);if(se)console.warn(se)}
+          const {error}=await sb.from("ktak_chat_messages").delete().eq("room_id",currentRoomUuid).eq("id",m.id);if(error)throw error;
+          state.chat=state.chat.filter(x=>x.id!==m.id);renderChat()
+        }catch(e){toast("刪除失敗："+e.message)}
+      };d.appendChild(del)
+    }
+    $("chatLog").appendChild(d)
+  });
+  $("chatLog").scrollTop=$("chatLog").scrollHeight;
+  const ok=can('chat');$("chatInput").disabled=!ok;$("chatSendBtn").disabled=!ok;$("chatPhotoBtn").disabled=!ok;
+  $("chatInput").placeholder=ok?'輸入訊息…':'觀察員只能觀看';renderMembers()
+}
+function clearChatPhoto(){
+  pendingChatPhoto=null;$("chatPhotoInput").value='';$("chatPhotoPreview").classList.add("hidden");$("chatPhotoPreviewImg").removeAttribute("src");$("chatPhotoName").textContent=''
+}
+$("chatPhotoBtn").onclick=()=>{if(!can('chat')){toast('觀察員只能觀看');return}$("chatPhotoInput").click()};
+$("chatPhotoClearBtn").onclick=clearChatPhoto;
+$("chatPhotoInput").onchange=e=>{
+  const f=e.target.files?.[0];if(!f)return;if(!f.type.startsWith("image/")){toast("請選擇圖片");return}
+  if(f.size>20*1024*1024){toast("原始照片請小於 20MB");clearChatPhoto();return}
+  pendingChatPhoto=f;$("chatPhotoName").textContent=f.name;
+  const u=URL.createObjectURL(f);$("chatPhotoPreviewImg").src=u;$("chatPhotoPreviewImg").onload=()=>URL.revokeObjectURL(u);
+  $("chatPhotoPreview").classList.remove("hidden")
+};
+
+async function sendChat(){
+  if(!can('chat')){toast('觀察員只能觀看');return}
+  const t=$("chatInput").value.trim(),photo=pendingChatPhoto;if(!t&&!photo)return;
+  $("chatSendBtn").disabled=true;$("chatPhotoBtn").disabled=true;
+  let imagePath=null;
+  try{
+    if(photo){
+      const blob=await compressChatPhoto(photo);
+      imagePath=`${currentRoomUuid}/${currentUserId}/${safeUuid()}.jpg`;
+      const {error:upErr}=await sb.storage.from("ktak-chat").upload(imagePath,blob,{contentType:"image/jpeg",cacheControl:"3600",upsert:false});
+      if(upErr)throw upErr
+    }
+    const {error}=await sb.from("ktak_chat_messages").insert({
+      room_id:currentRoomUuid,sender_id:currentUserId,sender_name:displayName(),text:t,image_path:imagePath
+    });
+    if(error)throw error;
+    $("chatInput").value='';clearChatPhoto()
+  }catch(e){
+    console.error(e);
+    if(imagePath)await sb.storage.from("ktak-chat").remove([imagePath]).catch(()=>{});
+    toast("傳送失敗："+e.message)
+  }finally{$("chatSendBtn").disabled=!can('chat');$("chatPhotoBtn").disabled=!can('chat')}
+}
+$("chatSendBtn").onclick=sendChat;$("chatInput").addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});
+
+/* permissions */
+async function loadAudit(){
+  if(role()!=="commander"||!currentRoomUuid)return;
+  const {data,error}=await sb.from("ktak_audit_log")
+    .select("action,actor_user_id,target_user_id,details,created_at")
+    .eq("room_id",currentRoomUuid).order("created_at",{ascending:false}).limit(30);
+  if(error){$("auditList").innerHTML='<div class="muted">稽核紀錄讀取失敗</div>';return}
+  $("auditList").innerHTML="";
+  (data||[]).forEach(a=>{
+    const row=document.createElement("div");row.className="auditRow";
+    const actor=state.users[a.actor_user_id]?.nick||a.actor_user_id?.slice(0,8)||"系統";
+    row.innerHTML=`<b>${escapeHtml(a.action)}</b><br>${escapeHtml(actor)} · ${new Date(a.created_at).toLocaleString()}${a.details?`<br><span class="muted">${escapeHtml(JSON.stringify(a.details))}</span>`:""}`;
+    $("auditList").appendChild(row)
+  });
+  if(!(data||[]).length)$("auditList").innerHTML='<div class="muted">尚無安全管理紀錄</div>'
+}
+
+function renderPermissions(){
+  if(!can('permission')){
+    $("permissionTab").classList.add('hidden');$("roomAdminCard").classList.add('hidden');$("securityAdminCard").classList.add('hidden');return
+  }
+  $("permissionTab").classList.remove('hidden');$("permissionList").innerHTML='';
+  $("securityAdminCard").classList.remove('hidden');
+  $("roomAdminCard").classList.toggle('hidden',currentUserId!==state.meta.creatorId);
+  $("roomExpiryInfo").textContent=state.meta.expiresAt?`房間到期時間：${new Date(state.meta.expiresAt).toLocaleString()}`:"房間到期時間：—";
+
+  Object.values(state.users).forEach(u=>{
+    const row=document.createElement('div');row.className='permissionRow';
+    const info=document.createElement('div');info.className='permissionUser';
+    const pending=!u.approved;
+    info.innerHTML=`<b>${escapeHtml(u.nick)}</b>${pending?'<span class="pendingBadge">待核准</span>':'<span class="approvedBadge">已核准</span>'}<small>ID ${u.id.slice(0,8)} · ${u.id===state.meta.creatorId?'目前建立者':pending?`申請 ${roles[u.requestedRole]||u.requestedRole}`:roles[u.role]}</small>`;
+
+    const sel=document.createElement('select');
+    Object.entries(roles).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v;o.selected=(pending?u.requestedRole:u.role)===k;sel.appendChild(o)});
+
+    const actions=document.createElement('div');actions.className='permissionActions';
+
+    if(pending){
+      const approve=document.createElement('button');approve.className='primary';approve.textContent='核准';
+      approve.onclick=async()=>{
+        approve.disabled=true;
+        try{
+          const {error}=await sb.rpc("ktak_set_member_role",{p_room_id:currentRoomUuid,p_target_user:u.id,p_role:sel.value});
+          if(error)throw error;await fetchMembers();renderAll();toast("已核准加入")
+        }catch(e){toast("核准失敗："+e.message)}
+        finally{approve.disabled=false}
+      };
+      actions.appendChild(approve)
+    }else{
+      sel.onchange=async()=>{
+        const before=u.role;sel.disabled=true;
+        try{
+          const {error}=await sb.rpc("ktak_set_member_role",{p_room_id:currentRoomUuid,p_target_user:u.id,p_role:sel.value});
+          if(error)throw error;await fetchMembers();renderAll()
+        }catch(e){sel.value=before;toast(String(e.message).includes("LAST_COMMANDER")?"房間至少保留一名指揮官":"權限更新失敗："+e.message)}
+        finally{sel.disabled=false}
+      }
+    }
+
+    if(u.id!==state.meta.creatorId){
+      const remove=document.createElement('button');remove.className='danger';remove.textContent=pending?'拒絕／移除':'移除成員';
+      remove.onclick=async()=>{
+        if(!confirm(`${pending?'拒絕':'移除'} ${u.nick} 的房間存取權？`))return;
+        remove.disabled=true;
+        try{
+          const {error}=await sb.rpc("ktak_remove_member",{p_room_id:currentRoomUuid,p_target_user:u.id});
+          if(error)throw error;await fetchMembers();renderAll();toast("成員已移除")
+        }catch(e){toast("移除失敗："+e.message)}
+        finally{remove.disabled=false}
+      };
+      actions.appendChild(remove)
+    }
+
+    if(!pending){
+      const clear=document.createElement('button');clear.className='danger';clear.textContent='清除內容';
+      clear.onclick=async()=>{
+        if(!confirm(`清除 ${u.nick} 建立的地圖、戰術板與聊天內容？`))return;
+        clear.disabled=true;
+        try{
+          const [chatPhotoRes,mapPhotoRes,boardPhotoRes]=await Promise.all([
+            sb.from("ktak_chat_messages").select("image_path").eq("room_id",currentRoomUuid).eq("sender_id",u.id).not("image_path","is",null),
+            sb.from("ktak_map_items").select("data").eq("room_id",currentRoomUuid).eq("owner_id",u.id),
+            sb.from("ktak_board_objects").select("data").eq("room_id",currentRoomUuid).eq("owner_id",u.id)
+          ]);
+          if(chatPhotoRes.error)throw chatPhotoRes.error;if(mapPhotoRes.error)throw mapPhotoRes.error;if(boardPhotoRes.error)throw boardPhotoRes.error;
+          const chatPaths=(chatPhotoRes.data||[]).map(x=>x.image_path).filter(Boolean);
+          const mediaPaths=[...(mapPhotoRes.data||[]),...(boardPhotoRes.data||[])].map(x=>x.data?.photoPath).filter(Boolean);
+          if(chatPaths.length)await sb.storage.from("ktak-chat").remove(chatPaths);
+          if(mediaPaths.length)await sb.storage.from("ktak-object-media").remove(mediaPaths);
+          const results=await Promise.all([
+            sb.from("ktak_map_items").delete().eq("room_id",currentRoomUuid).eq("owner_id",u.id),
+            sb.from("ktak_board_objects").delete().eq("room_id",currentRoomUuid).eq("owner_id",u.id),
+            sb.from("ktak_chat_messages").delete().eq("room_id",currentRoomUuid).eq("sender_id",u.id)
+          ]);
+          const bad=results.find(x=>x.error);if(bad)throw bad.error;
+          await Promise.all([fetchMap(),fetchBoard(),fetchChat()]);renderAll();toast("已清除該成員內容")
+        }catch(e){toast("清除失敗："+e.message)}
+        finally{clear.disabled=false}
+      };
+      actions.appendChild(clear)
+    }
+
+    row.append(info,sel,actions);$("permissionList").appendChild(row)
+  });
+  loadAudit()
+}
+
+$("changeRoomPasswordBtn").onclick=async()=>{
+  const p=$("newRoomPassword").value;
+  if(p.length<8||p.length>72){toast("新密碼需 8～72 碼");return}
+  if(!confirm("確定更換房間密碼？尚未加入的成員之後必須使用新密碼。"))return;
+  const {error}=await sb.rpc("ktak_change_room_password",{p_room_id:currentRoomUuid,p_new_password:p});
+  if(error){toast("密碼更新失敗："+error.message);return}
+  $("newRoomPassword").value="";toast("房間密碼已更新");loadAudit()
+};
+
+$("rotateRecoveryBtn").onclick=async()=>{
+  if(currentUserId!==state.meta.creatorId)return;
+  if(!confirm("產生新恢復金鑰後，舊金鑰會立即失效。確定繼續？"))return;
+  const {data,error}=await sb.rpc("ktak_rotate_recovery_code",{p_room_id:currentRoomUuid});
+  if(error){toast("恢復金鑰更新失敗："+error.message);return}
+  const row=Array.isArray(data)?data[0]:data;
+  if(row?.recovery_code)showRecoveryCode(row.recovery_code,"新的指揮官恢復金鑰");
+  loadAudit()
+};
+
+$("deleteRoomBtn").onclick=async()=>{
+  if(currentUserId!==state?.meta?.creatorId){toast("只有房間建立者可以刪除整個房間");return}
+  if(!confirm(`確定要刪除房間 ${roomId}？\n\n這會永久刪除任務簡報、地圖、戰術板、聊天室與照片，且無法復原。`))return;
+  const verify=(prompt(`最後確認：請輸入房號 ${roomId}`)||"").trim().toUpperCase();
+  if(verify!==roomId){toast("房號不一致，已取消刪除");return}
+  const btn=$("deleteRoomBtn");btn.disabled=true;
+  try{
+    const [chatRes,mapRes,boardRes]=await Promise.all([
+      sb.from("ktak_chat_messages").select("image_path").eq("room_id",currentRoomUuid).not("image_path","is",null),
+      sb.from("ktak_map_items").select("data").eq("room_id",currentRoomUuid),
+      sb.from("ktak_board_objects").select("data").eq("room_id",currentRoomUuid)
+    ]);
+    if(chatRes.error)throw chatRes.error;if(mapRes.error)throw mapRes.error;if(boardRes.error)throw boardRes.error;
+    const chatPaths=(chatRes.data||[]).map(x=>x.image_path).filter(Boolean);
+    const mediaPaths=[...(mapRes.data||[]),...(boardRes.data||[])].map(x=>x.data?.photoPath).filter(Boolean);
+    if(chatPaths.length){const {error:se}=await sb.storage.from("ktak-chat").remove(chatPaths);if(se)throw se}
+    if(mediaPaths.length){const {error:me}=await sb.storage.from("ktak-object-media").remove(mediaPaths);if(me)throw me}
+    const {error}=await sb.rpc("ktak_delete_room",{p_room_id:currentRoomUuid});
+    if(error)throw error;
+    try{if(roomChannel)await sb.removeChannel(roomChannel)}catch{}
+    sessionStorage.removeItem("ktak.v16.roomUuid");
+    sessionStorage.removeItem("ktak.v16.room");
+    alert(`房間 ${roomId} 已刪除，這個房號現在可以重新使用。`);
+    location.reload()
+  }catch(e){
+    console.error(e);
+    toast("刪除房間失敗："+(e.message||"未知錯誤"));
+    btn.disabled=false
+  }
+};
+
+function applyRoleUI(){
+  $("permissionTab").classList.toggle('hidden',!can('permission'));
+  $("briefEditBtn").classList.toggle('hidden',!can('brief')||briefEditing);
+  if(!can('map'))$$('.mapTool:not([data-tool="pan"]),.mapIconTool,#customIconBtn,#photoPlaceBtn,#photoInput').forEach(x=>x.classList.add('disabled'));
+  else $$('.mapTool,.mapIconTool,#customIconBtn,#photoPlaceBtn,#photoInput').forEach(x=>x.classList.remove('disabled'));
+
+  if(!can('board'))$$('.boardTool:not([data-board-tool="select"])').forEach(x=>x.classList.add('disabled'));
+  else $$('.boardTool').forEach(x=>x.classList.remove('disabled'));
+
+  const commander=role()==="commander";
+  ['addFloorBtn','deleteFloorBtn','clearBoardBtn','expandCanvasBtn','floorName'].forEach(id=>{
+    const el=$(id);if(!el)return;
+    el.classList.toggle('disabled',!commander);
+    if('disabled' in el)el.disabled=!commander
+  })
+}
+function renderAll(){if(!state)return;$("headerRoom").textContent=roomId;$("headerNick").textContent=displayName();$("headerRole").textContent=roles[role()];fillBrief();setBriefEdit(false);renderMapItems();if(!state.board.pages.length)state.board.pages=[{id:uid(),name:'1F',objects:[]}];state.board.active=Math.min(state.board.active,state.board.pages.length-1);renderBoard();renderChat();renderPermissions();applyRoleUI();renderMembers()}
+
+/* restore online room session if possible */
+(async()=>{
+  const backendOk=await initBackend();
+  if(!backendOk){showEntry('home');return}
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    const savedRoom=sessionStorage.getItem("ktak.v16.roomUuid");
+    if(session?.user&&savedRoom){
+      currentUserId=session.user.id;
+      const {data:member,error}=await sb.from("ktak_room_members").select("user_id,approved").eq("room_id",savedRoom).eq("user_id",currentUserId).maybeSingle();
+      if(!error&&member){
+        if(member.approved){await loadOnlineRoom(savedRoom);await enterRoom();return}
+        const savedCode=sessionStorage.getItem("ktak.v16.room")||"房間";
+        await waitForApproval(savedRoom,savedCode,"目前使用者");return
+      }
+    }
+  }catch(e){console.warn("restore",e)}
+  showEntry('home')
+})();
+
+})();
+</script>
+</body>
+</html>
