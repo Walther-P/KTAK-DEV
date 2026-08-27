@@ -13,7 +13,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<title>KTAK Mission Room V2.0 Security</title>
+<title>KTAK Mission Room V2.1 DEV</title>
 <style>
 :root{--bg:#0a1014;--panel:#111a20;--panel2:#17232b;--line:#30424d;--text:#eff6f8;--muted:#98aab4;--blue:#45aff2;--green:#55d572;--yellow:#ffc650;--red:#f25c5c;--orange:#ff944c;--safe:env(safe-area-inset-bottom,0px);--safeTop:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -439,12 +439,26 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 .auditRow{padding:8px;border:1px solid #2e444f;border-radius:9px;background:#0b151a;font-size:10px;line-height:1.45}
 .auditRow b{font-size:11px}
 
+
+/* V2.1 DEV Google basemap stack */
+.mapStack{position:relative;height:100%;width:100%;overflow:hidden;background:#0e1519}
+#googleMapBase{position:absolute;inset:0;z-index:1;background:#0e1519;pointer-events:none}
+#map{position:absolute;inset:0;z-index:2;background:transparent!important}
+#map.googleBaseActive .leaflet-tile-pane{opacity:0!important}
+#map.googleBaseActive .leaflet-control-attribution{display:none!important}
+.mapProviderBadge{
+  position:absolute;left:10px;bottom:10px;z-index:900;
+  padding:5px 8px;border-radius:8px;background:rgba(10,17,22,.88);
+  border:1px solid #466170;color:#dce9ef;font-size:10px;
+  pointer-events:none
+}
+
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.0 · Security Production</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV · Google Maps 底圖測試版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -597,7 +611,8 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 
 <section id="mapPage" class="page"><div class="mapLayout">
 <aside class="mapSidebar" id="mapSidebar">
-  <div class="card"><h3>地址搜尋</h3><div class="searchRow"><input id="mapSearch" placeholder="例如：台南市永康區中華路34號"><button id="mapSearchBtn">搜尋</button></div><div class="row" style="margin-top:7px"><button id="googleAddressBtn" style="flex:1">G Google 搜尋</button><button id="streetViewBtn" style="flex:1">👁 Google 街景</button><button id="mapLayerBtn" style="flex:1">🛰 衛星</button></div><div class="muted" id="searchStatus" style="margin-top:6px">門牌會先拆解為台灣地址格式並做多組搜尋；若 OSM 缺門牌資料，可直接用 Google 搜尋。</div></div>
+  <div class="card"><h3>地址搜尋</h3><div class="searchRow"><input id="mapSearch" placeholder="例如：台南市永康區中華路34號"><button id="mapSearchBtn">搜尋</button></div><div class="row" style="margin-top:7px"><button id="googleAddressBtn" style="flex:1">G Google 搜尋</button><button id="streetViewBtn" style="flex:1">👁 Google 街景</button><button id="mapLayerBtn" style="flex:1">🛰 衛星</button></div>
+<div class="row" style="margin-top:7px"><button id="mapProviderBtn" style="flex:1">G Google 底圖</button></div><div class="muted" id="searchStatus" style="margin-top:6px">門牌會先拆解為台灣地址格式並做多組搜尋；若 OSM 缺門牌資料，可直接用 Google 搜尋。</div></div>
   <div class="card"><h3>地圖操作</h3><div class="toolGrid"><button class="mapTool active" data-tool="pan">✋ 拖曳</button><button class="mapTool" data-tool="line">╱ 直線</button><button class="mapTool" data-tool="rect">□ 方形</button><button class="mapTool" data-tool="circle">○ 圓形</button><button class="mapTool" data-tool="free">✎ 隨意畫筆</button><button id="mapUndoBtn">↶ 復原</button></div><div class="label" style="margin-top:9px">繪圖顏色</div><div class="palette" id="mapPalette"></div><div id="mapHint">目前：拖曳地圖。</div></div>
   <div class="card"><h3>快速圖樣</h3><div class="iconGrid" id="quickIcons"></div><div class="muted" style="margin-top:7px">拖曳可移動；按住 1 秒會顯示調整框與 ↻ 把手。電腦右鍵、手機輕觸可開啟刪除／方向選單。</div></div>
   <div class="card">
@@ -615,7 +630,14 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
   </div>
   <div class="card"><h3>照片標示</h3><input type="file" id="photoInput" accept="image/*"><input id="photoLabel" placeholder="照片標示，例如：後門、二樓窗戶" style="margin-top:6px"><button id="photoPlaceBtn" style="width:100%;margin-top:6px">📷 選取後點地圖放置</button><div class="muted" style="margin-top:6px">照片與其他地圖物件使用相同操作：拖曳、長按選取、↻ 把手旋轉縮放、右鍵／輕觸刪除或設定方向。</div></div>
 </aside>
-<div style="position:relative;min-width:0;z-index:1"><div class="mapTopMobile"><button id="mapToolsMobile">☰ 工具</button></div><div id="map"></div></div>
+<div style="position:relative;min-width:0;z-index:1">
+  <div class="mapTopMobile"><button id="mapToolsMobile">☰ 工具</button></div>
+  <div class="mapStack">
+    <div id="googleMapBase"></div>
+    <div id="map"></div>
+    <div id="mapProviderBadge" class="mapProviderBadge">底圖：初始化中</div>
+  </div>
+</div>
 </div></section>
 
 <section id="boardPage" class="page"><div class="boardLayout">
@@ -763,6 +785,7 @@ let refreshTimers={};
 const cfg=window.KTAK_CONFIG||{};
 const configReady=!!(cfg.SUPABASE_URL&&cfg.SUPABASE_PUBLISHABLE_KEY&&!String(cfg.SUPABASE_URL).includes("YOUR_")&&!String(cfg.SUPABASE_PUBLISHABLE_KEY).includes("YOUR_"));
 const turnstileConfigured=!!(cfg.TURNSTILE_SITE_KEY&&!String(cfg.TURNSTILE_SITE_KEY).includes("YOUR_"));
+const googleMapsConfigured=!!(cfg.GOOGLE_MAPS_API_KEY&&!String(cfg.GOOGLE_MAPS_API_KEY).includes("YOUR_"));
 let turnstileToken="",turnstileWidgetId=null,pendingPoll=null;
 
 function blankState(room,creatorId=""){return {schema:4,meta:{room,roomUuid:"",creatorId,createdAt:now(),expiresAt:""},users:{},brief:defaultBrief(),map:{items:[]},board:defaultBoard(),chat:[],updatedAt:now()}}
@@ -1109,7 +1132,7 @@ $("recoverRoomBtn").onclick=async()=>{
 $("leaveBtn").onclick=async()=>{try{if(roomChannel&&sb)await sb.removeChannel(roomChannel)}catch{}sessionStorage.removeItem("ktak.v16.roomUuid");sessionStorage.removeItem("ktak.v16.room");location.reload()};
 
 /* navigation */
-$$('.navBtn').forEach(b=>b.onclick=()=>{if(b.id==="permissionTab"&&!can("permission"))return;$$('.navBtn').forEach(x=>x.classList.toggle('active',x===b));$$('.page').forEach(p=>p.classList.toggle('active',p.id===b.dataset.page));if(b.dataset.page==='mapPage')setTimeout(()=>map.invalidateSize(),60);if(b.dataset.page==='boardPage')setTimeout(renderBoard,30);if(b.dataset.page==='chatPage')renderChat();if(b.dataset.page==='permissionPage')renderPermissions()});
+$$('.navBtn').forEach(b=>b.onclick=()=>{if(b.id==="permissionTab"&&!can("permission"))return;$$('.navBtn').forEach(x=>x.classList.toggle('active',x===b));$$('.page').forEach(p=>p.classList.toggle('active',p.id===b.dataset.page));if(b.dataset.page==='mapPage')setTimeout(()=>{map.invalidateSize();syncGoogleMap()},60);if(b.dataset.page==='boardPage')setTimeout(renderBoard,30);if(b.dataset.page==='chatPage')renderChat();if(b.dataset.page==='permissionPage')renderPermissions()});
 
 /* brief */
 const briefIds=["missionTime","caseType","situationSummary","riskLevel","suspectCount","suspectBackground","executionMode","executionOther","executionLocation","executionWeather","civilianCount","teamComposition","missionNotes"];
@@ -1264,7 +1287,7 @@ $("briefSaveBtn").onclick=()=>{
 };
 
 /* export import */
-$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.0",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
+$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev1",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{
     const x=JSON.parse(await f.text()),incoming=x.state||x;
@@ -1519,8 +1542,113 @@ document.addEventListener("pointerdown",e=>{
 const map=L.map('map',{zoomControl:true,preferCanvas:false}).setView([23.003,120.215],15);
 const road=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
 const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'});
+
 let satelliteOn=false;
-$("mapLayerBtn").onclick=()=>{satelliteOn=!satelliteOn;if(satelliteOn){map.removeLayer(road);sat.addTo(map);$("mapLayerBtn").textContent='🗺 道路圖'}else{map.removeLayer(sat);road.addTo(map);$("mapLayerBtn").textContent='🛰 衛星'}};
+let mapProvider='osm';
+let googleMap=null;
+let googleMapsReady=false;
+let googleMapsLoadPromise=null;
+
+function setProviderBadge(text){$("mapProviderBadge").textContent=text}
+
+function syncGoogleMap(){
+  if(!googleMapsReady||!googleMap||mapProvider!=='google')return;
+  const c=map.getCenter();
+  googleMap.setCenter({lat:c.lat,lng:c.lng});
+  googleMap.setZoom(map.getZoom());
+}
+
+function applyBasemapState(){
+  const googleActive=mapProvider==='google'&&googleMapsReady;
+  $("map").classList.toggle("googleBaseActive",googleActive);
+
+  if(googleActive){
+    if(map.hasLayer(road))map.removeLayer(road);
+    if(map.hasLayer(sat))map.removeLayer(sat);
+    googleMap.setMapTypeId(satelliteOn?'satellite':'roadmap');
+    $("mapProviderBtn").textContent='🆓 切換 OSM';
+    $("mapLayerBtn").textContent=satelliteOn?'🗺 道路圖':'🛰 衛星';
+    setProviderBadge('底圖：Google Maps');
+    syncGoogleMap()
+  }else{
+    if(satelliteOn){
+      if(map.hasLayer(road))map.removeLayer(road);
+      if(!map.hasLayer(sat))sat.addTo(map)
+    }else{
+      if(map.hasLayer(sat))map.removeLayer(sat);
+      if(!map.hasLayer(road))road.addTo(map)
+    }
+    $("mapProviderBtn").textContent=googleMapsReady?'G 切換 Google':'G Google 不可用';
+    $("mapLayerBtn").textContent=satelliteOn?'🗺 道路圖':'🛰 衛星';
+    setProviderBadge(googleMapsConfigured&&!googleMapsReady?'底圖：OSM（Google 載入失敗）':'底圖：OpenStreetMap')
+  }
+}
+
+function loadGoogleMaps(){
+  if(googleMapsLoadPromise)return googleMapsLoadPromise;
+  googleMapsLoadPromise=new Promise((resolve,reject)=>{
+    if(!googleMapsConfigured){reject(new Error('GOOGLE_MAPS_API_KEY 未設定'));return}
+    if(window.google?.maps){resolve(window.google.maps);return}
+    const callback='ktakGoogleMapsReady_'+Math.random().toString(36).slice(2);
+    window[callback]=()=>{
+      try{delete window[callback]}catch{}
+      resolve(window.google.maps)
+    };
+    const s=document.createElement('script');
+    s.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(cfg.GOOGLE_MAPS_API_KEY)}&callback=${callback}&v=weekly&language=zh-TW&region=TW`;
+    s.async=true;s.defer=true;
+    s.onerror=()=>{try{delete window[callback]}catch{};reject(new Error('Google Maps JavaScript API 載入失敗'))};
+    document.head.appendChild(s)
+  });
+  return googleMapsLoadPromise
+}
+
+async function initGoogleBasemap(){
+  if(!googleMapsConfigured){
+    mapProvider='osm';applyBasemapState();return
+  }
+  setProviderBadge('底圖：正在載入 Google Maps…');
+  try{
+    const maps=await loadGoogleMaps();
+    const c=map.getCenter();
+    googleMap=new maps.Map($("googleMapBase"),{
+      center:{lat:c.lat,lng:c.lng},
+      zoom:map.getZoom(),
+      mapTypeId:satelliteOn?'satellite':'roadmap',
+      disableDefaultUI:true,
+      clickableIcons:false,
+      keyboardShortcuts:false,
+      gestureHandling:'none',
+      backgroundColor:'#0e1519'
+    });
+    googleMapsReady=true;
+    mapProvider='google';
+    applyBasemapState()
+  }catch(err){
+    console.warn('Google Maps fallback to OSM',err);
+    googleMapsReady=false;mapProvider='osm';applyBasemapState();
+    toast('Google Maps 無法載入，已自動切回 OSM')
+  }
+}
+
+$("mapProviderBtn").onclick=async()=>{
+  if(mapProvider==='google'){
+    mapProvider='osm';applyBasemapState();return
+  }
+  if(!googleMapsReady){
+    try{await initGoogleBasemap()}catch{}
+    return
+  }
+  mapProvider='google';applyBasemapState()
+};
+
+$("mapLayerBtn").onclick=()=>{
+  satelliteOn=!satelliteOn;
+  applyBasemapState()
+};
+
+map.on('move zoom',syncGoogleMap);
+setTimeout(initGoogleBasemap,100);
 
 const mapLayer=L.layerGroup().addTo(map);
 const fanLayer=L.layerGroup().addTo(map);

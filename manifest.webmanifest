@@ -1,7 +1,7 @@
 {
-  "name": "KTAK Mission Room V2.0 Security",
-  "short_name": "KTAK V2.0",
-  "start_url": "./?v=2.0-security",
+  "name": "KTAK Mission Room V2.1 DEV",
+  "short_name": "KTAK V2.1 DEV",
+  "start_url": "./?v=2.1-dev1",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0a1014",
