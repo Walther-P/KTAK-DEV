@@ -542,7 +542,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV5.1 · 行動操作修正版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-A · 房間生命週期版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -762,6 +762,16 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 <div class="card"><h2>成員核准與權限</h2><div id="permissionList"></div></div>
 <div id="securityAdminCard" class="card hidden"><h2>安全管理</h2>
   <div id="roomExpiryInfo" class="valueBox"></div>
+  <div class="label" style="margin-top:10px">延長房間保存期限</div>
+  <div class="row">
+    <select id="extendRoomDays" style="flex:1">
+      <option value="1">再延長 1 天</option>
+      <option value="7" selected>再延長 7 天</option>
+      <option value="30">再延長 30 天</option>
+    </select>
+    <button id="extendRoomBtn">延長保存</button>
+  </div>
+  <div class="muted" style="margin-top:6px">從目前到期時間往後加；為避免誤按一次延太久，系統不允許把到期日一次堆到超過未來 90 天。</div>
   <div class="label" style="margin-top:10px">更換房間密碼</div>
   <div class="row"><input id="newRoomPassword" type="password" minlength="8" maxlength="72" placeholder="新密碼（至少 8 碼）"><button id="changeRoomPasswordBtn">更新密碼</button></div>
 </div>
@@ -908,6 +918,7 @@ let refreshTimers={};
 const cfg=window.KTAK_CONFIG||{};
 const configReady=!!(cfg.SUPABASE_URL&&cfg.SUPABASE_PUBLISHABLE_KEY&&!String(cfg.SUPABASE_URL).includes("YOUR_")&&!String(cfg.SUPABASE_PUBLISHABLE_KEY).includes("YOUR_"));
 const turnstileConfigured=!!(cfg.TURNSTILE_SITE_KEY&&!String(cfg.TURNSTILE_SITE_KEY).includes("YOUR_"));
+purgeLegacyRoomCaches();
 const googleMapsConfigured=!!(cfg.GOOGLE_MAPS_API_KEY&&!String(cfg.GOOGLE_MAPS_API_KEY).includes("YOUR_"));
 let turnstileToken="",turnstileWidgetId=null,pendingPoll=null;
 
@@ -929,7 +940,10 @@ function can(action){
 function canEditItem(item){return role()==="commander"||item.ownerId===currentUserId}
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").classList.remove("show"),2200)}
 function storageKey(room=roomId){return `ktak.v16.cache.${room}`}
-function save(){if(!state)return;state.updatedAt=now();try{localStorage.setItem(storageKey(),JSON.stringify(state))}catch{}}
+function purgeLegacyRoomCaches(){
+  try{Object.keys(localStorage).filter(k=>k.startsWith("ktak.v16.cache.")).forEach(k=>localStorage.removeItem(k))}catch{}
+}
+function save(){if(!state)return;state.updatedAt=now()}
 function jsonSame(a,b){return JSON.stringify(a)===JSON.stringify(b)}
 function validUuid(s){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s||""))}
 function safeUuid(){if(crypto.randomUUID)return crypto.randomUUID();return "10000000-1000-4000-8000-100000000000".replace(/[018]/g,c=>(+c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>+c/4).toString(16))}
@@ -1032,7 +1046,7 @@ async function fetchChat(){
 }
 async function loadOnlineRoom(roomUuid){
   currentRoomUuid=roomUuid;
-  const {data:room,error}=await sb.from("ktak_rooms").select("id,code,creator_user_id,created_at").eq("id",roomUuid).single();
+  const {data:room,error}=await sb.from("ktak_rooms").select("id,code,creator_user_id,created_at,expires_at").eq("id",roomUuid).single();
   if(error)throw error;
   roomId=room.code;
   state=blankState(room.code,room.creator_user_id);
@@ -1440,7 +1454,7 @@ $("briefSaveBtn").onclick=()=>{
 };
 
 /* export import */
-$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev5.1",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
+$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev6a",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{
     const x=JSON.parse(await f.text()),incoming=x.state||x;
@@ -3172,6 +3186,18 @@ async function loadAudit(){
   if(!(data||[]).length)$("auditList").innerHTML='<div class="muted">尚無安全管理紀錄</div>'
 }
 
+
+function expiryStatusText(iso){
+  if(!iso)return "房間到期時間：—";
+  const t=new Date(iso),ms=t.getTime()-Date.now();
+  if(!Number.isFinite(t.getTime()))return "房間到期時間：—";
+  const when=t.toLocaleString();
+  if(ms<=0)return `房間已到期：${when}`;
+  const hours=Math.ceil(ms/3600000);
+  const left=hours<48?`約剩 ${hours} 小時`:`約剩 ${Math.ceil(hours/24)} 天`;
+  return `房間到期時間：${when}（${left}）`
+}
+
 function renderPermissions(){
   if(!can('permission')){
     $("permissionTab").classList.add('hidden');$("roomAdminCard").classList.add('hidden');$("securityAdminCard").classList.add('hidden');return
@@ -3179,7 +3205,7 @@ function renderPermissions(){
   $("permissionTab").classList.remove('hidden');$("permissionList").innerHTML='';
   $("securityAdminCard").classList.remove('hidden');
   $("roomAdminCard").classList.toggle('hidden',currentUserId!==state.meta.creatorId);
-  $("roomExpiryInfo").textContent=state.meta.expiresAt?`房間到期時間：${new Date(state.meta.expiresAt).toLocaleString()}`:"房間到期時間：—";
+  $("roomExpiryInfo").textContent=expiryStatusText(state.meta.expiresAt);
 
   Object.values(state.users).forEach(u=>{
     const row=document.createElement('div');row.className='permissionRow';
@@ -3262,6 +3288,27 @@ function renderPermissions(){
   loadAudit()
 }
 
+
+$("extendRoomBtn").onclick=async()=>{
+  if(role()!=="commander"){toast("只有指揮官可以延長房間");return}
+  const days=Number($("extendRoomDays").value);
+  if(![1,7,30].includes(days))return;
+  const btn=$("extendRoomBtn");btn.disabled=true;
+  try{
+    const {data,error}=await sb.rpc("ktak_extend_room",{p_room_id:currentRoomUuid,p_days:days});
+    if(error)throw error;
+    const row=Array.isArray(data)?data[0]:data;
+    if(!row?.expires_at)throw new Error("沒有取得新的到期時間");
+    state.meta.expiresAt=row.expires_at;save();renderPermissions();loadAudit();
+    toast(`房間已延長 ${days} 天`)
+  }catch(e){
+    const msg=String(e.message||"");
+    if(msg.includes("RETENTION_TOO_FAR"))toast("目前到期日已太遠，之後再延長即可");
+    else if(msg.includes("ROOM_EXPIRED"))toast("房間已到期，無法再延長");
+    else toast("延長失敗："+msg)
+  }finally{btn.disabled=false}
+};
+
 $("changeRoomPasswordBtn").onclick=async()=>{
   const p=$("newRoomPassword").value;
   if(p.length<8||p.length>72){toast("新密碼需 8～72 碼");return}
@@ -3322,6 +3369,8 @@ function applyRoleUI(){
   else $$('.boardTool').forEach(x=>x.classList.remove('disabled'));
 
   const commander=role()==="commander";
+  const extendBtn=$("extendRoomBtn");if(extendBtn)extendBtn.disabled=!commander;
+  const extendDays=$("extendRoomDays");if(extendDays)extendDays.disabled=!commander;
   ['addFloorBtn','deleteFloorBtn','clearBoardBtn','expandCanvasBtn','floorName'].forEach(id=>{
     const el=$(id);if(!el)return;
     el.classList.toggle('disabled',!commander);
