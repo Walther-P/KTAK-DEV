@@ -1,4 +1,4 @@
-const VERSION="ktak-v21-dev2-retirement";
+const VERSION="ktak-v21-dev3-retirement";
 self.addEventListener("install",e=>self.skipWaiting());
 self.addEventListener("activate",e=>{
   e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("ktak-")).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))

@@ -1,14 +1,18 @@
-# KTAK V2.1 DEV2 — Google Maps 成本保護
+# KTAK V2.1 DEV3 — 戰術操作優化第一批
 
-本版在 V2.1 DEV1 基礎上新增：
+新增：
+- 任務簡報快速裝備：手槍。
+- 任務地圖：戰術圖樣改為分類下拉選單。
+- 任務地圖：加入手槍、破門點、集結點、主要目標等圖樣。
+- 任務地圖：自訂方形／三角形／圓形彩色圖樣。
+- 任務地圖：縮遠時圖示自動縮小，降低遮蔽。
+- 戰術板：加入同一套分類圖樣選單。
+- 戰術板：加入自訂方形／三角形／圓形圖樣。
+- 戰術板：加入「定型目前格局／解鎖目前格局」。
+- 定型範圍：牆線、自由畫、方形、圓形、門、樓梯、文字；友軍／敵軍／戰術圖樣仍可移動。
 
-- Google Maps 不再於網站啟動時載入。
-- 只有已登入房間的成員第一次打開「任務地圖」時，才嘗試建立 Google Map。
-- Supabase RPC 會先取得當月一個 Google Map load 安全額度。
-- KTAK 目前保守限制為每個 Google billing month 8,000 次。
-- 達到 8,000 後自動使用 OpenStreetMap。
-- 安全額度 RPC 發生錯誤時採 fail-closed：直接使用 OSM，不建立 Google Map。
-- Google / OSM 手動切換仍保留；同一頁已建立的 Google Map 不重複計數。
-
-注意：
-這是 KTAK 應用程式層的保護，不是 Google Cloud Billing 的官方硬停用功能。
+保留：
+- V2.0 Security
+- Google Maps + OSM fallback
+- Google Maps 8000/月應用層成本保護
+- 現有任務簡報、地圖、戰術板、聊天室功能

@@ -453,12 +453,29 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
   pointer-events:none
 }
 
+
+/* V2.1 DEV3 tactical symbol dropdowns / layout lock */
+.symbolPickerGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.symbolPickerGrid .full{grid-column:1/-1}
+.symbolPreviewRow{
+  display:grid;grid-template-columns:50px 1fr;gap:8px;align-items:center;
+  border:1px solid #344b58;border-radius:10px;padding:7px;background:#0d171c
+}
+.symbolPreviewBox{
+  width:46px;height:46px;display:grid;place-items:center;border-radius:9px;
+  background:#152129;border:1px solid #405865
+}
+.symbolPreviewBox svg{width:38px;height:38px}
+.shapeQuickGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.layoutLockBtn.locked{background:#6a4b16;border-color:#b38126;outline:1px solid #ffc650}
+.layoutLockHint{font-size:10px;color:#9fb1bb;margin-top:6px;line-height:1.45}
+
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV2 · Google Maps 成本保護版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV3 · 戰術操作優化版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -614,19 +631,29 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
   <div class="card"><h3>地址搜尋</h3><div class="searchRow"><input id="mapSearch" placeholder="例如：台南市永康區中華路34號"><button id="mapSearchBtn">搜尋</button></div><div class="row" style="margin-top:7px"><button id="googleAddressBtn" style="flex:1">G Google 搜尋</button><button id="streetViewBtn" style="flex:1">👁 Google 街景</button><button id="mapLayerBtn" style="flex:1">🛰 衛星</button></div>
 <div class="row" style="margin-top:7px"><button id="mapProviderBtn" style="flex:1">G Google 底圖</button></div><div class="muted" id="searchStatus" style="margin-top:6px">門牌會先拆解為台灣地址格式並做多組搜尋；若 OSM 缺門牌資料，可直接用 Google 搜尋。</div></div>
   <div class="card"><h3>地圖操作</h3><div class="toolGrid"><button class="mapTool active" data-tool="pan">✋ 拖曳</button><button class="mapTool" data-tool="line">╱ 直線</button><button class="mapTool" data-tool="rect">□ 方形</button><button class="mapTool" data-tool="circle">○ 圓形</button><button class="mapTool" data-tool="free">✎ 隨意畫筆</button><button id="mapUndoBtn">↶ 復原</button></div><div class="label" style="margin-top:9px">繪圖顏色</div><div class="palette" id="mapPalette"></div><div id="mapHint">目前：拖曳地圖。</div></div>
-  <div class="card"><h3>快速圖樣</h3><div class="iconGrid" id="quickIcons"></div><div class="muted" style="margin-top:7px">拖曳可移動；按住 1 秒會顯示調整框與 ↻ 把手。電腦右鍵、手機輕觸可開啟刪除／方向選單。</div></div>
   <div class="card">
-    <h3>＋ 自訂快速圖樣</h3>
-    <div class="muted">從圖案庫挑一個外型，再自己命名。例：選「車輛」後命名為「嫌疑車 A」；選「友軍」後命名為「A 組盾牌手」。</div>
-    <div class="customSymbolLibrary" id="customIconLibrary"></div>
-    <div class="customSymbolPreview">
-      <div id="customIconPreviewBox"></div>
-      <div>
-        <div class="label">自訂名稱</div>
-        <input id="customIconLabel" placeholder="例如：嫌疑車 A、A組盾牌手、破門器材">
+    <h3>戰術快速圖樣</h3>
+    <div class="muted">依類別選擇圖樣；可直接放置，也可自行命名。</div>
+    <div class="symbolPickerGrid" style="margin-top:7px">
+      <select id="mapSymbolCategory"></select>
+      <select id="mapSymbolSelect"></select>
+      <input id="mapSymbolCustomLabel" class="full" placeholder="自訂名稱（可留空，例如：A組、嫌疑車A）">
+      <div class="symbolPreviewRow full">
+        <div id="mapSymbolPreview" class="symbolPreviewBox"></div>
+        <button id="mapSymbolPlaceBtn" class="primary">＋ 點地圖放置圖樣</button>
       </div>
     </div>
-    <button id="customIconBtn" class="primary" style="width:100%;margin-top:7px">＋ 使用此自訂圖樣並放置</button>
+    <div class="muted" style="margin-top:7px">拖曳可移動；按住 1 秒可旋轉／縮放。縮小地圖時圖示會自動縮小，避免遮住整片區域。</div>
+  </div>
+  <div class="card">
+    <h3>自訂形狀圖樣</h3>
+    <div class="muted">快速建立一個有顏色與名稱的方形、三角形或圓形目標／隊伍標記。</div>
+    <div class="shapeQuickGrid">
+      <select id="mapShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option></select>
+      <input id="mapShapeColor" type="color" value="#45aff2" style="height:42px;padding:4px">
+      <input id="mapShapeLabel" style="grid-column:1/-1" placeholder="例如：A組、目標區、搜索組">
+      <button id="mapShapePlaceBtn" class="primary" style="grid-column:1/-1">＋ 點地圖放置形狀</button>
+    </div>
   </div>
   <div class="card"><h3>照片標示</h3><input type="file" id="photoInput" accept="image/*"><input id="photoLabel" placeholder="照片標示，例如：後門、二樓窗戶" style="margin-top:6px"><button id="photoPlaceBtn" style="width:100%;margin-top:6px">📷 選取後點地圖放置</button><div class="muted" style="margin-top:6px">照片與其他地圖物件使用相同操作：拖曳、長按選取、↻ 把手旋轉縮放、右鍵／輕觸刪除或設定方向。</div></div>
 </aside>
@@ -642,9 +669,34 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 
 <section id="boardPage" class="page"><div class="boardLayout">
 <aside class="boardSidebar" id="boardSidebar">
-  <div class="card"><h3>樓層 / 頁面</h3><div class="floorControls"><button id="prevFloorBtn">‹</button><input id="floorName" value="1F" placeholder="例如 1F、大廳、頂樓"><button id="nextFloorBtn">›</button></div><div class="row" style="margin-top:7px"><button id="addFloorBtn" style="flex:1">＋ 新增樓層</button><button id="deleteFloorBtn" class="danger">刪除</button></div><div class="muted" id="floorCountText" style="margin-top:6px"></div><div id="floorSideList" class="floorSideList"></div><div class="boardCanvasMeta"><span id="canvasSizeText">畫布</span><button id="expandCanvasBtn">＋ 擴大畫布</button></div></div><div class="valueBox" style="margin-top:7px">選取重疊物件時會優先抓取友軍／敵軍／門／樓梯／文字；要調整建築外框，請點方形或圓形中沒有其他圖樣覆蓋的位置。</div>
+  <div class="card"><h3>樓層 / 頁面</h3><div class="floorControls"><button id="prevFloorBtn">‹</button><input id="floorName" value="1F" placeholder="例如 1F、大廳、頂樓"><button id="nextFloorBtn">›</button></div><div class="row" style="margin-top:7px"><button id="addFloorBtn" style="flex:1">＋ 新增樓層</button><button id="deleteFloorBtn" class="danger">刪除</button></div>
+  <button id="boardLayoutLockBtn" style="width:100%;margin-top:7px">🔒 定型目前格局</button>
+  <div class="layoutLockHint">定型後，已畫好的牆線、方形、圓形、門、樓梯與文字不會再被誤拖；友軍、敵軍與後續戰術圖樣仍可移動。</div>
+  <div class="muted" id="floorCountText" style="margin-top:6px"></div><div id="floorSideList" class="floorSideList"></div><div class="boardCanvasMeta"><span id="canvasSizeText">畫布</span><button id="expandCanvasBtn">＋ 擴大畫布</button></div></div><div class="valueBox" style="margin-top:7px">選取重疊物件時會優先抓取友軍／敵軍／門／樓梯／文字；要調整建築外框，請點方形或圓形中沒有其他圖樣覆蓋的位置。</div>
   <div class="card"><h3>畫筆 / 物件</h3><div class="boardToolGrid"><button class="boardTool active" data-board-tool="select">☝ 選取 / 移動</button><button class="boardTool" data-board-tool="free">✎ 隨意畫</button><button class="boardTool" data-board-tool="line">╱ 直線</button><button class="boardTool" data-board-tool="rect">□ 方形</button><button class="boardTool" data-board-tool="circle">○ 圓形</button><button class="boardTool" data-board-tool="stairsUp">▤ 樓梯↑</button><button class="boardTool" data-board-tool="stairsDown">▤ 樓梯↓</button><button class="boardTool" data-board-tool="door">▮ 門</button><button class="boardTool" data-board-tool="text">T 文字</button><button class="boardTool" data-board-tool="friendly">友軍</button><button class="boardTool" data-board-tool="enemy">敵人</button><button class="boardTool" data-board-tool="eraser">⌫ 部分橡皮擦</button><button id="boardUndoBtn">↶ 復原</button></div></div>
   <div class="card"><h3>畫筆設定</h3><div class="row"><input id="boardColor" type="color" value="#111111" style="height:42px;padding:4px"><select id="boardWidth"><option value="2">細</option><option value="4" selected>中</option><option value="7">粗</option><option value="26">橡皮擦</option></select></div><input id="boardTextInput" class="boardToolTextInput" placeholder="文字工具內容，例如：客廳、主臥、A入口"><button id="clearBoardBtn" class="danger" style="width:100%;margin-top:7px">清空本頁</button></div>
+  <div class="card">
+    <h3>戰術快速圖樣</h3>
+    <div class="symbolPickerGrid">
+      <select id="boardSymbolCategory"></select>
+      <select id="boardSymbolSelect"></select>
+      <input id="boardSymbolCustomLabel" class="full" placeholder="自訂名稱（可留空）">
+      <div class="symbolPreviewRow full">
+        <div id="boardSymbolPreview" class="symbolPreviewBox"></div>
+        <button id="boardSymbolPlaceBtn" class="primary">＋ 放置圖樣</button>
+      </div>
+    </div>
+    <div class="muted" style="margin-top:6px">按下後，再點戰術板位置放置。</div>
+  </div>
+  <div class="card">
+    <h3>自訂形狀圖樣</h3>
+    <div class="shapeQuickGrid">
+      <select id="boardShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option></select>
+      <input id="boardShapeColor" type="color" value="#45aff2" style="height:42px;padding:4px">
+      <input id="boardShapeLabel" style="grid-column:1/-1" placeholder="例如：A組、目標、待命區">
+      <button id="boardShapePlaceBtn" class="primary" style="grid-column:1/-1">＋ 放置形狀</button>
+    </div>
+  </div>
   <div class="muted">選取模式：拖曳物件移動；按住 1 秒顯示調整框，拖曳右下角 ↻ 把手旋轉／縮放；電腦右鍵、手機輕觸可刪除。手機戰術板可直接用兩隻手指捏合放大／縮小。</div>
 </aside>
 <div class="boardStage" id="boardStage"><div class="boardZoomBadge" id="boardZoomBadge">戰術板 100% · 雙指縮放</div><div class="mapTopMobile" style="top:8px;right:8px"><button id="boardToolsMobile">☰ 工具</button></div><div class="boardPaperArea"><div id="boardWrap"><canvas id="boardCanvas" width="2000" height="1400"></canvas></div><div id="floorTabs" class="floorTabs"></div></div></div>
@@ -1144,6 +1196,7 @@ const vehicleOptions=[
 ];
 
 const equipmentOptions=[
+  {name:"手槍",unit:"支"},
   {name:"III級盾牌",unit:"面"},
   {name:"IIIA級盾牌",unit:"面"},
   {name:"步槍",unit:"支"},
@@ -1287,7 +1340,7 @@ $("briefSaveBtn").onclick=()=>{
 };
 
 /* export import */
-$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev2",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
+$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev3",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{
     const x=JSON.parse(await f.text()),incoming=x.state||x;
@@ -1482,6 +1535,7 @@ async function removeObjectMedia(path){
 }
 function mapItemTypeName(item){
   if(item.type==="symbol")return item.label||allIconDefs[item.icon]?.[1]||"圖樣";
+  if(item.type==="shapeSymbol")return item.label||"自訂形狀";
   if(item.type==="photo")return item.label||"照片標示";
   return item.type==="line"?"直線":
          item.type==="rect"?"方形":
@@ -1713,6 +1767,7 @@ $("mapLayerBtn").onclick=()=>{
 };
 
 map.on('move zoom',syncGoogleMap);
+map.on('zoomend',()=>{if(state?.map?.items)renderMapItems()});
 // V2.1 DEV2: Google Maps is NOT instantiated at app startup.
 // A billable map load is only attempted when an authenticated room member opens the map tab.
 
@@ -1724,6 +1779,10 @@ const coarsePointer=matchMedia('(pointer:coarse)').matches;
 
 /* professional tactical symbols */
 const tacticalSvg={
+  pistol:`<svg viewBox="0 0 40 40"><path d="M7 11h24v9H20l-2 5 7 3-3 8-8-4 3-12H7Z" fill="#273238" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M27 14h7" stroke="#45aff2" stroke-width="2"/></svg>`,
+  breach:`<svg viewBox="0 0 40 40"><rect x="7" y="4" width="18" height="32" fill="#3a474e" stroke="#fff" stroke-width="2"/><path d="M13 20h21m-7-7 7 7-7 7" fill="none" stroke="#ff944c" stroke-width="3"/><path d="m6 30 8-8" stroke="#ffc650" stroke-width="3"/></svg>`,
+  rally:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#173548" stroke="#fff" stroke-width="2"/><path d="M11 20h18M20 11v18" stroke="#55d572" stroke-width="3"/><circle cx="20" cy="20" r="4" fill="#fff"/></svg>`,
+  objective:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="none" stroke="#ffc650" stroke-width="3"/><path d="M20 7v26M7 20h26" stroke="#ffc650" stroke-width="2"/><circle cx="20" cy="20" r="4" fill="#f25c5c"/></svg>`,
  entry:`<svg viewBox="0 0 40 40"><rect x="6" y="4" width="18" height="32" rx="1" fill="#253139" stroke="#fff" stroke-width="2"/><path d="M14 20h20m-8-8 8 8-8 8" fill="none" stroke="#ffb84d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
  standby:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#162129" stroke="#ffc650" stroke-width="3"/><path d="M14 12v16M26 12v16" stroke="#ffc650" stroke-width="4"/></svg>`,
  ambush:`<svg viewBox="0 0 40 40"><path d="M3 20s7-11 17-11 17 11 17 11-7 11-17 11S3 20 3 20Z" fill="#17232b" stroke="#dce9ef" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#ffc650"/></svg>`,
@@ -1786,6 +1845,7 @@ const iconDefs={
  camera:['camera','攝影機'],barricade:['barricade','封鎖／路障'],shield:['shield','盾牌'],radio:['radio','通訊'],hazard:['hazard','危險'],fire:['fire','火源']
 };
 const customExtraDefs={
+ pistol:['pistol','手槍'],breach:['breach','破門點'],rally:['rally','集結點'],objective:['objective','主要目標'],
  eye:['eye','觀察'],person:['person','人物'],group:['group','多人／群眾'],building:['building','建築物'],house:['house','住宅'],
  warehouse:['warehouse','倉庫'],school:['school','學校／機關'],hospital:['hospital','醫療院所'],checkpoint:['checkpoint','檢查點'],
  roadblock:['roadblock','道路封鎖'],cone:['cone','交通錐'],flag:['flag','旗標'],target:['target','目標'],warning:['warning','警告'],
@@ -1794,26 +1854,36 @@ const customExtraDefs={
  search:['search','搜索點'],lock:['lock','上鎖／管制'],pin:['pin','一般標記']
 };
 const allIconDefs={...iconDefs,...customExtraDefs};
-$("quickIcons").innerHTML='';
-$("customIconLibrary").innerHTML='';
-let customIconKey='friendly';
-Object.entries(iconDefs).forEach(([key,v])=>{
-  const b=document.createElement('button');b.className='mapIconTool';b.dataset.icon=key;
-  b.innerHTML=`<span style="display:inline-block;width:22px;vertical-align:middle">${tacticalSvg[v[0]]}</span> ${v[1]}`;
-  $("quickIcons").appendChild(b)
-});
-Object.entries(allIconDefs).forEach(([key,v])=>{
-  const c=document.createElement('button');
-  c.className='customSymbolChoice'+(key===customIconKey?' active':'');
-  c.dataset.customIcon=key;c.title=v[1];c.setAttribute('aria-label',v[1]);c.innerHTML=tacticalSvg[v[0]];
-  c.onclick=()=>{
-    customIconKey=key;
-    $$('.customSymbolChoice').forEach(x=>x.classList.toggle('active',x===c));
-    $("customIconPreviewBox").innerHTML=tacticalSvg[allIconDefs[customIconKey][0]]
+
+const symbolCategories={
+  personnel:{label:"人員／隊伍",keys:["friendly","enemy","civilian","person","group","command","medical","shield","sniper","gun","pistol","dog"]},
+  vehicles:{label:"車輛／載具",keys:["policecar","civilcar","enemycar","van","motorcycle","truck","bus","helicopter","boat","drone"]},
+  mission:{label:"任務／控制",keys:["entry","standby","ambush","rally","objective","breach","checkpoint","roadblock","barricade","target","flag","search","eye","hazard","fire","warning","lock","pin"]},
+  facilities:{label:"設施／器材",keys:["building","house","warehouse","school","hospital","camera","radio","antenna","package","phone","laptop","key"]}
+};
+function setupSymbolPicker(prefix){
+  const cat=$(prefix+"SymbolCategory"),sel=$(prefix+"SymbolSelect"),preview=$(prefix+"SymbolPreview");
+  cat.innerHTML="";
+  Object.entries(symbolCategories).forEach(([k,v])=>{
+    const o=document.createElement("option");o.value=k;o.textContent=v.label;cat.appendChild(o)
+  });
+  const fill=()=>{
+    const group=symbolCategories[cat.value]||symbolCategories.personnel;
+    sel.innerHTML="";
+    group.keys.filter(k=>allIconDefs[k]&&tacticalSvg[allIconDefs[k][0]]).forEach(k=>{
+      const o=document.createElement("option");o.value=k;o.textContent=allIconDefs[k][1];sel.appendChild(o)
+    });
+    refresh()
   };
-  $("customIconLibrary").appendChild(c)
-});
-$("customIconPreviewBox").innerHTML=tacticalSvg[allIconDefs[customIconKey][0]];
+  const refresh=()=>{
+    const k=sel.value;
+    preview.innerHTML=k&&allIconDefs[k]?tacticalSvg[allIconDefs[k][0]]:""
+  };
+  cat.onchange=fill;sel.onchange=refresh;cat.value="personnel";fill()
+}
+setupSymbolPicker("map");
+setupSymbolPicker("board");
+
 const colors=['#45aff2','#f25c5c','#55d572','#ffc650','#111111','#ffffff','#ff944c','#9b59b6'];
 $("mapPalette").innerHTML='';
 colors.forEach(c=>{const b=document.createElement('button');b.className='colorDot'+(c===currentColor?' active':'');b.style.background=c;b.title=c;b.onclick=()=>{currentColor=c;$$('.colorDot').forEach(x=>x.classList.toggle('active',x===b))};$("mapPalette").appendChild(b)});
@@ -1821,11 +1891,29 @@ colors.forEach(c=>{const b=document.createElement('button');b.className='colorDo
 function itemById(id){return state.map.items.find(x=>x.id===id)}
 function pushMapHistory(){mapHistory.push(clone(state.map.items));if(mapHistory.length>40)mapHistory.shift()}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function customShapeSvg(item){
+  const c=item.color||"#45aff2",shape=item.shape||"square";
+  const body=shape==="circle"
+    ? `<circle cx="20" cy="20" r="14" fill="${c}" fill-opacity=".30" stroke="${c}" stroke-width="4"/>`
+    : shape==="triangle"
+      ? `<path d="M20 4 36 34H4Z" fill="${c}" fill-opacity=".30" stroke="${c}" stroke-width="4" stroke-linejoin="round"/>`
+      : `<rect x="6" y="6" width="28" height="28" rx="2" fill="${c}" fill-opacity=".30" stroke="${c}" stroke-width="4"/>`;
+  return `<svg viewBox="0 0 40 40">${body}</svg>`
+}
+function mapZoomVisualFactor(){
+  const z=map.getZoom();
+  if(z>=16)return 1;
+  if(z<=8)return .42;
+  return .42+(z-8)*(.58/8)
+}
 function makeIcon(item){
   const svg=item.type==='photo'
     ? `<svg viewBox="0 0 40 40"><rect x="5" y="8" width="30" height="25" rx="3" fill="#2d3440" stroke="#fff" stroke-width="2"/><circle cx="20" cy="20" r="7" fill="#45aff2"/><rect x="12" y="5" width="9" height="5" rx="1" fill="#fff"/></svg>`
-    : (tacticalSvg[item.icon]||tacticalSvg.friendly);
-  return L.divIcon({className:'',html:`<div class="map-symbol-shell${item.id===selectedMapId?' map-selected-glow':''}"><div class="tac-inner" style="transform:rotate(${item.rotation||0}deg) scale(${item.scale||1})">${svg}</div></div>`,iconSize:[40,40],iconAnchor:[20,20]})
+    : item.type==='shapeSymbol'
+      ? customShapeSvg(item)
+      : (tacticalSvg[item.icon]||tacticalSvg.friendly);
+  const visual=(item.scale||1)*mapZoomVisualFactor();
+  return L.divIcon({className:'',html:`<div class="map-symbol-shell${item.id===selectedMapId?' map-selected-glow':''}"><div class="tac-inner" style="transform:rotate(${item.rotation||0}deg) scale(${visual})">${svg}</div></div>`,iconSize:[40,40],iconAnchor:[20,20]})
 }
 function destination(lat,lng,bearingDeg,d){const R=6371000,br=bearingDeg*Math.PI/180,la1=lat*Math.PI/180,lo1=lng*Math.PI/180,dr=d/R;const la2=Math.asin(Math.sin(la1)*Math.cos(dr)+Math.cos(la1)*Math.sin(dr)*Math.cos(br));const lo2=lo1+Math.atan2(Math.sin(br)*Math.sin(dr)*Math.cos(la1),Math.cos(dr)-Math.sin(la1)*Math.sin(la2));return [la2*180/Math.PI,lo2*180/Math.PI]}
 function bearing(a,b){const la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180,dl=(b.lng-a.lng)*Math.PI/180;return (Math.atan2(Math.sin(dl)*Math.cos(la2),Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dl))*180/Math.PI+360)%360}
@@ -1833,7 +1921,7 @@ function normalizeRect(item){if(item.type==='rect'&&!item.points&&item.bounds){c
 function mapItemCenter(item){
   normalizeRect(item);
   if(item.type==='circle')return L.latLng(item.center[0],item.center[1]);
-  if(item.type==='symbol'||item.type==='photo')return L.latLng(item.lat,item.lng);
+  if(item.type==='symbol'||item.type==='shapeSymbol'||item.type==='photo')return L.latLng(item.lat,item.lng);
   const pts=item.points||[];if(!pts.length)return map.getCenter();
   return L.latLng(pts.reduce((s,p)=>s+p[0],0)/pts.length,pts.reduce((s,p)=>s+p[1],0)/pts.length)
 }
@@ -1848,13 +1936,13 @@ function rotateLatLngPoint(p,c,deg){const z=map.getZoom(),pp=map.project(L.latLn
 function scaleLatLngPoint(p,c,f){const z=map.getZoom(),pp=map.project(L.latLng(p[0],p[1]),z),cp=map.project(c,z);return map.unproject([cp.x+(pp.x-cp.x)*f,cp.y+(pp.y-cp.y)*f],z)}
 function translateMapItem(item,dlat,dlng,base=null){
   const src=base||item;normalizeRect(src);
-  if(item.type==='symbol'||item.type==='photo'){item.lat=src.lat+dlat;item.lng=src.lng+dlng}
+  if(item.type==='symbol'||item.type==='shapeSymbol'||item.type==='photo'){item.lat=src.lat+dlat;item.lng=src.lng+dlng}
   else if(item.type==='circle'){item.center=[src.center[0]+dlat,src.center[1]+dlng]}
   else item.points=(src.points||[]).map(p=>[p[0]+dlat,p[1]+dlng])
 }
 function applyMapTransform(item,base,deltaDeg,factor){
   const c=mapItemCenter(base);
-  if(item.type==='symbol'||item.type==='photo'){
+  if(item.type==='symbol'||item.type==='shapeSymbol'||item.type==='photo'){
     item.rotation=(base.rotation||0)+deltaDeg;
     item.scale=Math.max(.35,Math.min(5,(base.scale||1)*factor))
   }else if(item.type==='circle'){
@@ -1873,7 +1961,7 @@ function applyMapTransform(item,base,deltaDeg,factor){
 }
 function mapItemBounds(item){
   normalizeRect(item);
-  if(item.type==='symbol'||item.type==='photo'){
+  if(item.type==='symbol'||item.type==='shapeSymbol'||item.type==='photo'){
     const c=L.latLng(item.lat,item.lng),cp=map.latLngToLayerPoint(c),pad=28*(item.scale||1);
     return L.latLngBounds(map.layerPointToLatLng([cp.x-pad,cp.y-pad]),map.layerPointToLatLng([cp.x+pad,cp.y+pad]))
   }
@@ -1884,7 +1972,7 @@ function mapItemBounds(item){
   return L.latLngBounds((item.points||[]).map(p=>L.latLng(p[0],p[1])))
 }
 function updateLeafletLayer(layer,item){
-  if(item.type==='symbol'||item.type==='photo'){layer.setLatLng([item.lat,item.lng]);layer.setIcon(makeIcon(item))}
+  if(item.type==='symbol'||item.type==='shapeSymbol'||item.type==='photo'){layer.setLatLng([item.lat,item.lng]);layer.setIcon(makeIcon(item))}
   else if(item.type==='circle'){layer.setLatLng(item.center);layer.setRadius(item.radius)}
   else layer.setLatLngs(item.points)
 }
@@ -2047,7 +2135,7 @@ function renderMapItems(){
     if(item.type==='line'||item.type==='free')layer=L.polyline(item.points,{color:item.color||'#45aff2',weight:4});
     else if(item.type==='rect')layer=L.polygon(item.points,{color:item.color||'#ffc650',weight:3,fillOpacity:.10});
     else if(item.type==='circle')layer=L.circle(item.center,{radius:item.radius,color:item.color||'#ffc650',weight:3,fillOpacity:.10});
-    else if(item.type==='symbol'||item.type==='photo'){
+    else if(item.type==='symbol'||item.type==='shapeSymbol'||item.type==='photo'){
       item.lat??=item.latlng?.[0];item.lng??=item.latlng?.[1];
       layer=L.marker([item.lat,item.lng],{icon:makeIcon(item),keyboard:false})
     }
@@ -2075,12 +2163,22 @@ function chooseIcon(key,label=null){
   $$('.mapTool').forEach(x=>x.classList.remove('active'));$$('.mapIconTool').forEach(x=>x.classList.toggle('active',x.dataset.icon===key));
   map.getContainer().style.cursor='copy';$("mapHint").textContent=`目前：點地圖放置「${mapIcon.label}」。`
 }
-setTimeout(()=>$$('.mapIconTool').forEach(b=>b.onclick=()=>chooseIcon(b.dataset.icon)),0);
-$("customIconBtn").onclick=()=>{
-  const key=customIconKey;
-  const label=$("customIconLabel").value.trim();
-  if(!label){toast('請先輸入自訂圖樣名稱');$("customIconLabel").focus();return}
+$("mapSymbolPlaceBtn").onclick=()=>{
+  const key=$("mapSymbolSelect").value;
+  if(!key)return;
+  const label=$("mapSymbolCustomLabel").value.trim()||allIconDefs[key]?.[1]||"圖樣";
   chooseIcon(key,label)
+};
+$("mapShapePlaceBtn").onclick=()=>{
+  if(!can("map")){toast("目前角色只能觀看");return}
+  mapTool="shapeSymbol";
+  mapIcon={
+    shape:$("mapShapeType").value,
+    color:$("mapShapeColor").value,
+    label:$("mapShapeLabel").value.trim()||"自訂形狀"
+  };
+  map.getContainer().style.cursor="copy";
+  $("mapHint").textContent=`目前：點地圖放置「${mapIcon.label}」。`
 };
 
 function clearPreview(){if(preview){map.removeLayer(preview);preview=null}}
@@ -2090,6 +2188,11 @@ map.on('click',async e=>{
   if(mapTool==='symbol'&&mapIcon){
     pushMapHistory();const note=prompt(`${mapIcon.label}備註（可留空）：`,'')??'';
     state.map.items.push({id:uid(),type:'symbol',icon:mapIcon.key,label:mapIcon.label,lat:e.latlng.lat,lng:e.latlng.lng,rotation:0,scale:1,fan:null,note,color:currentColor,ownerId:currentUserId,ownerName:displayName()});
+    publish();renderMapItems();setMapTool('pan');return
+  }
+  if(mapTool==='shapeSymbol'&&mapIcon){
+    pushMapHistory();const note=prompt(`${mapIcon.label}備註（可留空）：`,'')??'';
+    state.map.items.push({id:uid(),type:'shapeSymbol',shape:mapIcon.shape,label:mapIcon.label,lat:e.latlng.lat,lng:e.latlng.lng,rotation:0,scale:1,fan:null,note,color:mapIcon.color,ownerId:currentUserId,ownerName:displayName()});
     publish();renderMapItems();setMapTool('pan');return
   }
   if(mapTool==='photo'&&pendingPhoto){
@@ -2225,6 +2328,14 @@ function updateBoardScale(keepCenter=false,pinchMid=null,beforeScale=null){
 }
 function resetBoardZoom(){boardUserZoom=1;updateBoardScale()}
 function floor(){return state.board.pages[state.board.active]}
+const boardLayoutTypes=new Set(["free","line","rect","circle","stairsUp","stairsDown","door","text"]);
+function boardLayoutIsLocked(){return (floor().objects||[]).some(o=>o.layoutLocked)}
+function updateBoardLayoutLockUI(){
+  const btn=$("boardLayoutLockBtn");if(!btn)return;
+  const locked=boardLayoutIsLocked();
+  btn.classList.toggle("locked",locked);
+  btn.textContent=locked?"🔓 解鎖目前格局":"🔒 定型目前格局"
+}
 function boardItem(id){return floor().objects.find(x=>x.id===id)}
 function pushBoardHistory(){boardHistory.push(clone(floor().objects));if(boardHistory.length>40)boardHistory.shift()}
 function boardPoint(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
@@ -2240,6 +2351,7 @@ function hitBoard(o,p){
   if(o.type==='circle')return Math.hypot(q.x,q.y)<=o.r+tol;
   if(['stairsUp','stairsDown','door'].includes(o.type))return Math.abs(q.x)<=65&&Math.abs(q.y)<=65;
   if(o.type==='text')return Math.abs(q.x)<=((o.textW||120)/2)+tol&&Math.abs(q.y)<=((o.textH||36)/2)+tol;
+  if(o.type==='symbol'||o.type==='shapeSymbol')return Math.abs(q.x)<=45&&Math.abs(q.y)<=50;
   if(o.type==='friendly'||o.type==='enemy')return Math.abs(q.x)<=42&&Math.abs(q.y)<=46;
   return false
 }
@@ -2249,7 +2361,7 @@ function findBoardAt(p){
   // V1.9.2:
   // Large rect/circle objects are usually building structure/background.
   // Small semantic/tactical objects must win when they overlap.
-  const tacticalTypes=new Set(['friendly','enemy','door','stairsUp','stairsDown','text']);
+  const tacticalTypes=new Set(['friendly','enemy','symbol','shapeSymbol','door','stairsUp','stairsDown','text']);
   const middleTypes=new Set(['free','line']);
   const structuralTypes=new Set(['rect','circle']);
 
@@ -2259,6 +2371,7 @@ function findBoardAt(p){
   const other=[];
 
   for(const o of objs){
+    if(o.layoutLocked && !tacticalTypes.has(o.type))continue;
     if(tacticalTypes.has(o.type))tactical.push(o);
     else if(middleTypes.has(o.type))middle.push(o);
     else if(structuralTypes.has(o.type))structural.push(o);
@@ -2273,6 +2386,27 @@ function findBoardAt(p){
     }
   }
   return null
+}
+const boardSvgImageCache=new Map();
+function boardSvgImage(key){
+  if(boardSvgImageCache.has(key))return boardSvgImageCache.get(key);
+  const svg=tacticalSvg[key]||tacticalSvg.friendly;
+  const img=new Image();
+  img.onload=()=>{if(state?.board)renderBoard()};
+  img.src="data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(svg);
+  boardSvgImageCache.set(key,img);
+  return img
+}
+function drawBoardCustomShape(o){
+  const c=o.color||"#45aff2";
+  ctx.strokeStyle=c;ctx.fillStyle=c+"33";ctx.lineWidth=4;
+  if(o.shape==="circle"){
+    ctx.beginPath();ctx.arc(0,0,30,0,Math.PI*2);ctx.fill();ctx.stroke()
+  }else if(o.shape==="triangle"){
+    ctx.beginPath();ctx.moveTo(0,-32);ctx.lineTo(34,30);ctx.lineTo(-34,30);ctx.closePath();ctx.fill();ctx.stroke()
+  }else{
+    ctx.fillRect(-30,-30,60,60);ctx.strokeRect(-30,-30,60,60)
+  }
 }
 function drawBoardObject(o){
   ctx.save();ctx.translate(o.x||0,o.y||0);ctx.rotate((o.rotation||0)*Math.PI/180);ctx.scale(o.scale||1,o.scale||1);
@@ -2294,6 +2428,15 @@ function drawBoardObject(o){
     ctx.fillStyle='#8a5a2b';ctx.strokeStyle='#4e321b';ctx.lineWidth=2;ctx.fillRect(-55,-10,110,20);ctx.strokeRect(-55,-10,110,20)
   }else if(o.type==='text'){
     ctx.fillStyle=o.color||'#111';ctx.font=`700 ${o.fontSize||28}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(o.text||'文字',0,0)
+  }else if(o.type==='symbol'){
+    const img=boardSvgImage(o.icon);
+    if(img.complete&&img.naturalWidth)ctx.drawImage(img,-28,-28,56,56);
+    else{ctx.strokeStyle="#455d69";ctx.strokeRect(-28,-28,56,56)}
+  }else if(o.type==='shapeSymbol'){
+    drawBoardCustomShape(o);
+    if(o.label){
+      ctx.fillStyle="#111";ctx.font="700 14px sans-serif";ctx.textAlign="center";ctx.textBaseline="top";ctx.fillText(o.label,0,38)
+    }
   }else if(o.type==='friendly'||o.type==='enemy'){
     const col=o.type==='friendly'?'#176aa0':'#9d2d2d';
     ctx.fillStyle=col;ctx.strokeStyle='#111';ctx.lineWidth=2;
@@ -2308,6 +2451,7 @@ function bbox(o){
   if(o.type==='circle')return[-o.r,-o.r,o.r,o.r];
   if(['stairsUp','stairsDown','door'].includes(o.type))return[-65,-65,65,65];
   if(o.type==='text')return[-(o.textW||120)/2,-(o.textH||36)/2,(o.textW||120)/2,(o.textH||36)/2];
+  if(o.type==='symbol'||o.type==='shapeSymbol')return[-45,-50,45,50];
   if(o.type==='friendly'||o.type==='enemy')return[-45,-50,45,50];
   const pts=o.type==='line'?[o.a,o.b]:o.points||[{x:-10,y:-10},{x:10,y:10}];
   return[Math.min(...pts.map(p=>p.x))-8,Math.min(...pts.map(p=>p.y))-8,Math.max(...pts.map(p=>p.x))+8,Math.max(...pts.map(p=>p.y))+8]
@@ -2346,7 +2490,7 @@ function renderBoard(previewObj=null){
     ctx.save();ctx.strokeStyle='#1595df';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(corners[0].x,corners[0].y);corners.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.closePath();ctx.stroke();ctx.setLineDash([]);
     const h=boardHandlePoint(sel);ctx.fillStyle='#0f74ad';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,15,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↻',h.x,h.y+1);ctx.restore()
   }
-  $("floorName").value=floor().name;$("floorCountText").textContent=`第 ${state.board.active+1} / ${state.board.pages.length} 頁`;renderFloorTabs();
+  $("floorName").value=floor().name;$("floorCountText").textContent=`第 ${state.board.active+1} / ${state.board.pages.length} 頁`;renderFloorTabs();updateBoardLayoutLockUI();
   if(!boardWrap.style.width) updateBoardScale()
 }
 function setBoardTool(t){if(t!=='select'&&!can('board')){toast('目前角色只能觀看');return}boardTool=t;selectedBoardId=null;hideBoardMenu();$$('.boardTool').forEach(b=>b.classList.toggle('active',b.dataset.boardTool===t));renderBoard()}
@@ -2359,7 +2503,7 @@ function createGeom(type,a,b,pts){
   else if(type==='free'||type==='erase'){const minx=Math.min(...pts.map(p=>p.x)),maxx=Math.max(...pts.map(p=>p.x)),miny=Math.min(...pts.map(p=>p.y)),maxy=Math.max(...pts.map(p=>p.y));base.x=(minx+maxx)/2;base.y=(miny+maxy)/2;base.points=pts.map(p=>({x:p.x-base.x,y:p.y-base.y}));if(type==='erase')base.width=Math.max(18,+$("boardWidth").value*4)}
   return base
 }
-function boardTypeName(o){return o.type==='text'?(o.text||'文字'):o.type==='door'?'門':o.type==='stairsUp'?'樓梯↑':o.type==='stairsDown'?'樓梯↓':o.type==='friendly'?'友軍':o.type==='enemy'?'敵人':o.type==='line'?'直線':o.type==='rect'?'方形':o.type==='circle'?'圓形':o.type==='free'?'隨意畫':'物件'}
+function boardTypeName(o){return o.type==='symbol'?(o.label||allIconDefs[o.icon]?.[1]||'圖樣'):o.type==='shapeSymbol'?(o.label||'自訂形狀'):o.type==='text'?(o.text||'文字'):o.type==='door'?'門':o.type==='stairsUp'?'樓梯↑':o.type==='stairsDown'?'樓梯↓':o.type==='friendly'?'友軍':o.type==='enemy'?'敵人':o.type==='line'?'直線':o.type==='rect'?'方形':o.type==='circle'?'圓形':o.type==='free'?'隨意畫':'物件'}
 function showBoardMenu(o,clientX,clientY){
   selectedBoardId=o.id;renderBoard();const m=$("boardContextMenu");$("boardCtxTitle").textContent=`${boardTypeName(o)} · ${o.ownerName||'未知'}`;
   const editable=canEditItem(o);$("boardCtxInfo").disabled=false;$("boardCtxDelete").disabled=!editable;$("boardCtxNote").disabled=!editable;$("boardCtxPhoto").disabled=!editable;$("boardCtxViewPhoto").disabled=!o.photoPath;m.classList.add('open');
@@ -2481,6 +2625,29 @@ canvas.addEventListener('mousemove',e=>{
 });
 canvas.addEventListener('mouseleave',()=>{boardHoverInfoId=null;clearTimeout(boardHoverInfoTimer);hideBoardCompactInfo()});
 canvas.addEventListener('contextmenu',e=>{e.preventDefault();const p=boardPoint(e),o=findBoardAt(p);if(o)showBoardMenu(o,e.clientX,e.clientY)});
+$("boardSymbolPlaceBtn").onclick=()=>{
+  if(!can("board")){toast("目前角色只能觀看");return}
+  boardTool="symbol";
+  const key=$("boardSymbolSelect").value;
+  boardCurrent={
+    key,
+    label:$("boardSymbolCustomLabel").value.trim()||allIconDefs[key]?.[1]||"圖樣"
+  };
+  $$(".boardTool").forEach(b=>b.classList.remove("active"));
+  toast(`點戰術板放置「${boardCurrent.label}」`)
+};
+$("boardShapePlaceBtn").onclick=()=>{
+  if(!can("board")){toast("目前角色只能觀看");return}
+  boardTool="shapeSymbol";
+  boardCurrent={
+    shape:$("boardShapeType").value,
+    color:$("boardShapeColor").value,
+    label:$("boardShapeLabel").value.trim()||"自訂形狀"
+  };
+  $$(".boardTool").forEach(b=>b.classList.remove("active"));
+  toast(`點戰術板放置「${boardCurrent.label}」`)
+};
+
 canvas.addEventListener('pointerdown',e=>{
   if(boardPinching||boardPointers.size>=2)return;
   const p=boardPoint(e);canvas.setPointerCapture?.(e.pointerId);
@@ -2499,6 +2666,18 @@ canvas.addEventListener('pointerdown',e=>{
     boardGesture={id:o.id,start:p,base:clone(o),moved:false,longTriggered:false,historyPushed:false,
       timer:setTimeout(()=>{if(boardGesture&&!boardGesture.moved){boardGesture.longTriggered=true;toggleBoardSelection(o)}},1000)};
     e.preventDefault();return
+  }
+  if(boardTool==='symbol'){
+    if(!can("board")||!boardCurrent?.key)return;
+    pushBoardHistory();
+    floor().objects.push({id:uid(),type:"symbol",icon:boardCurrent.key,label:boardCurrent.label,x:p.x,y:p.y,rotation:0,scale:1,ownerId:currentUserId,ownerName:displayName(),note:""});
+    publish();renderBoard();setBoardTool("select");return
+  }
+  if(boardTool==='shapeSymbol'){
+    if(!can("board")||!boardCurrent?.shape)return;
+    pushBoardHistory();
+    floor().objects.push({id:uid(),type:"shapeSymbol",shape:boardCurrent.shape,label:boardCurrent.label,color:boardCurrent.color,x:p.x,y:p.y,rotation:0,scale:1,ownerId:currentUserId,ownerName:displayName(),note:""});
+    publish();renderBoard();setBoardTool("select");return
   }
   if(boardTool==='text'){
     if(!can('board'))return;const txt=$("boardTextInput").value.trim()||(prompt("輸入要放在戰術板上的文字：","")||"").trim();if(!txt)return;pushBoardHistory();
@@ -2584,6 +2763,16 @@ $("expandCanvasBtn").onclick=()=>{
   state.board.canvasH=Math.min(3500,(+state.board.canvasH||1400)+350);
   ensureBoardCanvasSize();publish();renderBoard();updateBoardScale();
   toast(`畫布已擴大為 ${state.board.canvasW} × ${state.board.canvasH}`)
+};
+$("boardLayoutLockBtn").onclick=()=>{
+  if(!can("board")){toast("目前角色只能觀看");return}
+  const structural=(floor().objects||[]).filter(o=>boardLayoutTypes.has(o.type));
+  if(!structural.length){toast("目前沒有可定型的格局物件");return}
+  const willLock=!boardLayoutIsLocked();
+  pushBoardHistory();
+  structural.forEach(o=>o.layoutLocked=willLock);
+  publish();renderBoard();
+  toast(willLock?"目前格局已定型，不會再被誤拖":"目前格局已解鎖")
 };
 $("prevFloorBtn").onclick=()=>{if(state.board.active>0){state.board.active--;boardHistory=[];selectedBoardId=null;renderBoard()}};
 $("nextFloorBtn").onclick=()=>{if(state.board.active<state.board.pages.length-1){state.board.active++;boardHistory=[];selectedBoardId=null;renderBoard()}};
