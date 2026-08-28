@@ -13,7 +13,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<title>KTAK Mission Room V2.1 DEV6-B5</title>
+<title>KTAK Mission Room V2.1 DEV6-B6</title>
 <style>
 :root{--bg:#0a1014;--panel:#111a20;--panel2:#17232b;--line:#30424d;--text:#eff6f8;--muted:#98aab4;--blue:#45aff2;--green:#55d572;--yellow:#ffc650;--red:#f25c5c;--orange:#ff944c;--safe:env(safe-area-inset-bottom,0px);--safeTop:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -539,7 +539,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 
 
 
-/* V2.1 DEV6-B5 cross-browser geolocation permission + avatar display fix */
+/* V2.1 DEV6-B6 avatar crop + cross-browser geolocation */
 .locationCard .row button{flex:1}
 .locationState{font-size:10px;border:1px solid #3b515c;background:#17242b;border-radius:999px;padding:3px 7px;white-space:nowrap}
 .locationState.live{border-color:#2f8d62;background:#123525;color:#bdf6d7}
@@ -560,12 +560,40 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 .member-loc-name{position:absolute;left:50%;top:39px;transform:translateX(-50%);max-width:92px;padding:2px 5px;border-radius:5px;background:#081015e8;border:1px solid #45606e;color:#fff;font:800 10px/1.2 sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px #0008}
 .locationAccuracyLabel{font-size:10px;color:#9fb0b9;margin-top:4px}
 
+
+/* DEV6-B6 avatar cropper */
+.avatarCropOverlay{
+  position:fixed;inset:0;z-index:10050;background:#02070bd9;
+  display:grid;place-items:center;padding:14px
+}
+.avatarCropOverlay.hidden{display:none}
+.avatarCropPanel{
+  width:min(94vw,390px);background:#101b21;border:1px solid #405965;
+  border-radius:16px;padding:14px;box-shadow:0 18px 70px #000c
+}
+.avatarCropTitle{font-size:17px;font-weight:900;margin-bottom:4px}
+.avatarCropHint{font-size:11px;color:#a9bbc4;line-height:1.45;margin-bottom:10px}
+.avatarCropStage{
+  position:relative;width:min(82vw,320px);aspect-ratio:1;margin:0 auto 12px;
+  background:#050a0d;border-radius:50%;overflow:hidden;border:3px solid #e9f4f8;
+  box-shadow:0 0 0 5px #243741
+}
+#avatarCropCanvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+.avatarCropGuide{
+  pointer-events:none;position:absolute;inset:0;border-radius:50%;
+  box-shadow:inset 0 0 0 1px #ffffff80
+}
+.avatarCropZoom{display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:center;font-size:11px;margin:10px 0}
+.avatarCropZoom input{width:100%}
+.avatarCropActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.avatarCropActions button{min-height:42px}
+
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-B5 · 跨瀏覽器定位權限版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-B6 · 頭像裁切＋定位權限版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -2145,11 +2173,116 @@ $("locationCenterBtn").onclick=()=>{
     {enableHighAccuracy:true,maximumAge:0,timeout:10000}
   )
 };
+
+/* DEV6-B6 avatar cropper */
+const avatarCropState={
+  img:null,url:null,zoom:1,panX:0,panY:0,baseScale:1,
+  resolve:null,dragging:false,lastX:0,lastY:0
+};
+function avatarCropCanvas(){return $("avatarCropCanvas")}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
+function avatarCropMetrics(){
+  const c=avatarCropCanvas(),img=avatarCropState.img;
+  if(!c||!img)return null;
+  const scale=avatarCropState.baseScale*avatarCropState.zoom;
+  const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+  let x=(c.width-w)/2+avatarCropState.panX;
+  let y=(c.height-h)/2+avatarCropState.panY;
+  x=clamp(x,c.width-w,0);y=clamp(y,c.height-h,0);
+  avatarCropState.panX=x-(c.width-w)/2;
+  avatarCropState.panY=y-(c.height-h)/2;
+  return {scale,w,h,x,y}
+}
+function drawAvatarCrop(){
+  const c=avatarCropCanvas(),img=avatarCropState.img,m=avatarCropMetrics();
+  if(!c||!img||!m)return;
+  const ctx=c.getContext("2d",{alpha:false});
+  ctx.fillStyle="#081015";ctx.fillRect(0,0,c.width,c.height);
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+  ctx.drawImage(img,m.x,m.y,m.w,m.h)
+}
+function closeAvatarCrop(result=null){
+  const overlay=$("avatarCropOverlay");
+  overlay.classList.add("hidden");overlay.setAttribute("aria-hidden","true");
+  if(avatarCropState.url)URL.revokeObjectURL(avatarCropState.url);
+  avatarCropState.url=null;avatarCropState.img=null;
+  const resolve=avatarCropState.resolve;avatarCropState.resolve=null;
+  if(resolve)resolve(result)
+}
+async function openAvatarCrop(file){
+  if(!file?.type?.startsWith("image/"))throw new Error("請選擇圖片");
+  if(file.size>20*1024*1024)throw new Error("原始照片請小於 20MB");
+  return await new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{
+      avatarCropState.img=img;avatarCropState.url=url;avatarCropState.zoom=1;
+      avatarCropState.panX=0;avatarCropState.panY=0;avatarCropState.resolve=resolve;
+      const c=avatarCropCanvas();
+      avatarCropState.baseScale=Math.max(c.width/img.naturalWidth,c.height/img.naturalHeight);
+      $("avatarCropZoom").value="1";
+      $("avatarCropOverlay").classList.remove("hidden");
+      $("avatarCropOverlay").setAttribute("aria-hidden","false");
+      drawAvatarCrop()
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("照片解析失敗"))};
+    img.src=url
+  })
+}
+$("avatarCropZoom").oninput=e=>{
+  const old=avatarCropState.zoom;
+  avatarCropState.zoom=Number(e.target.value)||1;
+  if(old>0){
+    avatarCropState.panX*=avatarCropState.zoom/old;
+    avatarCropState.panY*=avatarCropState.zoom/old
+  }
+  drawAvatarCrop()
+};
+$("avatarCropCancel").onclick=()=>closeAvatarCrop(null);
+$("avatarCropUse").onclick=async()=>{
+  const c=avatarCropCanvas();
+  if(!avatarCropState.img)return;
+  drawAvatarCrop();
+  const out=document.createElement("canvas");out.width=512;out.height=512;
+  const ox=out.getContext("2d",{alpha:false});
+  ox.imageSmoothingEnabled=true;ox.imageSmoothingQuality="high";
+  ox.drawImage(c,0,0,512,512);
+  const blob=await new Promise((resolve,reject)=>
+    out.toBlob(b=>b?resolve(b):reject(new Error("頭像裁切失敗")),"image/jpeg",.82)
+  );
+  closeAvatarCrop(new File([blob],"ktak-avatar.jpg",{type:"image/jpeg"}))
+};
+(()=>{
+  const c=avatarCropCanvas();
+  const pt=e=>{
+    const r=c.getBoundingClientRect();
+    return {x:(e.clientX-r.left)*(c.width/r.width),y:(e.clientY-r.top)*(c.height/r.height)}
+  };
+  c.addEventListener("pointerdown",e=>{
+    if(!avatarCropState.img)return;
+    c.setPointerCapture?.(e.pointerId);
+    const p=pt(e);avatarCropState.dragging=true;avatarCropState.lastX=p.x;avatarCropState.lastY=p.y;
+    e.preventDefault()
+  });
+  c.addEventListener("pointermove",e=>{
+    if(!avatarCropState.dragging)return;
+    const p=pt(e);
+    avatarCropState.panX+=p.x-avatarCropState.lastX;
+    avatarCropState.panY+=p.y-avatarCropState.lastY;
+    avatarCropState.lastX=p.x;avatarCropState.lastY=p.y;
+    drawAvatarCrop();e.preventDefault()
+  });
+  const end=e=>{avatarCropState.dragging=false;try{c.releasePointerCapture?.(e.pointerId)}catch{}};
+  c.addEventListener("pointerup",end);c.addEventListener("pointercancel",end)
+})();
+
 $("memberAvatarBtn").onclick=()=>$("memberAvatarInput").click();
 $("memberAvatarInput").onchange=async e=>{
-  const file=e.target.files?.[0];if(!file)return;const old=user()?.avatarPath||null;let fresh=null;
+  const file=e.target.files?.[0];if(!file)return;
+  const old=user()?.avatarPath||null;let fresh=null;
   try{
-    const up=await uploadMemberAvatar(file);
+    const cropped=await openAvatarCrop(file);
+    if(!cropped)return;
+    const up=await uploadMemberAvatar(cropped);
     fresh=up.path;
     const verifiedUrl=await verifiedAvatarUrl(fresh);
     const {error}=await sb.rpc("ktak_set_my_avatar",{p_room_id:currentRoomUuid,p_avatar_path:fresh});
@@ -3693,5 +3826,22 @@ function renderAll(){if(!state)return;if(!locationUiTimer)locationUiTimer=setInt
 
 })();
 </script>
+
+<div id="avatarCropOverlay" class="avatarCropOverlay hidden" aria-hidden="true">
+  <div class="avatarCropPanel" role="dialog" aria-modal="true" aria-labelledby="avatarCropTitle">
+    <div id="avatarCropTitle" class="avatarCropTitle">調整頭像範圍</div>
+    <div class="avatarCropHint">拖曳照片調整位置，使用滑桿縮放。圓框內就是其他隊員看到的頭像。</div>
+    <div class="avatarCropStage">
+      <canvas id="avatarCropCanvas" width="640" height="640"></canvas>
+      <div class="avatarCropGuide"></div>
+    </div>
+    <label class="avatarCropZoom"><span>縮放</span><input id="avatarCropZoom" type="range" min="1" max="3" step="0.01" value="1"></label>
+    <div class="avatarCropActions">
+      <button id="avatarCropCancel" type="button">取消</button>
+      <button id="avatarCropUse" type="button" class="primary">使用這個範圍</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
