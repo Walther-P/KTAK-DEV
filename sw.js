@@ -1,4 +1,4 @@
-const VERSION="ktak-v21-dev6c31-push-runtime-fix";
+const VERSION="ktak-v21-dev6c32-pwa-turnstile";
 
 self.addEventListener("install",()=>self.skipWaiting());
 

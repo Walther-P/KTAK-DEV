@@ -13,7 +13,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<title>KTAK Mission Room V2.1 DEV6-C3.1</title>
+<title>KTAK Mission Room V2.1 DEV6-C3.2</title>
 <style>
 :root{--bg:#0a1014;--panel:#111a20;--panel2:#17232b;--line:#30424d;--text:#eff6f8;--muted:#98aab4;--blue:#45aff2;--green:#55d572;--yellow:#ffc650;--red:#f25c5c;--orange:#ff944c;--safe:env(safe-area-inset-bottom,0px);--safeTop:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -611,12 +611,22 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
   .pushPreviewLabel{white-space:normal}
 }
 
+
+/* DEV6-C3.2 PWA Turnstile placement */
+.turnstileGate{
+  border:1px solid #375362;background:#0b151a;border-radius:11px;
+  padding:9px 10px;margin:10px 0 12px
+}
+.turnstileGateTitle{font-size:11px;font-weight:900;margin-bottom:3px}
+.turnstileGateHint{font-size:10px;color:#9fb1ba;line-height:1.45}
+#turnstileBox{min-height:68px;display:flex;align-items:center;justify-content:center;margin-top:7px}
+
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-C3.1 · Push 前端修正版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-C3.2 · PWA 安全驗證修正版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -883,10 +893,14 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 <div class="overlay" id="entryOverlay"><div class="entryCard">
   <div id="restoreForm" class="hidden"><div class="formTitle">正在恢復任務房間…</div><div class="muted">正在確認登入狀態、成員權限與最新任務資料，請稍候。</div></div>
   <div id="entryHome"><h1>KTAK 任務房間</h1><p>安全版：建立、直接加入或恢復任務房間。加入者預設特勤人員，指揮官可再調整權限。</p><div class="entryActions"><button id="showCreateBtn" class="primary">＋ 創建房間</button><button id="showJoinBtn">→ 加入房間</button><button id="showRecoverBtn">🔑 恢復指揮官</button></div><div class="muted" style="margin-top:12px"><span id="onlineStatus">正在檢查線上服務…</span></div></div>
+  <div id="turnstileGate" class="turnstileGate">
+    <div class="turnstileGateTitle">🛡️ Cloudflare 安全驗證</div>
+    <div class="turnstileGateHint">第一次從這個瀏覽器／主畫面 KTAK 使用時，請先完成此驗證；完成後再創建、加入或恢復房間。</div>
+    <div id="turnstileBox"></div>
+  </div>
   <div id="createForm" class="hidden"><div class="formTitle">創建安全房間</div><div class="stack"><input id="createRoom" placeholder="設定房號，例如 A102"><input id="createPassword" type="password" minlength="8" maxlength="72" placeholder="房間密碼（至少 8 碼）"><input id="createNick" placeholder="你的暱稱"><select id="createRetention"><option value="1">保存 1 天</option><option value="7" selected>保存 7 天</option><option value="30">保存 30 天</option></select><div class="muted">到期後房間會停止存取，並由清理程序移除資料與照片。</div><div class="row"><button class="backEntry">返回</button><button id="createRoomBtn" class="primary" style="flex:1">創建並進入</button></div></div></div>
   <div id="joinForm" class="hidden"><div class="formTitle">加入房間</div><div class="stack"><input id="joinRoom" placeholder="房號"><input id="joinPassword" type="password" placeholder="房間密碼"><input id="joinNick" placeholder="你的暱稱"><div class="muted">房號與密碼正確即可直接加入，預設為「特勤人員」；指揮官仍可再調整權限或移除成員。</div><div class="row"><button class="backEntry">返回</button><button id="joinRoomBtn" class="primary" style="flex:1">直接加入房間</button></div></div></div>
   <div id="recoverForm" class="hidden"><div class="formTitle">恢復指揮官</div><div class="stack"><input id="recoverRoom" placeholder="房號"><input id="recoverCode" type="password" placeholder="指揮官恢復金鑰"><input id="recoverNick" placeholder="恢復後顯示的暱稱"><div class="muted">恢復成功後舊金鑰會立即失效，系統會產生一組新金鑰。</div><div class="row"><button class="backEntry">返回</button><button id="recoverRoomBtn" class="primary" style="flex:1">恢復控制權</button></div></div></div>
-  <div id="turnstileBox"></div>
 </div></div>
 
 <div id="mapContextMenu" class="contextMenu">
@@ -1098,7 +1112,7 @@ function initTurnstile(){
   try{
     turnstileWidgetId=window.turnstile.render("#turnstileBox",{
       sitekey:cfg.TURNSTILE_SITE_KEY,
-      callback:t=>{turnstileToken=t;onlineStatus("安全驗證完成","ok")},
+      callback:t=>{turnstileToken=t;onlineStatus("安全驗證完成，可以加入／創建房間","ok")},
       "expired-callback":()=>{turnstileToken="";onlineStatus("安全驗證已過期，請重新驗證","wait")},
       "error-callback":()=>{turnstileToken="";onlineStatus("安全驗證載入失敗","bad")}
     })
@@ -1113,7 +1127,16 @@ async function ensureAuth(){
   const {data:{session},error:sErr}=await sb.auth.getSession();
   if(sErr)throw sErr;
   if(session?.user){currentUserId=session.user.id;return session.user}
-  if(!turnstileToken)throw new Error("請先完成 Cloudflare 安全驗證");
+  if(!turnstileToken){
+    initTurnstile();
+    const gate=$("turnstileGate");
+    if(gate){
+      gate.classList.remove("hidden");
+      gate.scrollIntoView({behavior:"smooth",block:"center"});
+    }
+    onlineStatus("請先完成 Cloudflare 安全驗證","wait");
+    throw new Error("第一次使用此瀏覽器／主畫面 KTAK，請先完成上方 Cloudflare 安全驗證")
+  }
   const {data,error}=await sb.auth.signInAnonymously({options:{captchaToken:turnstileToken}});
   resetTurnstile();
   if(error)throw error;
@@ -1319,6 +1342,8 @@ function showEntry(which){
   $("createForm").classList.toggle("hidden",which!=="create");
   $("joinForm").classList.toggle("hidden",which!=="join");
   $("recoverForm").classList.toggle("hidden",which!=="recover");
+  const gate=$("turnstileGate");
+  if(gate)gate.classList.toggle("hidden",which==="restore");
   initTurnstile()
 }
 $("showCreateBtn").onclick=()=>showEntry("create");

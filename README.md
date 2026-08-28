@@ -1,19 +1,21 @@
-# KTAK V2.1 DEV6-C3.1 — Push 前端修正版
+# KTAK V2.1 DEV6-C3.2 — PWA Cloudflare 安全驗證修正
 
-修正 C3：
-- C3 的 Push JavaScript 被錯誤插入 CSS 區塊，導致 triggerChatPush 未定義。
-- 同一錯誤也破壞後續 CSS，所以聊天室介面比例異常。
-- Push JavaScript 現在插入真正的 JavaScript chat 區段。
-- 聊天室 grid 改為 4 列：資訊 / Push 設定 / 訊息 / 輸入框。
-- Push 按鈕改成較緊湊，不再在桌機拉滿整列。
-- Service Worker 只負責 Push，不攔截一般 fetch。
-- Push 發送失敗不會再讓已成功寫入的聊天訊息顯示「傳送失敗」。
+症狀：
+- 從 iPhone 主畫面版 KTAK 開啟後，第一次加入房間出現：
+  「加入失敗：請先完成 Cloudflare 安全驗證」
+- 使用者看不到該去哪裡完成驗證。
 
-保留：
-- DEV6-B 定位
-- 頭像功能（裁切顯示問題暫列已知 bug）
-- 聊天照片
-- 房間生命週期
+原因：
+- 主畫面 Web App 第一次啟動時可能沒有原本瀏覽器中的 Supabase anonymous session。
+- 因此 KTAK 必須先完成 Turnstile，才能建立新的 anonymous auth session。
+- 舊 UI 把 Turnstile 放在所有表單最下方，不夠明顯。
+
+修正：
+- Cloudflare Turnstile 移到加入／創建／恢復區塊上方。
+- 明確標示「第一次從這個瀏覽器／主畫面 KTAK 使用時先驗證」。
+- 若使用者未驗證就按加入，KTAK 會自動捲到驗證區。
+- 驗證成功後狀態顯示「可以加入／創建房間」。
+- Push / 定位 / 聊天 / 戰術板功能維持 C3.1。
 
 部署：
 只覆蓋 index.html、sw.js、manifest.webmanifest、README.md。
