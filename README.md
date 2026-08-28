@@ -1,18 +1,18 @@
-# KTAK V2.1 DEV6-B – 隊員定位＋頭像
+# KTAK V2.1 DEV6-B5 — 跨瀏覽器定位權限版
 
-GitHub 更新時請保留現有 `config.js`，只覆蓋本包內檔案。
+本版包含 DEV6-B4 頭像顯示修正，並調整定位權限流程。
 
-## 本版新增
-- 房間成員高精度目前位置分享（預設關閉）
-- 每位成員每房只保留最新 1 筆位置，不建立歷史軌跡
-- RLS 保護的目前位置，前端寫入最高 1 Hz
-- 10 秒位置警告、30 秒後從地圖隱藏
-- GPS accuracy 精度圈與 ± 公尺顯示
-- 隊員頭像：可拍照／選照片、移除；沿用 ktak-object-media
-- 房間刪除時定位資料與頭像媒體沿用 DEV6-A Cleanup 清理
+定位流程：
+- 使用者按「分享我的位置」時，立即呼叫標準 Geolocation `getCurrentPosition()`。
+- 權限尚未決定（prompt）時，由瀏覽器／作業系統顯示原生定位權限詢問。
+- 允許後立即取得第一筆位置，再啟動 `watchPosition()` 持續更新。
+- 若權限已被拒絕，網頁不能強迫瀏覽器再次顯示系統詢問；UI 會明確提示到瀏覽器／系統設定重新允許。
+- 支援 Permissions API 時會辨識 granted / prompt / denied；不支援時仍用標準 Geolocation fallback。
+- 檢查 HTTPS secure context 與 Geolocation API 支援。
 
-## 前置
-必須先執行 DEV6-B1 頭像 SQL 與 DEV6-B2 定位 SQL。
+重要限制：
+網站無法控制系統權限視窗的文字與選項，也無法在使用者已拒絕後強制重新跳出詢問。
+這是瀏覽器／OS 的安全限制，不是 KTAK 可繞過的行為。
 
-## 注意
-iPhone/PWA 背景或鎖屏後無法保證持續定位；回到前景會重新啟動 watchPosition。室內 GPS 可能有數公尺以上誤差，不能當作室內房間級定位。
+部署：
+只覆蓋 index.html、sw.js、manifest.webmanifest、README.md；保留原 config.js。

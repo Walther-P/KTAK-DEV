@@ -13,7 +13,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<title>KTAK Mission Room V2.1 DEV6-B</title>
+<title>KTAK Mission Room V2.1 DEV6-B5</title>
 <style>
 :root{--bg:#0a1014;--panel:#111a20;--panel2:#17232b;--line:#30424d;--text:#eff6f8;--muted:#98aab4;--blue:#45aff2;--green:#55d572;--yellow:#ffc650;--red:#f25c5c;--orange:#ff944c;--safe:env(safe-area-inset-bottom,0px);--safeTop:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -539,7 +539,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 
 
 
-/* V2.1 DEV6-B member location + avatar */
+/* V2.1 DEV6-B5 cross-browser geolocation permission + avatar display fix */
 .locationCard .row button{flex:1}
 .locationState{font-size:10px;border:1px solid #3b515c;background:#17242b;border-radius:999px;padding:3px 7px;white-space:nowrap}
 .locationState.live{border-color:#2f8d62;background:#123525;color:#bdf6d7}
@@ -565,7 +565,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-B · 隊員定位＋頭像版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-B5 · 跨瀏覽器定位權限版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -1592,8 +1592,19 @@ async function decodeImageForCompression(file){
   const url=URL.createObjectURL(file);
   try{
     const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error("照片解析失敗"));i.src=url});
-    return {source:img,width:img.naturalWidth||img.width,height:img.naturalHeight||img.height,close:()=>{},decodeMs:Math.round(performance.now()-started),decoder:"Image"}
-  }finally{URL.revokeObjectURL(url)}
+    let closed=false;
+    return {
+      source:img,
+      width:img.naturalWidth||img.width,
+      height:img.naturalHeight||img.height,
+      close:()=>{if(!closed){closed=true;URL.revokeObjectURL(url)}},
+      decodeMs:Math.round(performance.now()-started),
+      decoder:"Image"
+    }
+  }catch(err){
+    URL.revokeObjectURL(url);
+    throw err
+  }
 }
 async function compressImageFile(file,max=1280,quality=.72,targetBytes=320*1024){
   const totalStart=performance.now(),decoded=await decodeImageForCompression(file);
@@ -1625,14 +1636,38 @@ async function compressChatPhoto(file){return await compressImageFile(file,1280,
 /* object media */
 let objectMediaUrlCache=new Map();
 
-async function signedObjectMediaUrl(path){
+async function signedObjectMediaUrl(path,{force=false}={}){
   if(!path)return null;
   const c=objectMediaUrlCache.get(path);
-  if(c&&c.expires>Date.now()+60000)return c.url;
+  if(!force&&c&&c.expires>Date.now()+60000)return c.url;
   const {data,error}=await sb.storage.from("ktak-object-media").createSignedUrl(path,3600);
   if(error)throw error;
   objectMediaUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+3500000});
   return data.signedUrl
+}
+async function preloadRemoteImage(url,timeoutMs=8000){
+  await new Promise((resolve,reject)=>{
+    const img=new Image();
+    const timer=setTimeout(()=>{img.onload=img.onerror=null;reject(new Error("頭像載入逾時"))},timeoutMs);
+    img.onload=()=>{clearTimeout(timer);resolve()};
+    img.onerror=()=>{clearTimeout(timer);reject(new Error("頭像檔案無法顯示"))};
+    img.src=url
+  });
+  return url
+}
+async function verifiedAvatarUrl(path){
+  let lastErr=null;
+  for(let i=0;i<3;i++){
+    try{
+      const url=await signedObjectMediaUrl(path,{force:i>0});
+      await preloadRemoteImage(url);
+      return url
+    }catch(err){
+      lastErr=err;
+      if(i<2)await new Promise(r=>setTimeout(r,250*(i+1)))
+    }
+  }
+  throw lastErr||new Error("頭像載入失敗")
 }
 async function uploadObjectMedia(file,ownerId=currentUserId){
   if(!file?.type?.startsWith("image/"))throw new Error("請選擇圖片");
@@ -1948,7 +1983,27 @@ map.on("zoomend",()=>{
 function locationAgeMs(loc){const t=Date.parse(loc?.updatedAt||"");return Number.isFinite(t)?Math.max(0,Date.now()-t):Infinity}
 function ageText(ms){if(!Number.isFinite(ms))return "無更新";const s=Math.max(0,Math.floor(ms/1000));if(s<2)return "剛剛";if(s<60)return `${s}秒前`;return `${Math.floor(s/60)}分${s%60}秒前`}
 function locationInitials(u){const n=(u?.nick||"隊員").trim();return escapeHtml((n.slice(0,2)||"隊"))}
-function memberAvatarUrl(userId){const u=state?.users?.[userId],path=u?.avatarPath;if(!path)return null;const cached=memberAvatarUrls.get(userId);if(cached?.path===path&&cached.url)return cached.url;if(!memberAvatarLoads.has(userId)){memberAvatarLoads.add(userId);signedObjectMediaUrl(path).then(url=>{memberAvatarUrls.set(userId,{path,url});renderMyAvatar();renderMemberLocations()}).catch(e=>console.warn("avatar url",e)).finally(()=>memberAvatarLoads.delete(userId))}return null}
+function memberAvatarUrl(userId){
+  const u=state?.users?.[userId],path=u?.avatarPath;
+  if(!path)return null;
+  const cached=memberAvatarUrls.get(userId);
+  if(cached?.path===path&&cached.url)return cached.url;
+  if(!memberAvatarLoads.has(userId)){
+    memberAvatarLoads.add(userId);
+    verifiedAvatarUrl(path)
+      .then(url=>{
+        memberAvatarUrls.set(userId,{path,url});
+        renderMyAvatar();
+        renderMemberLocations()
+      })
+      .catch(e=>{
+        memberAvatarUrls.delete(userId);
+        console.warn("avatar url",e)
+      })
+      .finally(()=>memberAvatarLoads.delete(userId))
+  }
+  return null
+}
 function renderMyAvatar(){
   if(!state||!$("myAvatarPreview"))return;const u=user();$("myLocationName").textContent=u?.nick||"隊員";const box=$("myAvatarPreview"),url=memberAvatarUrl(currentUserId);box.innerHTML=url?`<img src="${url}" alt="頭像">`:locationInitials(u);
   $("memberAvatarRemoveBtn").disabled=!u?.avatarPath
@@ -1998,18 +2053,72 @@ function onLocationFix(pos){
   const loc={userId:currentUserId,lat:+c.latitude,lng:+c.longitude,accuracyM:Number.isFinite(c.accuracy)?+c.accuracy:null,updatedAt:new Date(pos.timestamp||Date.now()).toISOString()};
   memberLocations[currentUserId]=loc;setLocationUi("live","分享中",`高精度定位已開啟；最新精度 ${Number.isFinite(loc.accuracyM)?`±${Math.round(loc.accuracyM)}m`:"未知"}。`);renderMemberLocations();queueLocationWrite(loc)
 }
+async function geolocationPermissionState(){
+  try{
+    if(!navigator.permissions?.query)return "unknown";
+    const result=await navigator.permissions.query({name:"geolocation"});
+    return result?.state||"unknown"
+  }catch{
+    return "unknown"
+  }
+}
+function geolocationDeniedMessage(state="unknown"){
+  if(state==="denied"){
+    return "定位權限已被瀏覽器或系統拒絕。網頁無法強制再次跳出系統詢問；請在目前瀏覽器的網站權限或手機系統定位設定中重新允許 KTAK，然後再按一次「分享我的位置」。"
+  }
+  return "定位權限沒有取得。請確認目前瀏覽器與手機系統允許此網站使用定位，再按一次「分享我的位置」。"
+}
+async function onLocationPermissionDenied(err){
+  console.warn("geolocation permission",err);
+  locationSharing=false;
+  if(locationWatchId!==null){try{navigator.geolocation.clearWatch(locationWatchId)}catch{}locationWatchId=null}
+  const state=await geolocationPermissionState();
+  setLocationUi("off","未授權",geolocationDeniedMessage(state));
+}
 function onLocationError(err){
-  console.warn("geolocation",err);if(err?.code===1){stopLocationSharing({removeRemote:true,silent:true});setLocationUi("off","未授權","瀏覽器沒有定位權限。請在網站／iPhone 系統設定允許定位後再開啟。")}
-  else setLocationUi("warn","等待定位",err?.code===2?"目前無法取得 GPS 位置，仍會繼續等待。":"GPS 回應逾時，仍會繼續等待下一筆位置。")
+  console.warn("geolocation",err);
+  if(err?.code===1){onLocationPermissionDenied(err);return}
+  setLocationUi("warn","等待定位",err?.code===2?"目前無法取得 GPS 位置，仍會繼續等待。":"GPS 回應逾時，仍會繼續等待下一筆位置。")
 }
 function armLocationWatch(){
-  if(!locationSharing||!navigator.geolocation)return;if(locationWatchId!==null)try{navigator.geolocation.clearWatch(locationWatchId)}catch{}
-  locationWatchId=navigator.geolocation.watchPosition(onLocationFix,onLocationError,{enableHighAccuracy:true,maximumAge:0,timeout:10000})
+  if(!locationSharing||!navigator.geolocation)return;
+  if(locationWatchId!==null)try{navigator.geolocation.clearWatch(locationWatchId)}catch{}
+  locationWatchId=navigator.geolocation.watchPosition(
+    onLocationFix,
+    onLocationError,
+    {enableHighAccuracy:true,maximumAge:0,timeout:10000}
+  )
 }
-async function startLocationSharing(){
-  if(locationSharing)return;if(!navigator.geolocation){toast("此瀏覽器不支援定位");return}
-  locationSharing=true;setLocationUi("warn","定位中","正在要求高精度位置…請允許瀏覽器使用定位。" );armLocationWatch();
+function beginLocationWatchFromGrantedFix(pos){
+  locationSharing=true;
+  onLocationFix(pos);
+  setLocationUi("live","分享中","定位權限已允許，正在持續更新目前位置。");
+  armLocationWatch();
   if(!locationUiTimer)locationUiTimer=setInterval(renderMemberLocations,1000)
+}
+function startLocationSharing(){
+  if(locationSharing)return;
+  if(!window.isSecureContext){
+    setLocationUi("off","無法定位","定位功能需要 HTTPS 安全連線。請從正式的 HTTPS KTAK 網址開啟。");
+    return
+  }
+  if(!navigator.geolocation){
+    setLocationUi("off","不支援","此瀏覽器不支援標準 Geolocation API。請改用支援定位的新版 Chrome、Safari、Edge 或 Firefox。");
+    return
+  }
+
+  /*
+    跨瀏覽器權限流程：
+    使用者直接按下「分享我的位置」時，立即呼叫 getCurrentPosition()。
+    若目前權限為 prompt，支援 Geolocation 的瀏覽器會由瀏覽器/OS 顯示原生詢問。
+    若已 granted，會直接取得位置；若已 denied，瀏覽器可能直接拒絕，網頁無法強制重開系統提示。
+  */
+  setLocationUi("warn","要求權限","正在向瀏覽器要求定位權限…若出現系統詢問，請選擇允許。");
+  navigator.geolocation.getCurrentPosition(
+    beginLocationWatchFromGrantedFix,
+    onLocationError,
+    {enableHighAccuracy:true,maximumAge:0,timeout:15000}
+  )
 }
 async function stopLocationSharing({removeRemote=true,silent=false}={}){
   locationSharing=false;if(locationWatchId!==null){try{navigator.geolocation.clearWatch(locationWatchId)}catch{}locationWatchId=null}
@@ -2019,14 +2128,44 @@ async function stopLocationSharing({removeRemote=true,silent=false}={}){
 }
 $("locationShareBtn").onclick=()=>locationSharing?stopLocationSharing():startLocationSharing();
 $("locationCenterBtn").onclick=()=>{
-  const loc=memberLocations[currentUserId];if(loc&&Number.isFinite(loc.lat)){map.setView([loc.lat,loc.lng],Math.max(map.getZoom(),18));return}
-  if(!navigator.geolocation){toast("此瀏覽器不支援定位");return}navigator.geolocation.getCurrentPosition(p=>map.setView([p.coords.latitude,p.coords.longitude],Math.max(map.getZoom(),18)),e=>toast(e.code===1?"尚未允許定位":"暫時找不到位置"),{enableHighAccuracy:true,maximumAge:0,timeout:10000})
+  const loc=memberLocations[currentUserId];
+  if(loc&&Number.isFinite(loc.lat)){
+    map.setView([loc.lat,loc.lng],Math.max(map.getZoom(),18));
+    return
+  }
+  if(!navigator.geolocation){toast("此瀏覽器不支援定位");return}
+  navigator.geolocation.getCurrentPosition(
+    p=>map.setView([p.coords.latitude,p.coords.longitude],Math.max(map.getZoom(),18)),
+    async e=>{
+      if(e.code===1){
+        const state=await geolocationPermissionState();
+        toast(state==="denied"?"定位權限已被拒絕，請到瀏覽器／系統設定重新允許":"尚未取得定位權限")
+      }else toast("暫時找不到位置")
+    },
+    {enableHighAccuracy:true,maximumAge:0,timeout:10000}
+  )
 };
 $("memberAvatarBtn").onclick=()=>$("memberAvatarInput").click();
 $("memberAvatarInput").onchange=async e=>{
   const file=e.target.files?.[0];if(!file)return;const old=user()?.avatarPath||null;let fresh=null;
-  try{const up=await uploadMemberAvatar(file);fresh=up.path;const {error}=await sb.rpc("ktak_set_my_avatar",{p_room_id:currentRoomUuid,p_avatar_path:fresh});if(error)throw error;if(user())user().avatarPath=fresh;memberAvatarUrls.delete(currentUserId);renderMyAvatar();renderMemberLocations();if(old&&old!==fresh)await removeObjectMedia(old);toast("隊員頭像已更新")}
-  catch(err){if(fresh)await removeObjectMedia(fresh);toast("頭像更新失敗："+(err.message||err))}finally{$("memberAvatarInput").value=""}
+  try{
+    const up=await uploadMemberAvatar(file);
+    fresh=up.path;
+    const verifiedUrl=await verifiedAvatarUrl(fresh);
+    const {error}=await sb.rpc("ktak_set_my_avatar",{p_room_id:currentRoomUuid,p_avatar_path:fresh});
+    if(error)throw error;
+    if(user())user().avatarPath=fresh;
+    memberAvatarUrls.set(currentUserId,{path:fresh,url:verifiedUrl});
+    renderMyAvatar();
+    renderMemberLocations();
+    if(old&&old!==fresh)await removeObjectMedia(old);
+    toast("隊員頭像已更新")
+  }
+  catch(err){
+    if(fresh)await removeObjectMedia(fresh);
+    memberAvatarUrls.delete(currentUserId);
+    toast("頭像更新失敗："+(err.message||err))
+  }finally{$("memberAvatarInput").value=""}
 };
 $("memberAvatarRemoveBtn").onclick=async()=>{
   const old=user()?.avatarPath;if(!old)return;if(!confirm("移除目前頭像？"))return;
