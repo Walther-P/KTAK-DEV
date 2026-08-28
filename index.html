@@ -470,12 +470,58 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 .layoutLockBtn.locked{background:#6a4b16;border-color:#b38126;outline:1px solid #ffc650}
 .layoutLockHint{font-size:10px;color:#9fb1bb;margin-top:6px;line-height:1.45}
 
+
+/* V2.1 DEV4 */
+.tacticalListGrid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:7px
+}
+.tacticalGroupTitle{
+  grid-column:1/-1;color:#9fb3bd;font-size:10px;font-weight:850;
+  padding:6px 2px 2px;border-bottom:1px solid #293d47;margin-top:4px
+}
+.tacticalPickBtn{
+  min-height:42px;padding:6px!important;display:flex;align-items:center;gap:6px;
+  text-align:left;font-size:10px!important;background:#132027
+}
+.tacticalPickBtn svg{width:27px;height:27px;flex:0 0 27px}
+.tacticalPickBtn.active{outline:2px solid var(--yellow);background:#263039}
+
+.quickBriefFab{
+  position:fixed;z-index:7600;right:14px;bottom:calc(14px + var(--safe));
+  padding:8px 11px;border-radius:999px;background:#164058;border:1px solid #3597ce;
+  box-shadow:0 5px 18px #0009;font-size:11px
+}
+.quickBriefModal{
+  position:fixed;inset:0;z-index:9500;background:rgba(2,6,8,.82);
+  display:none;align-items:center;justify-content:center;padding:14px;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)
+}
+.quickBriefModal.open{display:flex}
+.quickBriefCard{
+  width:min(760px,96vw);max-height:92vh;overflow:auto;
+  background:#0f191f;border:1px solid #486371;border-radius:15px;
+  box-shadow:0 18px 60px #000d;padding:13px
+}
+.quickBriefHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.quickBriefGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.quickBriefItem{
+  padding:8px 9px;border:1px solid #2e444f;border-radius:9px;background:#0b151a;
+  font-size:11px;line-height:1.5;white-space:pre-wrap
+}
+.quickBriefItem.wide{grid-column:1/-1}
+.quickBriefItem b{display:block;color:#9fb4be;font-size:9px;margin-bottom:3px}
+@media(max-width:600px){
+  .quickBriefGrid{grid-template-columns:1fr}
+  .quickBriefItem.wide{grid-column:auto}
+  .quickBriefFab{right:9px;bottom:calc(9px + var(--safe));padding:7px 9px}
+}
+
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV3 · 戰術操作優化版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV4 · 快速協作優化版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -633,23 +679,16 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
   <div class="card"><h3>地圖操作</h3><div class="toolGrid"><button class="mapTool active" data-tool="pan">✋ 拖曳</button><button class="mapTool" data-tool="line">╱ 直線</button><button class="mapTool" data-tool="rect">□ 方形</button><button class="mapTool" data-tool="circle">○ 圓形</button><button class="mapTool" data-tool="free">✎ 隨意畫筆</button><button id="mapUndoBtn">↶ 復原</button></div><div class="label" style="margin-top:9px">繪圖顏色</div><div class="palette" id="mapPalette"></div><div id="mapHint">目前：拖曳地圖。</div></div>
   <div class="card">
     <h3>戰術快速圖樣</h3>
-    <div class="muted">依類別選擇圖樣；可直接放置，也可自行命名。</div>
-    <div class="symbolPickerGrid" style="margin-top:7px">
-      <select id="mapSymbolCategory"></select>
-      <select id="mapSymbolSelect"></select>
-      <input id="mapSymbolCustomLabel" class="full" placeholder="自訂名稱（可留空，例如：A組、嫌疑車A）">
-      <div class="symbolPreviewRow full">
-        <div id="mapSymbolPreview" class="symbolPreviewBox"></div>
-        <button id="mapSymbolPlaceBtn" class="primary">＋ 點地圖放置圖樣</button>
-      </div>
-    </div>
-    <div class="muted" style="margin-top:7px">拖曳可移動；按住 1 秒可旋轉／縮放。縮小地圖時圖示會自動縮小，避免遮住整片區域。</div>
+    <div class="muted">整張列表直接選；點圖樣後再點地圖放置。</div>
+    <div id="mapTacticalList" class="tacticalListGrid"></div>
+    <input id="mapTacticalCustomLabel" placeholder="自訂名稱（可留空，例如：A組、嫌疑車A）" style="margin-top:7px">
+    <div class="muted" style="margin-top:7px">拖曳可移動；按住 1 秒可旋轉／縮放。縮小地圖時圖示會自動縮小。</div>
   </div>
   <div class="card">
     <h3>自訂形狀圖樣</h3>
     <div class="muted">快速建立一個有顏色與名稱的方形、三角形或圓形目標／隊伍標記。</div>
     <div class="shapeQuickGrid">
-      <select id="mapShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option></select>
+      <select id="mapShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option><option value="free">✎ 自由手繪形狀</option></select>
       <input id="mapShapeColor" type="color" value="#45aff2" style="height:42px;padding:4px">
       <input id="mapShapeLabel" style="grid-column:1/-1" placeholder="例如：A組、目標區、搜索組">
       <button id="mapShapePlaceBtn" class="primary" style="grid-column:1/-1">＋ 點地圖放置形狀</button>
@@ -677,21 +716,14 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
   <div class="card"><h3>畫筆設定</h3><div class="row"><input id="boardColor" type="color" value="#111111" style="height:42px;padding:4px"><select id="boardWidth"><option value="2">細</option><option value="4" selected>中</option><option value="7">粗</option><option value="26">橡皮擦</option></select></div><input id="boardTextInput" class="boardToolTextInput" placeholder="文字工具內容，例如：客廳、主臥、A入口"><button id="clearBoardBtn" class="danger" style="width:100%;margin-top:7px">清空本頁</button></div>
   <div class="card">
     <h3>戰術快速圖樣</h3>
-    <div class="symbolPickerGrid">
-      <select id="boardSymbolCategory"></select>
-      <select id="boardSymbolSelect"></select>
-      <input id="boardSymbolCustomLabel" class="full" placeholder="自訂名稱（可留空）">
-      <div class="symbolPreviewRow full">
-        <div id="boardSymbolPreview" class="symbolPreviewBox"></div>
-        <button id="boardSymbolPlaceBtn" class="primary">＋ 放置圖樣</button>
-      </div>
-    </div>
-    <div class="muted" style="margin-top:6px">按下後，再點戰術板位置放置。</div>
+    <div class="muted">整張列表直接選；點圖樣後再點戰術板位置放置。</div>
+    <div id="boardTacticalList" class="tacticalListGrid"></div>
+    <input id="boardTacticalCustomLabel" placeholder="自訂名稱（可留空）" style="margin-top:7px">
   </div>
   <div class="card">
     <h3>自訂形狀圖樣</h3>
     <div class="shapeQuickGrid">
-      <select id="boardShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option></select>
+      <select id="boardShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option><option value="free">✎ 自由手繪形狀</option></select>
       <input id="boardShapeColor" type="color" value="#45aff2" style="height:42px;padding:4px">
       <input id="boardShapeLabel" style="grid-column:1/-1" placeholder="例如：A組、目標、待命區">
       <button id="boardShapePlaceBtn" class="primary" style="grid-column:1/-1">＋ 放置形狀</button>
@@ -705,7 +737,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 <section id="chatPage" class="page"><div class="chatShell"><div class="chatInfo"><div><b>聊天室</b><div class="muted">觀察員僅能觀看；其他角色可發言。指揮官可刪除房間內訊息。可傳送文字或照片。</div></div><div class="memberList" id="memberList"></div></div><div id="chatLog"></div><div><div id="chatPhotoPreview" class="chatPhotoPreview hidden"><img id="chatPhotoPreviewImg"><div class="photoInfo"><div class="label">待傳送照片</div><div id="chatPhotoName" class="photoName"></div></div><button id="chatPhotoClearBtn" class="danger">移除</button></div><div class="chatInput"><input id="chatPhotoInput" class="hidden" type="file" accept="image/*"><button id="chatPhotoBtn" class="chatPhotoBtn" title="插入照片">📷</button><input id="chatInput" placeholder="輸入訊息…"><button id="chatSendBtn" class="primary">送出</button></div></div></div></section>
 
 <section id="permissionPage" class="page"><div class="shell"><div class="sectionTitle">房間權限</div>
-<div class="card"><h2>安全權限規則</h2><div class="grid2"><div class="valueBox">新加入者：先待核准，核准前無法讀取任務資料。</div><div class="valueBox">指揮官：可核准／移除成員、調整權限、編輯全房內容。</div><div class="valueBox">特勤／偵查：可建立與修改自己的地圖／戰術板物件與聊天內容。</div><div class="valueBox">觀察員：只能觀看；戰術板樓層、畫布大小與清空整頁僅限指揮官。</div></div></div>
+<div class="card"><h2>安全權限規則</h2><div class="grid2"><div class="valueBox">新加入者：房號與密碼正確即直接加入，預設特勤人員。</div><div class="valueBox">指揮官：可核准／移除成員、調整權限、編輯全房內容。</div><div class="valueBox">特勤／偵查：可建立與修改自己的地圖／戰術板物件與聊天內容。</div><div class="valueBox">觀察員：只能觀看；戰術板樓層、畫布大小與清空整頁僅限指揮官。</div></div></div>
 <div class="card"><h2>成員核准與權限</h2><div id="permissionList"></div></div>
 <div id="securityAdminCard" class="card hidden"><h2>安全管理</h2>
   <div id="roomExpiryInfo" class="valueBox"></div>
@@ -719,9 +751,9 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 </div>
 
 <div class="overlay" id="entryOverlay"><div class="entryCard">
-  <div id="entryHome"><h1>KTAK 任務房間</h1><p>安全版：建立、加入或恢復任務房間。新加入者須由指揮官核准後才能查看任務內容。</p><div class="entryActions"><button id="showCreateBtn" class="primary">＋ 創建房間</button><button id="showJoinBtn">→ 加入房間</button><button id="showRecoverBtn">🔑 恢復指揮官</button></div><div class="muted" style="margin-top:12px"><span id="onlineStatus">正在檢查線上服務…</span></div></div>
+  <div id="entryHome"><h1>KTAK 任務房間</h1><p>安全版：建立、直接加入或恢復任務房間。加入者預設特勤人員，指揮官可再調整權限。</p><div class="entryActions"><button id="showCreateBtn" class="primary">＋ 創建房間</button><button id="showJoinBtn">→ 加入房間</button><button id="showRecoverBtn">🔑 恢復指揮官</button></div><div class="muted" style="margin-top:12px"><span id="onlineStatus">正在檢查線上服務…</span></div></div>
   <div id="createForm" class="hidden"><div class="formTitle">創建安全房間</div><div class="stack"><input id="createRoom" placeholder="設定房號，例如 A102"><input id="createPassword" type="password" minlength="8" maxlength="72" placeholder="房間密碼（至少 8 碼）"><input id="createNick" placeholder="你的暱稱"><select id="createRetention"><option value="1">保存 1 天</option><option value="7" selected>保存 7 天</option><option value="30">保存 30 天</option></select><div class="muted">到期後房間會停止存取，並由清理程序移除資料與照片。</div><div class="row"><button class="backEntry">返回</button><button id="createRoomBtn" class="primary" style="flex:1">創建並進入</button></div></div></div>
-  <div id="joinForm" class="hidden"><div class="formTitle">申請加入房間</div><div class="stack"><input id="joinRoom" placeholder="房號"><input id="joinPassword" type="password" placeholder="房間密碼"><input id="joinNick" placeholder="你的暱稱"><select id="joinRole"><option value="tactical">申請：特勤人員</option><option value="recon">申請：偵查隊</option><option value="observer">申請：觀察員</option></select><div class="muted">送出後先進入待核准狀態；指揮官核准前看不到任務內容。</div><div class="row"><button class="backEntry">返回</button><button id="joinRoomBtn" class="primary" style="flex:1">送出加入申請</button></div></div></div>
+  <div id="joinForm" class="hidden"><div class="formTitle">加入房間</div><div class="stack"><input id="joinRoom" placeholder="房號"><input id="joinPassword" type="password" placeholder="房間密碼"><input id="joinNick" placeholder="你的暱稱"><div class="muted">房號與密碼正確即可直接加入，預設為「特勤人員」；指揮官仍可再調整權限或移除成員。</div><div class="row"><button class="backEntry">返回</button><button id="joinRoomBtn" class="primary" style="flex:1">直接加入房間</button></div></div></div>
   <div id="recoverForm" class="hidden"><div class="formTitle">恢復指揮官</div><div class="stack"><input id="recoverRoom" placeholder="房號"><input id="recoverCode" type="password" placeholder="指揮官恢復金鑰"><input id="recoverNick" placeholder="恢復後顯示的暱稱"><div class="muted">恢復成功後舊金鑰會立即失效，系統會產生一組新金鑰。</div><div class="row"><button class="backEntry">返回</button><button id="recoverRoomBtn" class="primary" style="flex:1">恢復控制權</button></div></div></div>
   <div id="turnstileBox"></div>
 </div></div>
@@ -797,6 +829,18 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
     <p id="securityModalText">請把這組金鑰保存在安全的位置。伺服器只保存雜湊值，無法替你找回原字串。</p>
     <div id="securityRecoveryCode" class="recoveryCode"></div>
     <div class="row"><button id="copyRecoveryBtn" class="primary" style="flex:1">複製金鑰</button><button id="closeSecurityModal" style="flex:1">我已保存</button></div>
+  </div>
+</div>
+
+
+<button id="quickBriefFab" class="quickBriefFab hidden">📋 快速簡報</button>
+<div id="quickBriefModal" class="quickBriefModal" aria-hidden="true">
+  <div class="quickBriefCard">
+    <div class="quickBriefHead">
+      <div><b>任務簡報｜快速查看</b><div class="muted">不離開目前頁籤。</div></div>
+      <button id="quickBriefClose" style="width:38px;height:38px;padding:0">×</button>
+    </div>
+    <div id="quickBriefContent" class="quickBriefGrid"></div>
   </div>
 </div>
 
@@ -1064,6 +1108,32 @@ async function setupRealtime(){
       if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")toast("即時連線異常，正在重試")
     })
 }
+
+let roomResumeBusy=false,lastRoomResumeAt=0;
+async function resumeRoomConnection(reason="resume"){
+  if(document.visibilityState==="hidden"||!currentRoomUuid||!sb||roomResumeBusy)return;
+  const t=Date.now();if(t-lastRoomResumeAt<1200)return;lastRoomResumeAt=t;
+  roomResumeBusy=true;
+  try{
+    const {data:{session},error:sErr}=await sb.auth.getSession();
+    if(sErr)throw sErr;
+    if(!session?.user){toast("登入狀態已失效，請重新進入房間");return}
+    currentUserId=session.user.id;
+    await Promise.all([fetchMembers(),fetchBrief(),fetchMap(),fetchBoard(),fetchChat()]);
+    if(!state.users[currentUserId])throw new Error("MEMBERSHIP_REMOVED");
+    renderAll();await setupRealtime();toast("已恢復線上連線")
+  }catch(err){
+    console.warn("KTAK foreground reconnect",reason,err);
+    if(String(err.message||"").includes("MEMBERSHIP_REMOVED")){
+      sessionStorage.removeItem("ktak.v16.roomUuid");sessionStorage.removeItem("ktak.v16.room");
+      alert("你的房間存取權限已被移除。");location.reload()
+    }else toast("重新連線失敗，回到前景時會再試")
+  }finally{roomResumeBusy=false}
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)setTimeout(()=>resumeRoomConnection("visibility"),250)});
+window.addEventListener("pageshow",()=>setTimeout(()=>resumeRoomConnection("pageshow"),250));
+window.addEventListener("online",()=>setTimeout(()=>resumeRoomConnection("online"),250));
+
 async function enterRoom(){
   sessionStorage.setItem("ktak.v16.roomUuid",currentRoomUuid);
   sessionStorage.setItem("ktak.v16.room",roomId);
@@ -1149,20 +1219,22 @@ $("createRoomBtn").onclick=async()=>{
 };
 
 $("joinRoomBtn").onclick=async()=>{
-  const r=$("joinRoom").value.trim().toUpperCase(),nick=$("joinNick").value.trim(),pass=$("joinPassword").value,requested=$("joinRole").value;
+  const r=$("joinRoom").value.trim().toUpperCase(),nick=$("joinNick").value.trim(),pass=$("joinPassword").value;
   if(!r||!nick||!pass){toast("請輸入房號、密碼與暱稱");return}
   try{
     $("joinRoomBtn").disabled=true;await ensureAuth();
-    const {data,error}=await sb.rpc("ktak_join_room",{p_code:r,p_password:pass,p_nick:nick,p_requested_role:requested});
+    const {data,error}=await sb.rpc("ktak_join_room",{p_code:r,p_password:pass,p_nick:nick,p_requested_role:"tactical"});
     if(error)throw error;
     const row=Array.isArray(data)?data[0]:data;
     if(!row)throw new Error("加入房間失敗");
     if(row.status==="RATE_LIMITED"){toast("嘗試次數過多，10 分鐘後再試");return}
     if(row.status!=="OK"||!row.room_id){toast("房號或密碼錯誤");return}
-    if(row.approved){await loadOnlineRoom(row.room_id);await enterRoom()}
-    else await waitForApproval(row.room_id,row.room_code,nick)
+    if(!row.approved)throw new Error("JOIN_BACKEND_NOT_DIRECT");
+    await loadOnlineRoom(row.room_id);await enterRoom()
   }catch(e){
-    console.error(e);toast("加入失敗："+String(e.message||"未知錯誤"))
+    console.error(e);const msg=String(e.message||"未知錯誤");
+    if(msg.includes("JOIN_BACKEND_NOT_DIRECT"))toast("DEV4 直接加入 SQL 尚未套用");
+    else toast("加入失敗："+msg)
   }finally{$("joinRoomBtn").disabled=false;initTurnstile()}
 };
 
@@ -1340,7 +1412,7 @@ $("briefSaveBtn").onclick=()=>{
 };
 
 /* export import */
-$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev3",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
+$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev4",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{
     const x=JSON.parse(await f.text()),incoming=x.state||x;
@@ -1536,6 +1608,7 @@ async function removeObjectMedia(path){
 function mapItemTypeName(item){
   if(item.type==="symbol")return item.label||allIconDefs[item.icon]?.[1]||"圖樣";
   if(item.type==="shapeSymbol")return item.label||"自訂形狀";
+  if(item.type==="freeShape")return item.label||"自由手繪形狀";
   if(item.type==="photo")return item.label||"照片標示";
   return item.type==="line"?"直線":
          item.type==="rect"?"方形":
@@ -1792,12 +1865,13 @@ const tacticalSvg={
  medical:`<svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" rx="4" fill="#26703d" stroke="#fff" stroke-width="2"/><path d="M17 10h6v7h7v6h-7v7h-6v-7h-7v-6h7Z" fill="#fff"/></svg>`,
  civilian:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#59656d" stroke="#fff" stroke-width="2"/><circle cx="20" cy="14" r="4" fill="#fff"/><path d="M12 30c1-7 4-10 8-10s7 3 8 10" fill="#fff"/></svg>`,
  command:`<svg viewBox="0 0 40 40"><path d="M20 3 35 12v16l-15 9-15-9V12Z" fill="#66521b" stroke="#ffc650" stroke-width="2"/><text x="20" y="24" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="800">CMD</text></svg>`,
- gun:`<svg viewBox="0 0 48 40">
-   <path d="M4 14h8l5-5 5 2 4 3h17v5H27l-2 4 6 3-3 5-8-5-4 10h-6l4-13H4Z" fill="#20282d" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
-   <path d="M30 14h14v-3h3v8h-3" fill="none" stroke="#fff" stroke-width="1.5"/>
-   <path d="M17 20l7 1-4 8" fill="#343e44" stroke="#fff" stroke-width="1.2"/>
+ gun:`<svg viewBox="0 0 64 40">
+   <path d="M3 15h12l8-7 7 2 5 5h22v5H36l-5 3 7 4-4 7-9-6-5 9h-7l5-14H3Z" fill="#273238" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+   <path d="M38 15h22v-3h3v8h-3" fill="none" stroke="#fff" stroke-width="1.7"/>
+   <path d="M25 21h9l-4 11-7-2Z" fill="#45545c" stroke="#fff" stroke-width="1.4"/>
+   <path d="M44 13V9h9v4M17 15l-9-5" fill="none" stroke="#45aff2" stroke-width="1.8"/>
   </svg>`,
- policecar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#176aa0" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#26343c" stroke="#fff"/><rect x="15" y="6" width="10" height="3" fill="#e85d5d"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
+policecar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#176aa0" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#26343c" stroke="#fff"/><rect x="15" y="6" width="10" height="3" fill="#e85d5d"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
  civilcar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#68747b" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#39464d" stroke="#fff"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
  enemycar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#8d3030" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#452a2a" stroke="#fff"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
  van:`<svg viewBox="0 0 40 40"><rect x="5" y="12" width="30" height="18" rx="4" fill="#59656d" stroke="#fff" stroke-width="2"/><rect x="9" y="15" width="11" height="7" fill="#b8d0dc"/><circle cx="12" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
@@ -1861,28 +1935,24 @@ const symbolCategories={
   mission:{label:"任務／控制",keys:["entry","standby","ambush","rally","objective","breach","checkpoint","roadblock","barricade","target","flag","search","eye","hazard","fire","warning","lock","pin"]},
   facilities:{label:"設施／器材",keys:["building","house","warehouse","school","hospital","camera","radio","antenna","package","phone","laptop","key"]}
 };
-function setupSymbolPicker(prefix){
-  const cat=$(prefix+"SymbolCategory"),sel=$(prefix+"SymbolSelect"),preview=$(prefix+"SymbolPreview");
-  cat.innerHTML="";
-  Object.entries(symbolCategories).forEach(([k,v])=>{
-    const o=document.createElement("option");o.value=k;o.textContent=v.label;cat.appendChild(o)
-  });
-  const fill=()=>{
-    const group=symbolCategories[cat.value]||symbolCategories.personnel;
-    sel.innerHTML="";
-    group.keys.filter(k=>allIconDefs[k]&&tacticalSvg[allIconDefs[k][0]]).forEach(k=>{
-      const o=document.createElement("option");o.value=k;o.textContent=allIconDefs[k][1];sel.appendChild(o)
-    });
-    refresh()
-  };
-  const refresh=()=>{
-    const k=sel.value;
-    preview.innerHTML=k&&allIconDefs[k]?tacticalSvg[allIconDefs[k][0]]:""
-  };
-  cat.onchange=fill;sel.onchange=refresh;cat.value="personnel";fill()
+function buildTacticalGrid(containerId,handler){
+  const root=$(containerId);if(!root)return;
+  root.innerHTML="";
+  Object.values(symbolCategories).forEach(group=>{
+    const title=document.createElement("div");
+    title.className="tacticalGroupTitle";title.textContent=group.label;root.appendChild(title);
+    group.keys.forEach(key=>{
+      const def=allIconDefs[key];if(!def||!tacticalSvg[def[0]])return;
+      const b=document.createElement("button");
+      b.type="button";b.className="tacticalPickBtn";b.dataset.tacticalKey=key;
+      b.innerHTML=`${tacticalSvg[def[0]]}<span>${escapeHtml(def[1])}</span>`;
+      b.onclick=()=>handler(key,b);
+      root.appendChild(b)
+    })
+  })
 }
-setupSymbolPicker("map");
-setupSymbolPicker("board");
+
+
 
 const colors=['#45aff2','#f25c5c','#55d572','#ffc650','#111111','#ffffff','#ff944c','#9b59b6'];
 $("mapPalette").innerHTML='';
@@ -2133,6 +2203,7 @@ function renderMapItems(){
   state.map.items.forEach(item=>{
     normalizeRect(item);let layer=null;
     if(item.type==='line'||item.type==='free')layer=L.polyline(item.points,{color:item.color||'#45aff2',weight:4});
+    else if(item.type==='freeShape')layer=L.polygon(item.points,{color:item.color||'#45aff2',weight:3,fillColor:item.color||'#45aff2',fillOpacity:.22});
     else if(item.type==='rect')layer=L.polygon(item.points,{color:item.color||'#ffc650',weight:3,fillOpacity:.10});
     else if(item.type==='circle')layer=L.circle(item.center,{radius:item.radius,color:item.color||'#ffc650',weight:3,fillOpacity:.10});
     else if(item.type==='symbol'||item.type==='shapeSymbol'||item.type==='photo'){
@@ -2163,22 +2234,26 @@ function chooseIcon(key,label=null){
   $$('.mapTool').forEach(x=>x.classList.remove('active'));$$('.mapIconTool').forEach(x=>x.classList.toggle('active',x.dataset.icon===key));
   map.getContainer().style.cursor='copy';$("mapHint").textContent=`目前：點地圖放置「${mapIcon.label}」。`
 }
-$("mapSymbolPlaceBtn").onclick=()=>{
-  const key=$("mapSymbolSelect").value;
-  if(!key)return;
-  const label=$("mapSymbolCustomLabel").value.trim()||allIconDefs[key]?.[1]||"圖樣";
+buildTacticalGrid("mapTacticalList",(key,btn)=>{
+  if(!can("map")){toast("目前角色只能觀看");return}
+  $$("#mapTacticalList .tacticalPickBtn").forEach(x=>x.classList.toggle("active",x===btn));
+  const label=$("mapTacticalCustomLabel").value.trim()||allIconDefs[key]?.[1]||"圖樣";
   chooseIcon(key,label)
-};
+});
 $("mapShapePlaceBtn").onclick=()=>{
   if(!can("map")){toast("目前角色只能觀看");return}
-  mapTool="shapeSymbol";
-  mapIcon={
-    shape:$("mapShapeType").value,
-    color:$("mapShapeColor").value,
-    label:$("mapShapeLabel").value.trim()||"自訂形狀"
-  };
-  map.getContainer().style.cursor="copy";
-  $("mapHint").textContent=`目前：點地圖放置「${mapIcon.label}」。`
+  const shape=$("mapShapeType").value;
+  mapIcon={shape,color:$("mapShapeColor").value,label:$("mapShapeLabel").value.trim()};
+  if(shape==="free"){
+    mapTool="freeShape";
+    $$("#mapTacticalList .tacticalPickBtn").forEach(x=>x.classList.remove("active"));
+    map.getContainer().style.cursor="crosshair";
+    $("mapHint").textContent="目前：按住並拖曳，自由畫出封閉形狀。"
+  }else{
+    mapTool="shapeSymbol";
+    map.getContainer().style.cursor="copy";
+    $("mapHint").textContent=`目前：點地圖放置${mapIcon.label?`「${mapIcon.label}」`:"自訂形狀"}。`
+  }
 };
 
 function clearPreview(){if(preview){map.removeLayer(preview);preview=null}}
@@ -2192,7 +2267,7 @@ map.on('click',async e=>{
   }
   if(mapTool==='shapeSymbol'&&mapIcon){
     pushMapHistory();const note=prompt(`${mapIcon.label}備註（可留空）：`,'')??'';
-    state.map.items.push({id:uid(),type:'shapeSymbol',shape:mapIcon.shape,label:mapIcon.label,lat:e.latlng.lat,lng:e.latlng.lng,rotation:0,scale:1,fan:null,note,color:mapIcon.color,ownerId:currentUserId,ownerName:displayName()});
+    state.map.items.push({id:uid(),type:'shapeSymbol',shape:mapIcon.shape,label:mapIcon.label||'',lat:e.latlng.lat,lng:e.latlng.lng,rotation:0,scale:1,fan:null,note,color:mapIcon.color,ownerId:currentUserId,ownerName:displayName()});
     publish();renderMapItems();setMapTool('pan');return
   }
   if(mapTool==='photo'&&pendingPhoto){
@@ -2236,11 +2311,28 @@ map.getContainer().addEventListener('pointerdown',e=>{
     const up=()=>{document.removeEventListener('pointermove',move);map.dragging.enable();fanTargetId=null;map.getContainer().style.cursor=cursorFor(mapTool);publish();renderMapItems()};
     document.addEventListener('pointermove',move,{passive:false});document.addEventListener('pointerup',up,{once:true});return
   }
-  if(mapTool!=='free')return;
-  freeDrawing=true;freePoints=[];map.dragging.disable();pushMapHistory();const p=map.mouseEventToLatLng(e);freePoints.push([p.lat,p.lng]);preview=L.polyline(freePoints,{color:currentColor,weight:4}).addTo(map);e.preventDefault()
+  if(mapTool!=='free'&&mapTool!=='freeShape')return;
+  freeDrawing=true;freePoints=[];map.dragging.disable();pushMapHistory();const p=map.mouseEventToLatLng(e);freePoints.push([p.lat,p.lng]);
+  preview=mapTool==='freeShape'
+    ? L.polygon(freePoints,{color:mapIcon?.color||currentColor,weight:3,fillColor:mapIcon?.color||currentColor,fillOpacity:.22}).addTo(map)
+    : L.polyline(freePoints,{color:currentColor,weight:4}).addTo(map);
+  e.preventDefault()
 });
 map.getContainer().addEventListener('pointermove',e=>{if(!freeDrawing)return;const p=map.mouseEventToLatLng(e);freePoints.push([p.lat,p.lng]);preview.setLatLngs(freePoints);e.preventDefault()});
-function endFree(){if(!freeDrawing)return;freeDrawing=false;map.dragging.enable();clearPreview();if(freePoints.length>1){state.map.items.push({id:uid(),type:'free',points:freePoints,rotation:0,color:currentColor,ownerId:currentUserId,ownerName:displayName()});publish();renderMapItems()}}
+function endFree(){
+  if(!freeDrawing)return;
+  const finishedTool=mapTool,finishedIcon=mapIcon?clone(mapIcon):null;
+  freeDrawing=false;map.dragging.enable();clearPreview();
+  if(freePoints.length>1){
+    if(finishedTool==='freeShape'){
+      state.map.items.push({id:uid(),type:'freeShape',points:freePoints,rotation:0,color:finishedIcon?.color||currentColor,label:finishedIcon?.label||'',note:'',ownerId:currentUserId,ownerName:displayName()})
+    }else{
+      state.map.items.push({id:uid(),type:'free',points:freePoints,rotation:0,color:currentColor,ownerId:currentUserId,ownerName:displayName()})
+    }
+    publish();renderMapItems()
+  }
+  if(finishedTool==='freeShape')setMapTool('pan')
+}
 map.getContainer().addEventListener('pointerup',endFree);map.getContainer().addEventListener('pointercancel',endFree);
 
 $("mapUndoBtn").onclick=()=>{if(!mapHistory.length){toast('沒有可復原的地圖動作');return}state.map.items=mapHistory.pop();selectedMapId=null;publish();renderMapItems()};
@@ -2288,7 +2380,7 @@ $("mapToolsMobile").onclick=e=>{e.preventDefault();e.stopPropagation();$("mapSid
 /* board */
 const canvas=$("boardCanvas"),ctx=canvas.getContext('2d');
 const boardStage=$("boardStage"),boardWrap=$("boardWrap");
-let boardTool='select',boardDrawing=false,boardStart=null,boardCurrent=null,tempPoints=[],selectedBoardId=null,boardHistory=[],boardGesture=null,boardTransformGesture=null,boardTapMemory={id:null,at:0,timer:null};
+let boardTool='select',boardDrawing=false,boardStart=null,boardCurrent=null,boardPlaceConfig=null,tempPoints=[],selectedBoardId=null,boardHistory=[],boardGesture=null,boardTransformGesture=null,boardTapMemory={id:null,at:0,timer:null};
 let boardUserZoom=1,boardBaseScale=1,boardPointers=new Map(),boardPinch=null,boardPinching=false;
 function boardDisplayScale(){return boardBaseScale*boardUserZoom}
 function ensureBoardCanvasSize(){
@@ -2346,6 +2438,11 @@ function hitBoard(o,p){
   if(o.type==='erase')return false;
   const q=toLocal(p,o),tol=14/(o.scale||1);
   if(o.type==='free'){for(let i=1;i<o.points.length;i++)if(distSeg(q,o.points[i-1],o.points[i])<tol)return true;return false}
+  if(o.type==='freeShape'){
+    const pts=o.points||[];if(!pts.length)return false;
+    const xs=pts.map(x=>x.x),ys=pts.map(x=>x.y);
+    return q.x>=Math.min(...xs)-tol&&q.x<=Math.max(...xs)+tol&&q.y>=Math.min(...ys)-tol&&q.y<=Math.max(...ys)+tol
+  }
   if(o.type==='line')return distSeg(q,o.a,o.b)<tol;
   if(o.type==='rect')return Math.abs(q.x)<=o.w/2+tol&&Math.abs(q.y)<=o.h/2+tol;
   if(o.type==='circle')return Math.hypot(q.x,q.y)<=o.r+tol;
@@ -2361,7 +2458,7 @@ function findBoardAt(p){
   // V1.9.2:
   // Large rect/circle objects are usually building structure/background.
   // Small semantic/tactical objects must win when they overlap.
-  const tacticalTypes=new Set(['friendly','enemy','symbol','shapeSymbol','door','stairsUp','stairsDown','text']);
+  const tacticalTypes=new Set(['friendly','enemy','symbol','shapeSymbol','freeShape','door','stairsUp','stairsDown','text']);
   const middleTypes=new Set(['free','line']);
   const structuralTypes=new Set(['rect','circle']);
 
@@ -2392,10 +2489,10 @@ function boardSvgImage(key){
   if(boardSvgImageCache.has(key))return boardSvgImageCache.get(key);
   const svg=tacticalSvg[key]||tacticalSvg.friendly;
   const img=new Image();
-  img.onload=()=>{if(state?.board)renderBoard()};
-  img.src="data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(svg);
-  boardSvgImageCache.set(key,img);
-  return img
+  const url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
+  img.onload=()=>{URL.revokeObjectURL(url);if(state?.board)renderBoard()};
+  img.onerror=()=>{URL.revokeObjectURL(url);console.warn("戰術圖樣 SVG 載入失敗",key)};
+  img.src=url;boardSvgImageCache.set(key,img);return img
 }
 function drawBoardCustomShape(o){
   const c=o.color||"#45aff2";
@@ -2415,6 +2512,11 @@ function drawBoardObject(o){
     ctx.strokeStyle='#f7f7f4';ctx.lineWidth=o.width||28;if(o.points?.length>1){ctx.beginPath();ctx.moveTo(o.points[0].x,o.points[0].y);o.points.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke()}
   }else if(o.type==='free'){
     if(o.points.length>1){ctx.beginPath();ctx.moveTo(o.points[0].x,o.points[0].y);o.points.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke()}
+  }else if(o.type==='freeShape'){
+    if(o.points.length>2){
+      ctx.fillStyle=(o.color||'#45aff2')+'38';ctx.strokeStyle=o.color||'#45aff2';ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(o.points[0].x,o.points[0].y);o.points.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.closePath();ctx.fill();ctx.stroke()
+    }
   }else if(o.type==='line'){ctx.beginPath();ctx.moveTo(o.a.x,o.a.y);ctx.lineTo(o.b.x,o.b.y);ctx.stroke()}
   else if(o.type==='rect')ctx.strokeRect(-o.w/2,-o.h/2,o.w,o.h);
   else if(o.type==='circle'){ctx.beginPath();ctx.arc(0,0,o.r,0,Math.PI*2);ctx.stroke()}
@@ -2431,7 +2533,11 @@ function drawBoardObject(o){
   }else if(o.type==='symbol'){
     const img=boardSvgImage(o.icon);
     if(img.complete&&img.naturalWidth)ctx.drawImage(img,-28,-28,56,56);
-    else{ctx.strokeStyle="#455d69";ctx.strokeRect(-28,-28,56,56)}
+    else{
+      ctx.fillStyle="#20313a";ctx.strokeStyle="#55707d";ctx.fillRect(-28,-28,56,56);ctx.strokeRect(-28,-28,56,56);
+      ctx.fillStyle="#dce9ef";ctx.font="700 10px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText((o.label||allIconDefs[o.icon]?.[1]||"圖樣").slice(0,5),0,0)
+    }
   }else if(o.type==='shapeSymbol'){
     drawBoardCustomShape(o);
     if(o.label){
@@ -2493,17 +2599,22 @@ function renderBoard(previewObj=null){
   $("floorName").value=floor().name;$("floorCountText").textContent=`第 ${state.board.active+1} / ${state.board.pages.length} 頁`;renderFloorTabs();updateBoardLayoutLockUI();
   if(!boardWrap.style.width) updateBoardScale()
 }
-function setBoardTool(t){if(t!=='select'&&!can('board')){toast('目前角色只能觀看');return}boardTool=t;selectedBoardId=null;hideBoardMenu();$$('.boardTool').forEach(b=>b.classList.toggle('active',b.dataset.boardTool===t));renderBoard()}
+function setBoardTool(t){if(t!=='select'&&!can('board')){toast('目前角色只能觀看');return}boardTool=t;boardPlaceConfig=null;selectedBoardId=null;hideBoardMenu();$$('.boardTool').forEach(b=>b.classList.toggle('active',b.dataset.boardTool===t));renderBoard()}
 $$('.boardTool').forEach(b=>b.onclick=()=>setBoardTool(b.dataset.boardTool));
 function createGeom(type,a,b,pts){
   const cx=(a.x+b.x)/2,cy=(a.y+b.y)/2,base={id:uid(),type,x:cx,y:cy,rotation:0,scale:1,color:$("boardColor").value,width:+$("boardWidth").value,ownerId:currentUserId,ownerName:displayName(),note:""};
   if(type==='line'){base.a={x:a.x-cx,y:a.y-cy};base.b={x:b.x-cx,y:b.y-cy}}
   else if(type==='rect'){base.w=Math.abs(b.x-a.x);base.h=Math.abs(b.y-a.y)}
   else if(type==='circle'){base.x=a.x;base.y=a.y;base.r=Math.hypot(b.x-a.x,b.y-a.y)}
-  else if(type==='free'||type==='erase'){const minx=Math.min(...pts.map(p=>p.x)),maxx=Math.max(...pts.map(p=>p.x)),miny=Math.min(...pts.map(p=>p.y)),maxy=Math.max(...pts.map(p=>p.y));base.x=(minx+maxx)/2;base.y=(miny+maxy)/2;base.points=pts.map(p=>({x:p.x-base.x,y:p.y-base.y}));if(type==='erase')base.width=Math.max(18,+$("boardWidth").value*4)}
+  else if(type==='free'||type==='freeShape'||type==='erase'){
+    const minx=Math.min(...pts.map(p=>p.x)),maxx=Math.max(...pts.map(p=>p.x)),miny=Math.min(...pts.map(p=>p.y)),maxy=Math.max(...pts.map(p=>p.y));
+    base.x=(minx+maxx)/2;base.y=(miny+maxy)/2;base.points=pts.map(p=>({x:p.x-base.x,y:p.y-base.y}));
+    if(type==='erase')base.width=Math.max(18,+$("boardWidth").value*4);
+    if(type==='freeShape'){base.color=boardPlaceConfig?.color||'#45aff2';base.label=boardPlaceConfig?.label||''}
+  }
   return base
 }
-function boardTypeName(o){return o.type==='symbol'?(o.label||allIconDefs[o.icon]?.[1]||'圖樣'):o.type==='shapeSymbol'?(o.label||'自訂形狀'):o.type==='text'?(o.text||'文字'):o.type==='door'?'門':o.type==='stairsUp'?'樓梯↑':o.type==='stairsDown'?'樓梯↓':o.type==='friendly'?'友軍':o.type==='enemy'?'敵人':o.type==='line'?'直線':o.type==='rect'?'方形':o.type==='circle'?'圓形':o.type==='free'?'隨意畫':'物件'}
+function boardTypeName(o){return o.type==='symbol'?(o.label||allIconDefs[o.icon]?.[1]||'圖樣'):o.type==='shapeSymbol'?(o.label||'自訂形狀'):o.type==='freeShape'?(o.label||'自由手繪形狀'):o.type==='text'?(o.text||'文字'):o.type==='door'?'門':o.type==='stairsUp'?'樓梯↑':o.type==='stairsDown'?'樓梯↓':o.type==='friendly'?'友軍':o.type==='enemy'?'敵人':o.type==='line'?'直線':o.type==='rect'?'方形':o.type==='circle'?'圓形':o.type==='free'?'隨意畫':'物件'}
 function showBoardMenu(o,clientX,clientY){
   selectedBoardId=o.id;renderBoard();const m=$("boardContextMenu");$("boardCtxTitle").textContent=`${boardTypeName(o)} · ${o.ownerName||'未知'}`;
   const editable=canEditItem(o);$("boardCtxInfo").disabled=false;$("boardCtxDelete").disabled=!editable;$("boardCtxNote").disabled=!editable;$("boardCtxPhoto").disabled=!editable;$("boardCtxViewPhoto").disabled=!o.photoPath;m.classList.add('open');
@@ -2625,27 +2736,21 @@ canvas.addEventListener('mousemove',e=>{
 });
 canvas.addEventListener('mouseleave',()=>{boardHoverInfoId=null;clearTimeout(boardHoverInfoTimer);hideBoardCompactInfo()});
 canvas.addEventListener('contextmenu',e=>{e.preventDefault();const p=boardPoint(e),o=findBoardAt(p);if(o)showBoardMenu(o,e.clientX,e.clientY)});
-$("boardSymbolPlaceBtn").onclick=()=>{
+buildTacticalGrid("boardTacticalList",(key,btn)=>{
   if(!can("board")){toast("目前角色只能觀看");return}
+  $$("#boardTacticalList .tacticalPickBtn").forEach(x=>x.classList.toggle("active",x===btn));
   boardTool="symbol";
-  const key=$("boardSymbolSelect").value;
-  boardCurrent={
-    key,
-    label:$("boardSymbolCustomLabel").value.trim()||allIconDefs[key]?.[1]||"圖樣"
-  };
+  boardPlaceConfig={key,label:$("boardTacticalCustomLabel").value.trim()||allIconDefs[key]?.[1]||"圖樣"};
   $$(".boardTool").forEach(b=>b.classList.remove("active"));
-  toast(`點戰術板放置「${boardCurrent.label}」`)
-};
+  toast(`點戰術板放置「${boardPlaceConfig.label}」`)
+});
 $("boardShapePlaceBtn").onclick=()=>{
   if(!can("board")){toast("目前角色只能觀看");return}
-  boardTool="shapeSymbol";
-  boardCurrent={
-    shape:$("boardShapeType").value,
-    color:$("boardShapeColor").value,
-    label:$("boardShapeLabel").value.trim()||"自訂形狀"
-  };
+  const shape=$("boardShapeType").value;
+  boardTool=shape==="free"?"freeShape":"shapeSymbol";
+  boardPlaceConfig={shape,color:$("boardShapeColor").value,label:$("boardShapeLabel").value.trim()};
   $$(".boardTool").forEach(b=>b.classList.remove("active"));
-  toast(`點戰術板放置「${boardCurrent.label}」`)
+  toast(shape==="free"?"按住並拖曳，自由畫出封閉形狀":`點戰術板放置${boardPlaceConfig.label?`「${boardPlaceConfig.label}」`:"自訂形狀"}`)
 };
 
 canvas.addEventListener('pointerdown',e=>{
@@ -2668,15 +2773,15 @@ canvas.addEventListener('pointerdown',e=>{
     e.preventDefault();return
   }
   if(boardTool==='symbol'){
-    if(!can("board")||!boardCurrent?.key)return;
+    if(!can("board")||!boardPlaceConfig?.key)return;
     pushBoardHistory();
-    floor().objects.push({id:uid(),type:"symbol",icon:boardCurrent.key,label:boardCurrent.label,x:p.x,y:p.y,rotation:0,scale:1,ownerId:currentUserId,ownerName:displayName(),note:""});
+    floor().objects.push({id:uid(),type:"symbol",icon:boardPlaceConfig.key,label:boardPlaceConfig.label,x:p.x,y:p.y,rotation:0,scale:1,ownerId:currentUserId,ownerName:displayName(),note:""});
     publish();renderBoard();setBoardTool("select");return
   }
   if(boardTool==='shapeSymbol'){
-    if(!can("board")||!boardCurrent?.shape)return;
+    if(!can("board")||!boardPlaceConfig?.shape)return;
     pushBoardHistory();
-    floor().objects.push({id:uid(),type:"shapeSymbol",shape:boardCurrent.shape,label:boardCurrent.label,color:boardCurrent.color,x:p.x,y:p.y,rotation:0,scale:1,ownerId:currentUserId,ownerName:displayName(),note:""});
+    floor().objects.push({id:uid(),type:"shapeSymbol",shape:boardPlaceConfig.shape,label:boardPlaceConfig.label||"",color:boardPlaceConfig.color,x:p.x,y:p.y,rotation:0,scale:1,ownerId:currentUserId,ownerName:displayName(),note:""});
     publish();renderBoard();setBoardTool("select");return
   }
   if(boardTool==='text'){
@@ -2713,8 +2818,9 @@ canvas.addEventListener('pointermove',e=>{
   }
   if(!boardDrawing)return;
   boardCurrent=p;
-  if(boardTool==='free'||boardTool==='eraser'){tempPoints.push(p);renderBoard(createGeom(boardTool==='eraser'?'erase':'free',boardStart,p,tempPoints))}
-  else renderBoard(createGeom(boardTool,boardStart,p,tempPoints));e.preventDefault()
+  if(boardTool==='free'||boardTool==='freeShape'||boardTool==='eraser'){
+    tempPoints.push(p);renderBoard(createGeom(boardTool==='eraser'?'erase':boardTool,boardStart,p,tempPoints))
+  }else renderBoard(createGeom(boardTool,boardStart,p,tempPoints));e.preventDefault()
 });
 function boardEnd(e){
   if(boardPinching)return;
@@ -2750,8 +2856,10 @@ function boardEnd(e){
     return
   }
   if(!boardDrawing)return;boardDrawing=false;
+  const finishedTool=boardTool;
   const type=boardTool==='eraser'?'erase':boardTool,o=createGeom(type,boardStart,boardCurrent,tempPoints);
-  floor().objects.push(o);publish();renderBoard()
+  floor().objects.push(o);publish();renderBoard();
+  if(finishedTool==='freeShape')setBoardTool('select')
 }
 canvas.addEventListener('pointerup',boardEnd);canvas.addEventListener('pointercancel',boardEnd);
 $("boardUndoBtn").onclick=()=>{if(!boardHistory.length){toast('沒有可復原動作');return}floor().objects=boardHistory.pop();selectedBoardId=null;publish();renderBoard()};
@@ -2866,6 +2974,38 @@ async function sendChat(){
   }finally{$("chatSendBtn").disabled=!can('chat');$("chatPhotoBtn").disabled=!can('chat')}
 }
 $("chatSendBtn").onclick=sendChat;$("chatInput").addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});
+
+
+function quickVal(v){return String(v??"").trim()||"—"}
+function openQuickBrief(){
+  if(!state)return;
+  const b=state.brief||defaultBrief();
+  const vehicles=qtyText(normalizeQtyList(b.vehicles,vehicleOptions,"台"));
+  const equipment=qtyText(normalizeQtyList(b.equipment,equipmentOptions,"件"));
+  const exec=b.executionMode==="其他"&&b.executionOther?`${b.executionMode}：${b.executionOther}`:quickVal(b.executionMode);
+  const items=[
+    ["時間",quickVal(b.missionTime),false],
+    ["案類",quickVal(b.caseType),false],
+    ["案情摘要／現況",quickVal(b.situationSummary),true],
+    ["敵情",`風險：${quickVal(b.riskLevel)}｜嫌疑人：${quickVal(b.suspectCount)}\n${quickVal(b.suspectBackground)}`,true],
+    ["執行方式",exec,false],
+    ["執行地點",quickVal(b.executionLocation),true],
+    ["執行天氣",quickVal(b.executionWeather),false],
+    ["現場人員",`平民：${quickVal(b.civilianCount)}\n隊伍：${quickVal(b.teamComposition)}`,true],
+    ["車輛",vehicles,true],
+    ["攜帶裝備",equipment,true],
+    ["補充任務內容",quickVal(b.missionNotes),true]
+  ];
+  $("quickBriefContent").innerHTML=items.map(([k,v,wide])=>`<div class="quickBriefItem${wide?" wide":""}"><b>${escapeHtml(k)}</b>${escapeHtml(v)}</div>`).join("");
+  $("quickBriefModal").classList.add("open");$("quickBriefModal").setAttribute("aria-hidden","false")
+}
+function closeQuickBrief(){
+  $("quickBriefModal").classList.remove("open");$("quickBriefModal").setAttribute("aria-hidden","true")
+}
+$("quickBriefFab").onclick=openQuickBrief;
+$("quickBriefClose").onclick=closeQuickBrief;
+$("quickBriefModal").addEventListener("click",e=>{if(e.target===$("quickBriefModal"))closeQuickBrief()});
+
 
 /* permissions */
 async function loadAudit(){
@@ -3040,7 +3180,7 @@ function applyRoleUI(){
     if('disabled' in el)el.disabled=!commander
   })
 }
-function renderAll(){if(!state)return;$("headerRoom").textContent=roomId;$("headerNick").textContent=displayName();$("headerRole").textContent=roles[role()];fillBrief();setBriefEdit(false);renderMapItems();if(!state.board.pages.length)state.board.pages=[{id:uid(),name:'1F',objects:[]}];state.board.active=Math.min(state.board.active,state.board.pages.length-1);renderBoard();renderChat();renderPermissions();applyRoleUI();renderMembers()}
+function renderAll(){if(!state)return;$("quickBriefFab").classList.remove("hidden");$("headerRoom").textContent=roomId;$("headerNick").textContent=displayName();$("headerRole").textContent=roles[role()];fillBrief();setBriefEdit(false);renderMapItems();if(!state.board.pages.length)state.board.pages=[{id:uid(),name:'1F',objects:[]}];state.board.active=Math.min(state.board.active,state.board.pages.length-1);renderBoard();renderChat();renderPermissions();applyRoleUI();renderMembers()}
 
 /* restore online room session if possible */
 (async()=>{
