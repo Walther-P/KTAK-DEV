@@ -1,15 +1,18 @@
-# KTAK V2.1 DEV6-A — 房間生命週期版
+# KTAK V2.1 DEV6-B – 隊員定位＋頭像
 
-新增：
-- 指揮官可延長房間 1／7／30 天。
-- 延長是從「目前到期時間」往後加，不會把剩餘時間吃掉。
-- 防誤按：單一房間不能一次堆到超過未來 90 天；之後仍可持續再延長。
-- 修正前端沒有讀取 `expires_at`，導致到期時間可能顯示空白的問題。
-- 顯示剩餘約幾小時／幾天。
-- 新增 `ktak-cleanup` Edge Function：刪除過期房間前先透過 Storage API 清除兩個 private buckets。
-- Database 子資料利用既有 `ON DELETE CASCADE` 清除。
-- Audit log 另外刪除，避免房間刪掉後仍殘留管理紀錄。
-- Cleanup 會在真正刪除前再次檢查 `expires_at`，避免和最後一刻的延長操作競爭。
-- 停止把完整任務內容寫進 browser localStorage，並在載入 DEV6-A 時清除舊的 KTAK room cache。
+GitHub 更新時請保留現有 `config.js`，只覆蓋本包內檔案。
 
-保留 DEV5.1 全部功能。
+## 本版新增
+- 房間成員高精度目前位置分享（預設關閉）
+- 每位成員每房只保留最新 1 筆位置，不建立歷史軌跡
+- RLS 保護的目前位置，前端寫入最高 1 Hz
+- 10 秒位置警告、30 秒後從地圖隱藏
+- GPS accuracy 精度圈與 ± 公尺顯示
+- 隊員頭像：可拍照／選照片、移除；沿用 ktak-object-media
+- 房間刪除時定位資料與頭像媒體沿用 DEV6-A Cleanup 清理
+
+## 前置
+必須先執行 DEV6-B1 頭像 SQL 與 DEV6-B2 定位 SQL。
+
+## 注意
+iPhone/PWA 背景或鎖屏後無法保證持續定位；回到前景會重新啟動 watchPosition。室內 GPS 可能有數公尺以上誤差，不能當作室內房間級定位。
