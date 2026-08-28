@@ -527,12 +527,22 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 .map-duplicate-handle{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#278c4d;color:#fff;border:2px solid #fff;box-shadow:0 3px 10px #0008;font:900 22px/1 sans-serif}
 @media(max-width:600px){.quickBriefDock{top:45%}}
 
+
+/* V2.1 DEV5.1 */
+.quickBriefToggle{
+  touch-action:none!important;
+  user-select:none;-webkit-user-select:none;
+  cursor:ns-resize
+}
+.quickBriefDock.dragging{transition:none!important;filter:drop-shadow(0 5px 15px #000b)}
+.boardStage.board-panning,.boardStage.board-panning #boardCanvas{cursor:grabbing!important}
+
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV5 · 核心修正版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV5.1 · 行動操作修正版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -1430,7 +1440,7 @@ $("briefSaveBtn").onclick=()=>{
 };
 
 /* export import */
-$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev5",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
+$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev5.1",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{
     const x=JSON.parse(await f.text()),incoming=x.state||x;
@@ -1500,6 +1510,11 @@ function fmtBytes(n){
   if(n<1024*1024)return `${(n/1024).toFixed(0)} KB`;
   return `${(n/1024/1024).toFixed(1)} MB`
 }
+function uploadRateText(bytes,ms){
+  if(!Number.isFinite(bytes)||!Number.isFinite(ms)||ms<=0)return "";
+  const kbps=(bytes/1024)/(ms/1000);
+  return kbps>=1024?`${(kbps/1024).toFixed(1)} MB/s`:`${Math.round(kbps)} KB/s`
+}
 async function decodeImageForCompression(file){
   const started=performance.now();
   if(!isIOSLike()&&"createImageBitmap" in window){
@@ -1514,18 +1529,32 @@ async function decodeImageForCompression(file){
     return {source:img,width:img.naturalWidth||img.width,height:img.naturalHeight||img.height,close:()=>{},decodeMs:Math.round(performance.now()-started),decoder:"Image"}
   }finally{URL.revokeObjectURL(url)}
 }
-async function compressImageFile(file,max=1600,quality=.78){
+async function compressImageFile(file,max=1280,quality=.72,targetBytes=320*1024){
   const totalStart=performance.now(),decoded=await decodeImageForCompression(file);
-  const scale=Math.min(1,max/decoded.width,max/decoded.height),targetW=Math.max(1,Math.round(decoded.width*scale)),targetH=Math.max(1,Math.round(decoded.height*scale));
+  const scale=Math.min(1,max/decoded.width,max/decoded.height);
+  const targetW=Math.max(1,Math.round(decoded.width*scale)),targetH=Math.max(1,Math.round(decoded.height*scale));
   const encodeStart=performance.now();
   try{
     const c=document.createElement("canvas");c.width=targetW;c.height=targetH;
     const cx=c.getContext("2d",{alpha:false,desynchronized:true});cx.drawImage(decoded.source,0,0,targetW,targetH);
-    const blob=await new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("照片壓縮失敗")),"image/jpeg",quality));
-    return {blob,originalBytes:file.size,compressedBytes:blob.size,originalWidth:decoded.width,originalHeight:decoded.height,width:targetW,height:targetH,decodeMs:decoded.decodeMs,encodeMs:Math.round(performance.now()-encodeStart),ms:Math.round(performance.now()-totalStart),decoder:decoded.decoder}
+    let q=quality,blob=null,passes=0;
+    do{
+      passes++;
+      blob=await new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("照片壓縮失敗")),"image/jpeg",q));
+      if(blob.size<=targetBytes||q<=.54)break;
+      q=Math.max(.54,q-.08)
+    }while(passes<4);
+    return {
+      blob,originalBytes:file.size,compressedBytes:blob.size,
+      originalWidth:decoded.width,originalHeight:decoded.height,width:targetW,height:targetH,
+      decodeMs:decoded.decodeMs,encodeMs:Math.round(performance.now()-encodeStart),
+      ms:Math.round(performance.now()-totalStart),decoder:decoded.decoder,
+      quality:q,passes
+    }
   }finally{decoded.close?.()}
 }
-async function compressChatPhoto(file){return await compressImageFile(file,1600,.78)}
+async function compressChatPhoto(file){return await compressImageFile(file,1280,.72,320*1024)}
+
 
 /* object media */
 let objectMediaUrlCache=new Map();
@@ -1545,7 +1574,7 @@ async function uploadObjectMedia(file,ownerId=currentUserId){
 
   const totalStart=performance.now();
   toast(`照片處理中… 原始 ${fmtBytes(file.size)}`);
-  const packed=await compressImageFile(file,1600,.78);
+  const packed=await compressImageFile(file,1280,.72,320*1024);
   toast(`已壓縮 ${fmtBytes(packed.originalBytes)} → ${fmtBytes(packed.compressedBytes)}（${packed.ms} ms），正在上傳…`);
 
   const path=`${currentRoomUuid}/${ownerId||currentUserId}/${safeUuid()}.jpg`;
@@ -2082,7 +2111,7 @@ let mapObjectPhotoTargetId=null;
 $("mapCtxPhoto").onclick=()=>{const item=itemById(selectedMapId);if(!item||!canEditItem(item)||item.type==='photo')return;mapObjectPhotoTargetId=item.id;$("mapObjectPhotoInput").value='';$("mapObjectPhotoInput").click()};
 $("mapObjectPhotoInput").onchange=async e=>{
   const file=e.target.files?.[0],item=itemById(mapObjectPhotoTargetId);if(!file||!item)return;
-  try{const old=item.photoPath,res=await uploadObjectMedia(file,item.ownerId||currentUserId);pushMapHistory();item.photoPath=res.path;publish();renderMapItems();hideMapMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片完成：解碼 ${res.decodeMs}ms／壓縮 ${res.encodeMs}ms／上傳 ${res.uploadMs}ms／總計 ${(res.totalMs/1000).toFixed(1)}s`)}
+  try{const old=item.photoPath,res=await uploadObjectMedia(file,item.ownerId||currentUserId);pushMapHistory();item.photoPath=res.path;publish();renderMapItems();hideMapMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片完成：${fmtBytes(res.compressedBytes)}／解碼 ${res.decodeMs}ms／壓縮 ${res.encodeMs}ms／上傳 ${res.uploadMs}ms（${uploadRateText(res.compressedBytes,res.uploadMs)}）／總計 ${(res.totalMs/1000).toFixed(1)}s`)}
   catch(err){toast("照片上傳失敗："+err.message)}finally{mapObjectPhotoTargetId=null;e.target.value=''}
 };
 $("mapCtxViewPhoto").onclick=async()=>{
@@ -2393,7 +2422,7 @@ $("mapToolsMobile").onclick=e=>{e.preventDefault();e.stopPropagation();$("mapSid
 /* board */
 const canvas=$("boardCanvas"),ctx=canvas.getContext('2d');
 const boardStage=$("boardStage"),boardWrap=$("boardWrap");
-let boardTool='select',boardDrawing=false,boardStart=null,boardCurrent=null,boardPlaceConfig=null,tempPoints=[],selectedBoardId=null,boardHistory=[],boardGesture=null,boardTransformGesture=null,boardTapMemory={id:null,at:0,timer:null};
+let boardTool='select',boardDrawing=false,boardStart=null,boardCurrent=null,boardPlaceConfig=null,tempPoints=[],selectedBoardId=null,boardHistory=[],boardGesture=null,boardTransformGesture=null,boardPanGesture=null,boardTapMemory={id:null,at:0,timer:null};
 let boardUserZoom=1,boardBaseScale=1,boardPointers=new Map(),boardPinch=null,boardPinching=false;
 function boardDisplayScale(){return boardBaseScale*boardUserZoom}
 function ensureBoardCanvasSize(){
@@ -2422,7 +2451,7 @@ function updateBoardScale(keepCenter=false,pinchMid=null,beforeScale=null){
   boardWrap.style.height=(canvas.height*scale)+'px';
   canvas.style.width='100%';canvas.style.height='100%';
   $("boardZoomBadge").textContent=mobile
-    ?`戰術板 ${Math.round(boardUserZoom*100)}% · 雙指縮放`
+    ?`戰術板 ${Math.round(boardUserZoom*100)}% · 單指空白處平移／雙指縮放`
     :`戰術板 100% · 大畫布工作區`;
   if(anchorX!==null){
     requestAnimationFrame(()=>{
@@ -2665,7 +2694,7 @@ let boardObjectPhotoTargetId=null;
 $("boardCtxPhoto").onclick=()=>{const o=boardItem(selectedBoardId);if(!o||!canEditItem(o))return;boardObjectPhotoTargetId=o.id;$("boardObjectPhotoInput").value='';$("boardObjectPhotoInput").click()};
 $("boardObjectPhotoInput").onchange=async e=>{
   const file=e.target.files?.[0],o=boardItem(boardObjectPhotoTargetId);if(!file||!o)return;
-  try{const old=o.photoPath,res=await uploadObjectMedia(file,o.ownerId||currentUserId);pushBoardHistory();o.photoPath=res.path;publish();renderBoard();hideBoardMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片完成：解碼 ${res.decodeMs}ms／壓縮 ${res.encodeMs}ms／上傳 ${res.uploadMs}ms／總計 ${(res.totalMs/1000).toFixed(1)}s`)}
+  try{const old=o.photoPath,res=await uploadObjectMedia(file,o.ownerId||currentUserId);pushBoardHistory();o.photoPath=res.path;publish();renderBoard();hideBoardMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片完成：${fmtBytes(res.compressedBytes)}／解碼 ${res.decodeMs}ms／壓縮 ${res.encodeMs}ms／上傳 ${res.uploadMs}ms（${uploadRateText(res.compressedBytes,res.uploadMs)}）／總計 ${(res.totalMs/1000).toFixed(1)}s`)}
   catch(err){toast("照片上傳失敗："+err.message)}finally{boardObjectPhotoTargetId=null;e.target.value=''}
 };
 $("boardCtxViewPhoto").onclick=async()=>{
@@ -2707,6 +2736,8 @@ function cancelBoardInteractionForPinch(){
   if(boardGesture?.timer)clearTimeout(boardGesture.timer);
   boardGesture=null;
   boardTransformGesture=null;
+  boardPanGesture=null;
+  boardStage.classList.remove("board-panning");
   boardDrawing=false;
   tempPoints=[];
 }
@@ -2796,7 +2827,18 @@ canvas.addEventListener('pointerdown',e=>{
       }
     }
     const o=findBoardAt(p);
-    if(!o){selectedBoardId=null;renderBoard();return}
+    if(!o){
+      selectedBoardId=null;renderBoard();
+      if(e.pointerType==="touch"){
+        boardPanGesture={
+          id:e.pointerId,startClientX:e.clientX,startClientY:e.clientY,
+          startScrollLeft:boardStage.scrollLeft,startScrollTop:boardStage.scrollTop,moved:false
+        };
+        boardStage.classList.add("board-panning");
+        e.preventDefault()
+      }
+      return
+    }
     boardGesture={id:o.id,start:p,base:clone(o),moved:false,longTriggered:false,historyPushed:false,
       timer:setTimeout(()=>{if(boardGesture&&!boardGesture.moved){boardGesture.longTriggered=true;toggleBoardSelection(o)}},1000)};
     e.preventDefault();return
@@ -2828,6 +2870,13 @@ canvas.addEventListener('pointerdown',e=>{
 canvas.addEventListener('pointermove',e=>{
   if(boardPinching)return;
   const p=boardPoint(e);
+  if(boardPanGesture&&boardPanGesture.id===e.pointerId){
+    const dx=e.clientX-boardPanGesture.startClientX,dy=e.clientY-boardPanGesture.startClientY;
+    if(Math.hypot(dx,dy)>3)boardPanGesture.moved=true;
+    boardStage.scrollLeft=boardPanGesture.startScrollLeft-dx;
+    boardStage.scrollTop=boardPanGesture.startScrollTop-dy;
+    e.preventDefault();return
+  }
   if(boardTransformGesture){
     const o=boardItem(boardTransformGesture.id);if(!o)return;
     const base=boardTransformGesture.base,vec={x:p.x-base.x,y:p.y-base.y},ang=Math.atan2(vec.y,vec.x),dist=Math.max(8,Math.hypot(vec.x,vec.y));
@@ -2853,6 +2902,9 @@ canvas.addEventListener('pointermove',e=>{
 });
 function boardEnd(e){
   if(boardPinching)return;
+  if(boardPanGesture&&boardPanGesture.id===e.pointerId){
+    boardPanGesture=null;boardStage.classList.remove("board-panning");return
+  }
   if(boardTransformGesture){boardTransformGesture=null;publish();renderBoard();return}
   if(boardGesture){
     clearTimeout(boardGesture.timer);const g=boardGesture,o=boardItem(g.id);boardGesture=null;
@@ -2992,14 +3044,14 @@ async function sendChat(){
       const uploadStart=performance.now();
       const {error:upErr}=await sb.storage.from("ktak-chat").upload(imagePath,packed.blob,{contentType:"image/jpeg",cacheControl:"3600",upsert:false});
       if(upErr)throw upErr;
-      chatPhotoPerf={decodeMs:packed.decodeMs,encodeMs:packed.encodeMs,uploadMs:Math.round(performance.now()-uploadStart),totalMs:Math.round(performance.now()-totalStart)}
+      chatPhotoPerf={decodeMs:packed.decodeMs,encodeMs:packed.encodeMs,compressedBytes:packed.compressedBytes,uploadMs:Math.round(performance.now()-uploadStart),totalMs:Math.round(performance.now()-totalStart)}
     }
     const {error}=await sb.from("ktak_chat_messages").insert({
       room_id:currentRoomUuid,sender_id:currentUserId,sender_name:displayName(),text:t,image_path:imagePath
     });
     if(error)throw error;
     $("chatInput").value='';clearChatPhoto();
-    if(chatPhotoPerf)toast(`照片完成：解碼 ${chatPhotoPerf.decodeMs}ms／壓縮 ${chatPhotoPerf.encodeMs}ms／上傳 ${chatPhotoPerf.uploadMs}ms／總計 ${(chatPhotoPerf.totalMs/1000).toFixed(1)}s`)
+    if(chatPhotoPerf)toast(`照片完成：${fmtBytes(chatPhotoPerf.compressedBytes)}／解碼 ${chatPhotoPerf.decodeMs}ms／壓縮 ${chatPhotoPerf.encodeMs}ms／上傳 ${chatPhotoPerf.uploadMs}ms（${uploadRateText(chatPhotoPerf.compressedBytes,chatPhotoPerf.uploadMs)}）／總計 ${(chatPhotoPerf.totalMs/1000).toFixed(1)}s`)
   }catch(e){
     console.error(e);
     if(imagePath)await sb.storage.from("ktak-chat").remove([imagePath]).catch(()=>{});
@@ -3042,11 +3094,62 @@ function setQuickBriefDockCollapsed(collapsed){
   $("quickBriefToggle").textContent=collapsed?"◀":"▶";
   try{localStorage.setItem(quickBriefDockStateKey,collapsed?"1":"0")}catch{}
 }
-$("quickBriefToggle").onclick=()=>setQuickBriefDockCollapsed(!$("quickBriefDock").classList.contains("collapsed"));
+const quickBriefDockYKey="ktak.quickBriefDockY";
+function clampQuickBriefY(y){
+  const h=Math.max(120,window.innerHeight),pad=66;
+  return Math.max(pad,Math.min(h-pad,y))
+}
+function setQuickBriefDockY(y,save=true){
+  const dock=$("quickBriefDock");if(!dock)return;
+  const cy=clampQuickBriefY(y);
+  dock.style.top=cy+"px";
+  if(save)try{localStorage.setItem(quickBriefDockYKey,String(cy/Math.max(1,window.innerHeight)))}catch{}
+}
+function restoreQuickBriefDockY(){
+  try{
+    const ratio=parseFloat(localStorage.getItem(quickBriefDockYKey)||"");
+    if(Number.isFinite(ratio))setQuickBriefDockY(ratio*window.innerHeight,false)
+  }catch{}
+}
+let quickBriefDrag=null;
+$("quickBriefToggle").addEventListener("pointerdown",e=>{
+  const dock=$("quickBriefDock");
+  quickBriefDrag={id:e.pointerId,startY:e.clientY,startTop:dock.getBoundingClientRect().top+dock.offsetHeight/2,moved:false};
+  dock.classList.add("dragging");
+  $("quickBriefToggle").setPointerCapture?.(e.pointerId);
+  e.preventDefault()
+},{passive:false});
+$("quickBriefToggle").addEventListener("pointermove",e=>{
+  if(!quickBriefDrag||quickBriefDrag.id!==e.pointerId)return;
+  const dy=e.clientY-quickBriefDrag.startY;
+  if(Math.abs(dy)>5)quickBriefDrag.moved=true;
+  if(quickBriefDrag.moved)setQuickBriefDockY(quickBriefDrag.startTop+dy,false);
+  e.preventDefault()
+},{passive:false});
+function finishQuickBriefDrag(e){
+  if(!quickBriefDrag||quickBriefDrag.id!==e.pointerId)return;
+  const moved=quickBriefDrag.moved;
+  quickBriefDrag=null;$("quickBriefDock").classList.remove("dragging");
+  if(moved){
+    const r=$("quickBriefDock").getBoundingClientRect();
+    setQuickBriefDockY(r.top+r.height/2,true)
+  }else{
+    setQuickBriefDockCollapsed(!$("quickBriefDock").classList.contains("collapsed"))
+  }
+  e.preventDefault()
+}
+$("quickBriefToggle").addEventListener("pointerup",finishQuickBriefDrag,{passive:false});
+$("quickBriefToggle").addEventListener("pointercancel",e=>{
+  quickBriefDrag=null;$("quickBriefDock").classList.remove("dragging")
+},{passive:false});
+window.addEventListener("resize",restoreQuickBriefDockY);
 try{
   const saved=localStorage.getItem(quickBriefDockStateKey);
-  setQuickBriefDockCollapsed(saved===null?matchMedia("(max-width:600px)").matches:saved==="1")
-}catch{setQuickBriefDockCollapsed(matchMedia("(max-width:600px)").matches)}
+  setQuickBriefDockCollapsed(saved===null?matchMedia("(max-width:600px)").matches:saved==="1");
+  restoreQuickBriefDockY()
+}catch{
+  setQuickBriefDockCollapsed(matchMedia("(max-width:600px)").matches)
+}
 $("quickBriefFab").onclick=openQuickBrief;
 $("quickBriefClose").onclick=closeQuickBrief;
 $("quickBriefModal").addEventListener("click",e=>{if(e.target===$("quickBriefModal"))closeQuickBrief()});
