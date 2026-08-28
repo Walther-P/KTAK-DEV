@@ -516,12 +516,23 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
   .quickBriefFab{right:9px;bottom:calc(9px + var(--safe));padding:7px 9px}
 }
 
+
+/* V2.1 DEV5 core fixes */
+.quickBriefDock{position:fixed;right:0;top:56%;z-index:7600;display:flex;align-items:center;transform:translateY(-50%);filter:drop-shadow(0 4px 12px #0008)}
+.quickBriefDock.hidden{display:none}
+.quickBriefDock button{border-radius:9px 0 0 9px}
+.quickBriefToggle{width:27px;height:46px;padding:0!important;background:#10242e;border-color:#376579;font-size:14px}
+.quickBriefFab{position:static!important;right:auto!important;bottom:auto!important;border-radius:8px 0 0 8px!important;white-space:nowrap;transition:max-width .18s ease,opacity .15s ease,padding .18s ease;overflow:hidden;max-width:150px}
+.quickBriefDock.collapsed .quickBriefFab{max-width:0;padding-left:0!important;padding-right:0!important;border-width:0;opacity:0;pointer-events:none}
+.map-duplicate-handle{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#278c4d;color:#fff;border:2px solid #fff;box-shadow:0 3px 10px #0008;font:900 22px/1 sans-serif}
+@media(max-width:600px){.quickBriefDock{top:45%}}
+
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV4 · 快速協作優化版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV5 · 核心修正版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -688,7 +699,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
     <h3>自訂形狀圖樣</h3>
     <div class="muted">快速建立一個有顏色與名稱的方形、三角形或圓形目標／隊伍標記。</div>
     <div class="shapeQuickGrid">
-      <select id="mapShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option><option value="free">✎ 自由手繪形狀</option></select>
+      <select id="mapShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option></select>
       <input id="mapShapeColor" type="color" value="#45aff2" style="height:42px;padding:4px">
       <input id="mapShapeLabel" style="grid-column:1/-1" placeholder="例如：A組、目標區、搜索組">
       <button id="mapShapePlaceBtn" class="primary" style="grid-column:1/-1">＋ 點地圖放置形狀</button>
@@ -723,7 +734,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
   <div class="card">
     <h3>自訂形狀圖樣</h3>
     <div class="shapeQuickGrid">
-      <select id="boardShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option><option value="free">✎ 自由手繪形狀</option></select>
+      <select id="boardShapeType"><option value="square">□ 方形</option><option value="triangle">△ 三角形</option><option value="circle">○ 圓形</option></select>
       <input id="boardShapeColor" type="color" value="#45aff2" style="height:42px;padding:4px">
       <input id="boardShapeLabel" style="grid-column:1/-1" placeholder="例如：A組、目標、待命區">
       <button id="boardShapePlaceBtn" class="primary" style="grid-column:1/-1">＋ 放置形狀</button>
@@ -751,6 +762,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 </div>
 
 <div class="overlay" id="entryOverlay"><div class="entryCard">
+  <div id="restoreForm" class="hidden"><div class="formTitle">正在恢復任務房間…</div><div class="muted">正在確認登入狀態、成員權限與最新任務資料，請稍候。</div></div>
   <div id="entryHome"><h1>KTAK 任務房間</h1><p>安全版：建立、直接加入或恢復任務房間。加入者預設特勤人員，指揮官可再調整權限。</p><div class="entryActions"><button id="showCreateBtn" class="primary">＋ 創建房間</button><button id="showJoinBtn">→ 加入房間</button><button id="showRecoverBtn">🔑 恢復指揮官</button></div><div class="muted" style="margin-top:12px"><span id="onlineStatus">正在檢查線上服務…</span></div></div>
   <div id="createForm" class="hidden"><div class="formTitle">創建安全房間</div><div class="stack"><input id="createRoom" placeholder="設定房號，例如 A102"><input id="createPassword" type="password" minlength="8" maxlength="72" placeholder="房間密碼（至少 8 碼）"><input id="createNick" placeholder="你的暱稱"><select id="createRetention"><option value="1">保存 1 天</option><option value="7" selected>保存 7 天</option><option value="30">保存 30 天</option></select><div class="muted">到期後房間會停止存取，並由清理程序移除資料與照片。</div><div class="row"><button class="backEntry">返回</button><button id="createRoomBtn" class="primary" style="flex:1">創建並進入</button></div></div></div>
   <div id="joinForm" class="hidden"><div class="formTitle">加入房間</div><div class="stack"><input id="joinRoom" placeholder="房號"><input id="joinPassword" type="password" placeholder="房間密碼"><input id="joinNick" placeholder="你的暱稱"><div class="muted">房號與密碼正確即可直接加入，預設為「特勤人員」；指揮官仍可再調整權限或移除成員。</div><div class="row"><button class="backEntry">返回</button><button id="joinRoomBtn" class="primary" style="flex:1">直接加入房間</button></div></div></div>
@@ -766,6 +778,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
     <button id="mapCtxViewPhoto">查看照片（大圖）</button>
     <button id="mapCtxDirection">方向／觀察扇形</button>
     <button id="mapCtxDirectionClear">清除方向</button>
+    <button id="mapCtxDuplicate">＋ 複製圖樣</button>
     <button id="mapCtxDelete" class="danger">刪除物件</button>
   </div>
   <div class="row" style="margin-top:7px">
@@ -776,7 +789,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
       <option value="90">扇形 90°</option>
     </select>
   </div>
-  <div class="ctxHint">拖曳物件＝移動；按住物件 1 秒＝進入／完成調整；選取後拖曳右下角 ↻ 把手，可同時旋轉與縮放。電腦右鍵、手機輕觸會出現此選單。</div>
+  <div class="ctxHint">拖曳物件＝移動；按住物件 1 秒＝進入／完成調整；選取後：右下 ↻ 可旋轉／縮放；左上 ＋ 可快速複製相同圖樣。電腦右鍵、手機輕觸會出現此選單。</div>
 </div>
 
 <input id="mapObjectPhotoInput" type="file" accept="image/*" class="hidden">
@@ -788,9 +801,10 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
     <button id="boardCtxNote">編輯備註</button>
     <button id="boardCtxPhoto">加入／更換照片</button>
     <button id="boardCtxViewPhoto">查看照片（大圖）</button>
+    <button id="boardCtxDuplicate">＋ 複製圖樣</button>
     <button id="boardCtxDelete" class="danger">刪除物件</button>
   </div>
-  <div class="ctxHint">拖曳物件＝移動；按住 1 秒＝顯示／關閉調整框；拖曳右下角 ↻ 把手可同時旋轉與縮放。</div>
+  <div class="ctxHint">拖曳物件＝移動；按住 1 秒＝顯示／關閉調整框；右下 ↻ 可旋轉／縮放；左上 ＋ 可快速複製戰術圖樣。</div>
 </div>
 
 <input id="boardObjectPhotoInput" type="file" accept="image/*" class="hidden">
@@ -833,7 +847,10 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 </div>
 
 
-<button id="quickBriefFab" class="quickBriefFab hidden">📋 快速簡報</button>
+<div id="quickBriefDock" class="quickBriefDock hidden collapsed">
+  <button id="quickBriefToggle" class="quickBriefToggle" aria-label="展開快速簡報">◀</button>
+  <button id="quickBriefFab" class="quickBriefFab">📋 快速簡報</button>
+</div>
 <div id="quickBriefModal" class="quickBriefModal" aria-hidden="true">
   <div class="quickBriefCard">
     <div class="quickBriefHead">
@@ -1142,6 +1159,7 @@ async function enterRoom(){
   await setupRealtime()
 }
 function showEntry(which){
+  $("restoreForm").classList.toggle("hidden",which!=="restore");
   $("entryHome").classList.toggle("hidden",which!=="home");
   $("createForm").classList.toggle("hidden",which!=="create");
   $("joinForm").classList.toggle("hidden",which!=="join");
@@ -1412,7 +1430,7 @@ $("briefSaveBtn").onclick=()=>{
 };
 
 /* export import */
-$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev4",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
+$("exportMissionBtn").onclick=()=>{const blob=new Blob([JSON.stringify({app:"KTAK Mission Room",version:"2.1-dev5",room:roomId,exportedAt:now(),state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`KTAK_${roomId}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$("importMissionBtn").onclick=()=>$("importMissionFile").click();$("importMissionFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{
     const x=JSON.parse(await f.text()),incoming=x.state||x;
@@ -1482,86 +1500,32 @@ function fmtBytes(n){
   if(n<1024*1024)return `${(n/1024).toFixed(0)} KB`;
   return `${(n/1024/1024).toFixed(1)} MB`
 }
-async function imageDimensionsFromObjectUrl(file){
+async function decodeImageForCompression(file){
+  const started=performance.now();
+  if(!isIOSLike()&&"createImageBitmap" in window){
+    try{
+      const bitmap=await createImageBitmap(file);
+      return {source:bitmap,width:bitmap.width,height:bitmap.height,close:()=>bitmap.close?.(),decodeMs:Math.round(performance.now()-started),decoder:"ImageBitmap"}
+    }catch(err){console.warn("createImageBitmap fallback",err)}
+  }
   const url=URL.createObjectURL(file);
   try{
-    const img=await new Promise((resolve,reject)=>{
-      const i=new Image();
-      i.onload=()=>resolve(i);
-      i.onerror=()=>reject(new Error("照片尺寸讀取失敗"));
-      i.src=url
-    });
-    return {width:img.naturalWidth||img.width,height:img.naturalHeight||img.height}
-  }finally{
-    URL.revokeObjectURL(url)
-  }
-}
-async function decodeDesktopResized(file,targetW,targetH){
-  if(!("createImageBitmap" in window))return null;
-  try{
-    const bitmap=await createImageBitmap(file,{
-      resizeWidth:targetW,
-      resizeHeight:targetH,
-      resizeQuality:"high"
-    });
-    return {source:bitmap,width:bitmap.width,height:bitmap.height,close:()=>bitmap.close?.()}
-  }catch(err){
-    console.warn("direct resized createImageBitmap fallback",err);
-    return null
-  }
-}
-async function decodeImageFallback(file){
-  const url=URL.createObjectURL(file);
-  try{
-    const img=await new Promise((resolve,reject)=>{
-      const i=new Image();
-      i.onload=()=>resolve(i);
-      i.onerror=()=>reject(new Error("照片解析失敗"));
-      i.src=url
-    });
-    return {source:img,width:img.naturalWidth||img.width,height:img.naturalHeight||img.height,close:()=>{}}
-  }finally{
-    // Object URL must stay alive until Image loaded; after onload it is safe to revoke.
-    URL.revokeObjectURL(url)
-  }
+    const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error("照片解析失敗"));i.src=url});
+    return {source:img,width:img.naturalWidth||img.width,height:img.naturalHeight||img.height,close:()=>{},decodeMs:Math.round(performance.now()-started),decoder:"Image"}
+  }finally{URL.revokeObjectURL(url)}
 }
 async function compressImageFile(file,max=1600,quality=.78){
-  const started=performance.now();
-  const dims=await imageDimensionsFromObjectUrl(file);
-  const scale=Math.min(1,max/dims.width,max/dims.height);
-  const targetW=Math.max(1,Math.round(dims.width*scale));
-  const targetH=Math.max(1,Math.round(dims.height*scale));
-
-  let decoded=null;
-  if(!isIOSLike())decoded=await decodeDesktopResized(file,targetW,targetH);
-  if(!decoded)decoded=await decodeImageFallback(file);
-
+  const totalStart=performance.now(),decoded=await decodeImageForCompression(file);
+  const scale=Math.min(1,max/decoded.width,max/decoded.height),targetW=Math.max(1,Math.round(decoded.width*scale)),targetH=Math.max(1,Math.round(decoded.height*scale));
+  const encodeStart=performance.now();
   try{
-    const c=document.createElement("canvas");
-    c.width=targetW;c.height=targetH;
-    const cx=c.getContext("2d",{alpha:false,desynchronized:true});
-    cx.drawImage(decoded.source,0,0,targetW,targetH);
-    const blob=await new Promise((resolve,reject)=>
-      c.toBlob(b=>b?resolve(b):reject(new Error("照片壓縮失敗")),"image/jpeg",quality)
-    );
-    return {
-      blob,
-      originalBytes:file.size,
-      compressedBytes:blob.size,
-      originalWidth:dims.width,
-      originalHeight:dims.height,
-      width:targetW,
-      height:targetH,
-      ms:Math.round(performance.now()-started)
-    }
-  }finally{
-    decoded.close?.()
-  }
+    const c=document.createElement("canvas");c.width=targetW;c.height=targetH;
+    const cx=c.getContext("2d",{alpha:false,desynchronized:true});cx.drawImage(decoded.source,0,0,targetW,targetH);
+    const blob=await new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("照片壓縮失敗")),"image/jpeg",quality));
+    return {blob,originalBytes:file.size,compressedBytes:blob.size,originalWidth:decoded.width,originalHeight:decoded.height,width:targetW,height:targetH,decodeMs:decoded.decodeMs,encodeMs:Math.round(performance.now()-encodeStart),ms:Math.round(performance.now()-totalStart),decoder:decoded.decoder}
+  }finally{decoded.close?.()}
 }
-async function compressChatPhoto(file){
-  const r=await compressImageFile(file,1600,.78);
-  return r.blob
-}
+async function compressChatPhoto(file){return await compressImageFile(file,1600,.78)}
 
 /* object media */
 let objectMediaUrlCache=new Map();
@@ -1595,7 +1559,7 @@ async function uploadObjectMedia(file,ownerId=currentUserId){
     path,
     originalBytes:packed.originalBytes,
     compressedBytes:packed.compressedBytes,
-    compressMs:packed.ms,
+    compressMs:packed.ms,decodeMs:packed.decodeMs,encodeMs:packed.encodeMs,decoder:packed.decoder,
     uploadMs:Math.round(performance.now()-uploadStart),
     totalMs:Math.round(performance.now()-totalStart)
   }
@@ -1666,7 +1630,7 @@ document.addEventListener("pointerdown",e=>{
 },{capture:true});
 
 /* map */
-const map=L.map('map',{zoomControl:true,preferCanvas:false}).setView([23.003,120.215],15);
+const map=L.map('map',{zoomControl:true,preferCanvas:false,zoomAnimation:false,markerZoomAnimation:false,fadeAnimation:false}).setView([23.003,120.215],15);
 const road=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
 const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'});
 
@@ -1839,20 +1803,53 @@ $("mapLayerBtn").onclick=()=>{
   applyBasemapState()
 };
 
-map.on('move zoom',syncGoogleMap);
-map.on('zoomend',()=>{if(state?.map?.items)renderMapItems()});
+map.on('move',syncGoogleMap);
 // V2.1 DEV2: Google Maps is NOT instantiated at app startup.
 // A billable map load is only attempted when an authenticated room member opens the map tab.
 
 const mapLayer=L.layerGroup().addTo(map);
 const fanLayer=L.layerGroup().addTo(map);
 const selectionLayer=L.layerGroup().addTo(map);
+let tacticalLayersSuppressed=false,googleZoomFallbackTimer=null;
+function suppressTacticalLayersForZoom(){
+  if(mapProvider!=="google"||!googleMapsReady)return;
+  tacticalLayersSuppressed=true;
+  [mapLayer,fanLayer,selectionLayer].forEach(layer=>{if(map.hasLayer(layer))map.removeLayer(layer)})
+}
+function restoreTacticalLayersAfterZoom(){
+  clearTimeout(googleZoomFallbackTimer);
+  const restore=()=>{
+    if(!tacticalLayersSuppressed)return;
+    tacticalLayersSuppressed=false;
+    [mapLayer,fanLayer,selectionLayer].forEach(layer=>{if(!map.hasLayer(layer))layer.addTo(map)});
+    if(state?.map?.items)renderMapItems()
+  };
+  syncGoogleMap();
+  if(mapProvider==="google"&&googleMapsReady&&window.google?.maps?.event&&googleMap){
+    let done=false;
+    const safe=()=>{if(done)return;done=true;restore()};
+    google.maps.event.addListenerOnce(googleMap,"idle",safe);
+    googleZoomFallbackTimer=setTimeout(safe,260)
+  }else restore()
+}
+map.on("zoomstart",suppressTacticalLayersForZoom);
+map.on("zoomend",()=>{
+  if(mapProvider==="google"&&googleMapsReady)restoreTacticalLayersAfterZoom();
+  else if(state?.map?.items)renderMapItems()
+});
+
 let mapTool='pan',mapIcon=null,currentColor='#45aff2',mapHistory=[],drawStart=null,preview=null,freePoints=[],freeDrawing=false,pendingPhoto=null,selectedMapId=null,fanTargetId=null,mapTapMemory={id:null,at:0,timer:null};
 const coarsePointer=matchMedia('(pointer:coarse)').matches;
 
 /* professional tactical symbols */
 const tacticalSvg={
-  pistol:`<svg viewBox="0 0 40 40"><path d="M7 11h24v9H20l-2 5 7 3-3 8-8-4 3-12H7Z" fill="#273238" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M27 14h7" stroke="#45aff2" stroke-width="2"/></svg>`,
+  pistol:`<svg viewBox="0 0 64 40">
+  <path d="M5 9h42l5 4v7H33l-3 4 7 11H25l-8-13H7c-3 0-4-2-4-5v-5c0-2 1-3 2-3Z" fill="#273238" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M7 9V6h39l5 3" fill="none" stroke="#fff" stroke-width="1.5"/>
+  <path d="M18 19h15c0 6-3 9-7 9s-8-3-8-9Z" fill="none" stroke="#45aff2" stroke-width="1.8"/>
+  <path d="M31 24 39 35H28l-7-12Z" fill="#46555d" stroke="#fff" stroke-width="1.3"/>
+  <path d="M52 13h9v5h-9" fill="#273238" stroke="#fff" stroke-width="1.4"/>
+</svg>`,
   breach:`<svg viewBox="0 0 40 40"><rect x="7" y="4" width="18" height="32" fill="#3a474e" stroke="#fff" stroke-width="2"/><path d="M13 20h21m-7-7 7 7-7 7" fill="none" stroke="#ff944c" stroke-width="3"/><path d="m6 30 8-8" stroke="#ffc650" stroke-width="3"/></svg>`,
   rally:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#173548" stroke="#fff" stroke-width="2"/><path d="M11 20h18M20 11v18" stroke="#55d572" stroke-width="3"/><circle cx="20" cy="20" r="4" fill="#fff"/></svg>`,
   objective:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="none" stroke="#ffc650" stroke-width="3"/><path d="M20 7v26M7 20h26" stroke="#ffc650" stroke-width="2"/><circle cx="20" cy="20" r="4" fill="#f25c5c"/></svg>`,
@@ -1865,12 +1862,13 @@ const tacticalSvg={
  medical:`<svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" rx="4" fill="#26703d" stroke="#fff" stroke-width="2"/><path d="M17 10h6v7h7v6h-7v7h-6v-7h-7v-6h7Z" fill="#fff"/></svg>`,
  civilian:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#59656d" stroke="#fff" stroke-width="2"/><circle cx="20" cy="14" r="4" fill="#fff"/><path d="M12 30c1-7 4-10 8-10s7 3 8 10" fill="#fff"/></svg>`,
  command:`<svg viewBox="0 0 40 40"><path d="M20 3 35 12v16l-15 9-15-9V12Z" fill="#66521b" stroke="#ffc650" stroke-width="2"/><text x="20" y="24" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="800">CMD</text></svg>`,
- gun:`<svg viewBox="0 0 64 40">
-   <path d="M3 15h12l8-7 7 2 5 5h22v5H36l-5 3 7 4-4 7-9-6-5 9h-7l5-14H3Z" fill="#273238" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
-   <path d="M38 15h22v-3h3v8h-3" fill="none" stroke="#fff" stroke-width="1.7"/>
-   <path d="M25 21h9l-4 11-7-2Z" fill="#45545c" stroke="#fff" stroke-width="1.4"/>
-   <path d="M44 13V9h9v4M17 15l-9-5" fill="none" stroke="#45aff2" stroke-width="1.8"/>
-  </svg>`,
+ gun:`<svg viewBox="0 0 76 40">
+  <path d="M4 15h13l8-7 8 3 6 4h25v5H41l-6 3 7 4-4 8-10-6-5 8h-8l6-15H4Z" fill="#273238" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M43 15h22v-4h4v4h5v5H64" fill="none" stroke="#fff" stroke-width="1.7"/>
+  <path d="M28 21h10l-4 12-8-3Z" fill="#46555d" stroke="#fff" stroke-width="1.3"/>
+  <path d="M46 13V9h12v4M18 15 9 9" fill="none" stroke="#45aff2" stroke-width="1.8"/>
+  <path d="M53 20v5h-5" fill="none" stroke="#fff" stroke-width="1.4"/>
+</svg>`,
 policecar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#176aa0" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#26343c" stroke="#fff"/><rect x="15" y="6" width="10" height="3" fill="#e85d5d"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
  civilcar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#68747b" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#39464d" stroke="#fff"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
  enemycar:`<svg viewBox="0 0 40 40"><path d="M7 16h26l3 9v6H4v-6Z" fill="#8d3030" stroke="#fff" stroke-width="1.5"/><path d="M12 16l4-7h10l4 7" fill="#452a2a" stroke="#fff"/><circle cx="11" cy="31" r="3" fill="#111"/><circle cx="29" cy="31" r="3" fill="#111"/></svg>`,
@@ -1973,8 +1971,16 @@ function customShapeSvg(item){
 function mapZoomVisualFactor(){
   const z=map.getZoom();
   if(z>=16)return 1;
-  if(z<=8)return .42;
-  return .42+(z-8)*(.58/8)
+  if(z===15)return .90;
+  if(z===14)return .78;
+  if(z===13)return .66;
+  if(z===12)return .54;
+  if(z===11)return .42;
+  if(z===10)return .32;
+  if(z===9)return .24;
+  if(z===8)return .17;
+  if(z===7)return .13;
+  return .10
 }
 function makeIcon(item){
   const svg=item.type==='photo'
@@ -2032,7 +2038,7 @@ function applyMapTransform(item,base,deltaDeg,factor){
 function mapItemBounds(item){
   normalizeRect(item);
   if(item.type==='symbol'||item.type==='shapeSymbol'||item.type==='photo'){
-    const c=L.latLng(item.lat,item.lng),cp=map.latLngToLayerPoint(c),pad=28*(item.scale||1);
+    const c=L.latLng(item.lat,item.lng),cp=map.latLngToLayerPoint(c),pad=Math.max(8,28*(item.scale||1)*mapZoomVisualFactor());
     return L.latLngBounds(map.layerPointToLatLng([cp.x-pad,cp.y-pad]),map.layerPointToLatLng([cp.x+pad,cp.y+pad]))
   }
   if(item.type==='circle'){
@@ -2055,13 +2061,14 @@ function showMapMenu(item,clientX,clientY){
   $("mapCtxDirectionClear").disabled=!editable||!item.fan;
   $("mapCtxNote").disabled=!editable;$("mapCtxPhoto").disabled=!editable||item.type==='photo';
   $("mapCtxViewPhoto").disabled=!(item.photoPath||(item.type==='photo'&&item.dataUrl));
-  $("mapCtxDelete").disabled=!editable;
+  $("mapCtxDuplicate").disabled=!canDuplicateMapItem(item);$("mapCtxDelete").disabled=!editable;
   if(item.fan)$("mapCtxFanAngle").value=String(item.fan.angle||60);
   menu.classList.add("open");
   const w=270,h=260,x=Math.min(clientX+6,innerWidth-w-8),y=Math.min(clientY+6,innerHeight-h-8);
   menu.style.left=Math.max(8,x)+"px";menu.style.top=Math.max(8,y)+"px"
 }
 function hideMapMenu(){$("mapContextMenu").classList.remove("open")}
+$("mapCtxDuplicate").onclick=()=>{const item=itemById(selectedMapId);if(!item)return;hideMapMenu();duplicateMapTacticalItem(item)};
 $("mapCtxDelete").onclick=async()=>{
   const item=itemById(selectedMapId);if(!item||!canEditItem(item))return;pushMapHistory();const photoPath=item.photoPath;
   state.map.items=state.map.items.filter(x=>x.id!==item.id);selectedMapId=null;hideMapMenu();publish();renderMapItems();if(photoPath)await removeObjectMedia(photoPath)
@@ -2075,7 +2082,7 @@ let mapObjectPhotoTargetId=null;
 $("mapCtxPhoto").onclick=()=>{const item=itemById(selectedMapId);if(!item||!canEditItem(item)||item.type==='photo')return;mapObjectPhotoTargetId=item.id;$("mapObjectPhotoInput").value='';$("mapObjectPhotoInput").click()};
 $("mapObjectPhotoInput").onchange=async e=>{
   const file=e.target.files?.[0],item=itemById(mapObjectPhotoTargetId);if(!file||!item)return;
-  try{const old=item.photoPath,res=await uploadObjectMedia(file,item.ownerId||currentUserId);pushMapHistory();item.photoPath=res.path;publish();renderMapItems();hideMapMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片已加入：${fmtBytes(res.compressedBytes)}，總耗時 ${(res.totalMs/1000).toFixed(1)} 秒`)}
+  try{const old=item.photoPath,res=await uploadObjectMedia(file,item.ownerId||currentUserId);pushMapHistory();item.photoPath=res.path;publish();renderMapItems();hideMapMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片完成：解碼 ${res.decodeMs}ms／壓縮 ${res.encodeMs}ms／上傳 ${res.uploadMs}ms／總計 ${(res.totalMs/1000).toFixed(1)}s`)}
   catch(err){toast("照片上傳失敗："+err.message)}finally{mapObjectPhotoTargetId=null;e.target.value=''}
 };
 $("mapCtxViewPhoto").onclick=async()=>{
@@ -2104,11 +2111,24 @@ $("mapCtxDirection").onclick=()=>{
 };
 
 
+function canDuplicateMapItem(item){return !!item&&["symbol","shapeSymbol"].includes(item.type)&&canEditItem(item)}
+function duplicateMapTacticalItem(item){
+  if(!canDuplicateMapItem(item))return null;
+  pushMapHistory();
+  const c=map.latLngToLayerPoint([item.lat,item.lng]),ll=map.layerPointToLatLng([c.x+44,c.y+44]);
+  const copy=clone(item);copy.id=uid();copy.lat=ll.lat;copy.lng=ll.lng;copy.ownerId=currentUserId;copy.ownerName=displayName();
+  state.map.items.push(copy);selectedMapId=copy.id;publish();renderMapItems();toast(`已複製：${mapItemTypeName(copy)}`);return copy
+}
 function renderMapSelection(){
   selectionLayer.clearLayers();
   const item=itemById(selectedMapId);if(!item)return;
   const bounds=mapItemBounds(item);if(!bounds.isValid())return;
   L.rectangle(bounds,{className:'map-select-frame',color:'#45aff2',weight:2,dashArray:'7,5',fill:false,interactive:false}).addTo(selectionLayer);
+  if(canDuplicateMapItem(item)){
+    const plusIcon=L.divIcon({className:'',html:'<div class="map-duplicate-handle">＋</div>',iconSize:[34,34],iconAnchor:[17,17]});
+    const plus=L.marker(bounds.getNorthWest(),{icon:plusIcon,keyboard:false,zIndexOffset:5100});
+    plus.on("click",e=>{L.DomEvent.stopPropagation(e);duplicateMapTacticalItem(item)});plus.addTo(selectionLayer)
+  }
   const handleIcon=L.divIcon({className:'',html:'<div class="map-transform-handle">↻</div>',iconSize:[34,34],iconAnchor:[17,17]});
   const handle=L.marker(bounds.getSouthEast(),{icon:handleIcon,keyboard:false,zIndexOffset:5000});
   handle.on('add',()=>{
@@ -2131,7 +2151,7 @@ function renderMapSelection(){
 }
 function toggleMapSelection(item){
   if(selectedMapId===item.id){selectedMapId=null;toast('已完成物件調整')}
-  else{selectedMapId=item.id;toast('已選取：拖曳右下角 ↻ 可旋轉／縮放')}
+  else{selectedMapId=item.id;toast('已選取：右下 ↻ 旋轉／縮放；左上 ＋ 可複製')}
   renderMapItems()
 }
 
@@ -2244,16 +2264,9 @@ $("mapShapePlaceBtn").onclick=()=>{
   if(!can("map")){toast("目前角色只能觀看");return}
   const shape=$("mapShapeType").value;
   mapIcon={shape,color:$("mapShapeColor").value,label:$("mapShapeLabel").value.trim()};
-  if(shape==="free"){
-    mapTool="freeShape";
-    $$("#mapTacticalList .tacticalPickBtn").forEach(x=>x.classList.remove("active"));
-    map.getContainer().style.cursor="crosshair";
-    $("mapHint").textContent="目前：按住並拖曳，自由畫出封閉形狀。"
-  }else{
-    mapTool="shapeSymbol";
-    map.getContainer().style.cursor="copy";
-    $("mapHint").textContent=`目前：點地圖放置${mapIcon.label?`「${mapIcon.label}」`:"自訂形狀"}。`
-  }
+  mapTool="shapeSymbol";
+  map.getContainer().style.cursor="copy";
+  $("mapHint").textContent=`目前：點地圖放置${mapIcon.label?`「${mapIcon.label}」`:"自訂形狀"}。`
 };
 
 function clearPreview(){if(preview){map.removeLayer(preview);preview=null}}
@@ -2467,8 +2480,9 @@ function findBoardAt(p){
   const structural=[];
   const other=[];
 
+  const movableWhenLayoutLocked=new Set(["friendly","enemy","symbol","shapeSymbol"]);
   for(const o of objs){
-    if(o.layoutLocked && !tacticalTypes.has(o.type))continue;
+    if(o.layoutLocked&&!movableWhenLayoutLocked.has(o.type))continue;
     if(tacticalTypes.has(o.type))tactical.push(o);
     else if(middleTypes.has(o.type))middle.push(o);
     else if(structuralTypes.has(o.type))structural.push(o);
@@ -2487,12 +2501,13 @@ function findBoardAt(p){
 const boardSvgImageCache=new Map();
 function boardSvgImage(key){
   if(boardSvgImageCache.has(key))return boardSvgImageCache.get(key);
-  const svg=tacticalSvg[key]||tacticalSvg.friendly;
+  let svg=tacticalSvg[key]||tacticalSvg.friendly;
+  if(!/xmlns=/.test(svg))svg=svg.replace("<svg","<svg xmlns=\"http://www.w3.org/2000/svg\"");
   const img=new Image();
-  const url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
-  img.onload=()=>{URL.revokeObjectURL(url);if(state?.board)renderBoard()};
-  img.onerror=()=>{URL.revokeObjectURL(url);console.warn("戰術圖樣 SVG 載入失敗",key)};
-  img.src=url;boardSvgImageCache.set(key,img);return img
+  img.onload=()=>{img.dataset.ktakReady="1";if(state?.board)renderBoard()};
+  img.onerror=()=>{img.dataset.ktakError="1";console.warn("戰術圖樣 SVG 載入失敗",key)};
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  boardSvgImageCache.set(key,img);return img
 }
 function drawBoardCustomShape(o){
   const c=o.color||"#45aff2";
@@ -2532,11 +2547,11 @@ function drawBoardObject(o){
     ctx.fillStyle=o.color||'#111';ctx.font=`700 ${o.fontSize||28}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(o.text||'文字',0,0)
   }else if(o.type==='symbol'){
     const img=boardSvgImage(o.icon);
-    if(img.complete&&img.naturalWidth)ctx.drawImage(img,-28,-28,56,56);
+    if(img.complete&&img.naturalWidth&&img.dataset.ktakError!=="1")ctx.drawImage(img,-28,-28,56,56);
     else{
-      ctx.fillStyle="#20313a";ctx.strokeStyle="#55707d";ctx.fillRect(-28,-28,56,56);ctx.strokeRect(-28,-28,56,56);
-      ctx.fillStyle="#dce9ef";ctx.font="700 10px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
-      ctx.fillText((o.label||allIconDefs[o.icon]?.[1]||"圖樣").slice(0,5),0,0)
+      ctx.strokeStyle="#8aa0aa";ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.strokeRect(-24,-24,48,48);ctx.setLineDash([]);
+      ctx.fillStyle="#53646c";ctx.font="700 9px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(img.dataset.ktakError==="1"?"圖樣錯誤":"載入…",0,0)
     }
   }else if(o.type==='shapeSymbol'){
     drawBoardCustomShape(o);
@@ -2566,6 +2581,16 @@ function boardHandlePoint(o){
   const b=bbox(o);
   return toWorld({x:b[2]+22/(o.scale||1),y:b[3]+22/(o.scale||1)},o)
 }
+function boardDuplicateHandlePoint(o){
+  const b=bbox(o);return toWorld({x:b[0]-22/(o.scale||1),y:b[1]-22/(o.scale||1)},o)
+}
+function canDuplicateBoardItem(o){return !!o&&["friendly","enemy","symbol","shapeSymbol"].includes(o.type)&&canEditItem(o)}
+function duplicateBoardTacticalItem(o){
+  if(!canDuplicateBoardItem(o))return null;
+  pushBoardHistory();const copy=clone(o);copy.id=uid();copy.x=(o.x||0)+55;copy.y=(o.y||0)+55;
+  copy.ownerId=currentUserId;copy.ownerName=displayName();copy.layoutLocked=false;
+  floor().objects.push(copy);selectedBoardId=copy.id;publish();renderBoard();toast(`已複製：${boardTypeName(copy)}`);return copy
+}
 function switchFloor(i){
   state.board.active=i;selectedBoardId=null;boardHistory=[];renderBoard();
   if(matchMedia('(min-width:821px)').matches){boardStage.scrollLeft=0;boardStage.scrollTop=0}
@@ -2594,7 +2619,9 @@ function renderBoard(previewObj=null){
       toWorld({x:b[0]-8/(sel.scale||1),y:b[3]+8/(sel.scale||1)},sel)
     ];
     ctx.save();ctx.strokeStyle='#1595df';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(corners[0].x,corners[0].y);corners.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.closePath();ctx.stroke();ctx.setLineDash([]);
-    const h=boardHandlePoint(sel);ctx.fillStyle='#0f74ad';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,15,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↻',h.x,h.y+1);ctx.restore()
+    const h=boardHandlePoint(sel);ctx.fillStyle='#0f74ad';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,15,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↻',h.x,h.y+1);
+    if(canDuplicateBoardItem(sel)){const d=boardDuplicateHandlePoint(sel);ctx.fillStyle='#278c4d';ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(d.x,d.y,15,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 20px sans-serif';ctx.fillText('+',d.x,d.y+1)}
+    ctx.restore()
   }
   $("floorName").value=floor().name;$("floorCountText").textContent=`第 ${state.board.active+1} / ${state.board.pages.length} 頁`;renderFloorTabs();updateBoardLayoutLockUI();
   if(!boardWrap.style.width) updateBoardScale()
@@ -2617,7 +2644,7 @@ function createGeom(type,a,b,pts){
 function boardTypeName(o){return o.type==='symbol'?(o.label||allIconDefs[o.icon]?.[1]||'圖樣'):o.type==='shapeSymbol'?(o.label||'自訂形狀'):o.type==='freeShape'?(o.label||'自由手繪形狀'):o.type==='text'?(o.text||'文字'):o.type==='door'?'門':o.type==='stairsUp'?'樓梯↑':o.type==='stairsDown'?'樓梯↓':o.type==='friendly'?'友軍':o.type==='enemy'?'敵人':o.type==='line'?'直線':o.type==='rect'?'方形':o.type==='circle'?'圓形':o.type==='free'?'隨意畫':'物件'}
 function showBoardMenu(o,clientX,clientY){
   selectedBoardId=o.id;renderBoard();const m=$("boardContextMenu");$("boardCtxTitle").textContent=`${boardTypeName(o)} · ${o.ownerName||'未知'}`;
-  const editable=canEditItem(o);$("boardCtxInfo").disabled=false;$("boardCtxDelete").disabled=!editable;$("boardCtxNote").disabled=!editable;$("boardCtxPhoto").disabled=!editable;$("boardCtxViewPhoto").disabled=!o.photoPath;m.classList.add('open');
+  const editable=canEditItem(o);$("boardCtxInfo").disabled=false;$("boardCtxDuplicate").disabled=!canDuplicateBoardItem(o);$("boardCtxDelete").disabled=!editable;$("boardCtxNote").disabled=!editable;$("boardCtxPhoto").disabled=!editable;$("boardCtxViewPhoto").disabled=!o.photoPath;m.classList.add('open');
   const w=250,h=210;m.style.left=Math.max(8,Math.min(clientX+6,innerWidth-w-8))+'px';m.style.top=Math.max(8,Math.min(clientY+6,innerHeight-h-8))+'px'
 }
 function hideBoardMenu(){$("boardContextMenu").classList.remove('open')}
@@ -2638,7 +2665,7 @@ let boardObjectPhotoTargetId=null;
 $("boardCtxPhoto").onclick=()=>{const o=boardItem(selectedBoardId);if(!o||!canEditItem(o))return;boardObjectPhotoTargetId=o.id;$("boardObjectPhotoInput").value='';$("boardObjectPhotoInput").click()};
 $("boardObjectPhotoInput").onchange=async e=>{
   const file=e.target.files?.[0],o=boardItem(boardObjectPhotoTargetId);if(!file||!o)return;
-  try{const old=o.photoPath,res=await uploadObjectMedia(file,o.ownerId||currentUserId);pushBoardHistory();o.photoPath=res.path;publish();renderBoard();hideBoardMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片已加入：${fmtBytes(res.compressedBytes)}，總耗時 ${(res.totalMs/1000).toFixed(1)} 秒`)}
+  try{const old=o.photoPath,res=await uploadObjectMedia(file,o.ownerId||currentUserId);pushBoardHistory();o.photoPath=res.path;publish();renderBoard();hideBoardMenu();if(old&&old!==res.path)await removeObjectMedia(old);toast(`照片完成：解碼 ${res.decodeMs}ms／壓縮 ${res.encodeMs}ms／上傳 ${res.uploadMs}ms／總計 ${(res.totalMs/1000).toFixed(1)}s`)}
   catch(err){toast("照片上傳失敗："+err.message)}finally{boardObjectPhotoTargetId=null;e.target.value=''}
 };
 $("boardCtxViewPhoto").onclick=async()=>{
@@ -2653,6 +2680,7 @@ $("boardCtxViewPhoto").onclick=async()=>{
   })
 };
 
+$("boardCtxDuplicate").onclick=()=>{const o=boardItem(selectedBoardId);if(!o)return;hideBoardMenu();duplicateBoardTacticalItem(o)};
 $("boardCtxDone").onclick=()=>{selectedBoardId=null;hideBoardMenu();renderBoard()};
 $("boardCtxDelete").onclick=async()=>{
   const o=boardItem(selectedBoardId);if(!o||!canEditItem(o))return;pushBoardHistory();const photoPath=o.photoPath;
@@ -2660,7 +2688,7 @@ $("boardCtxDelete").onclick=async()=>{
 };
 function toggleBoardSelection(o){
   if(selectedBoardId===o.id){selectedBoardId=null;toast('已完成物件調整')}
-  else{selectedBoardId=o.id;toast('已選取：拖曳右下角 ↻ 可旋轉／縮放')}
+  else{selectedBoardId=o.id;toast('已選取：右下 ↻ 旋轉／縮放；左上 ＋ 可複製')}
   renderBoard()
 }
 
@@ -2747,10 +2775,10 @@ buildTacticalGrid("boardTacticalList",(key,btn)=>{
 $("boardShapePlaceBtn").onclick=()=>{
   if(!can("board")){toast("目前角色只能觀看");return}
   const shape=$("boardShapeType").value;
-  boardTool=shape==="free"?"freeShape":"shapeSymbol";
+  boardTool="shapeSymbol";
   boardPlaceConfig={shape,color:$("boardShapeColor").value,label:$("boardShapeLabel").value.trim()};
   $$(".boardTool").forEach(b=>b.classList.remove("active"));
-  toast(shape==="free"?"按住並拖曳，自由畫出封閉形狀":`點戰術板放置${boardPlaceConfig.label?`「${boardPlaceConfig.label}」`:"自訂形狀"}`)
+  toast(`點戰術板放置${boardPlaceConfig.label?`「${boardPlaceConfig.label}」`:"自訂形狀"}`)
 };
 
 canvas.addEventListener('pointerdown',e=>{
@@ -2759,6 +2787,7 @@ canvas.addEventListener('pointerdown',e=>{
   if(boardTool==='select'){
     const sel=boardItem(selectedBoardId);
     if(sel&&canEditItem(sel)){
+      if(canDuplicateBoardItem(sel)){const d=boardDuplicateHandlePoint(sel);if(Math.hypot(p.x-d.x,p.y-d.y)<=28){duplicateBoardTacticalItem(sel);e.preventDefault();return}}
       const h=boardHandlePoint(sel);
       if(Math.hypot(p.x-h.x,p.y-h.y)<=28){
         pushBoardHistory();
@@ -2956,17 +2985,21 @@ async function sendChat(){
   $("chatSendBtn").disabled=true;$("chatPhotoBtn").disabled=true;
   let imagePath=null;
   try{
+    let chatPhotoPerf=null;
     if(photo){
-      const blob=await compressChatPhoto(photo);
+      const totalStart=performance.now(),packed=await compressChatPhoto(photo);
       imagePath=`${currentRoomUuid}/${currentUserId}/${safeUuid()}.jpg`;
-      const {error:upErr}=await sb.storage.from("ktak-chat").upload(imagePath,blob,{contentType:"image/jpeg",cacheControl:"3600",upsert:false});
-      if(upErr)throw upErr
+      const uploadStart=performance.now();
+      const {error:upErr}=await sb.storage.from("ktak-chat").upload(imagePath,packed.blob,{contentType:"image/jpeg",cacheControl:"3600",upsert:false});
+      if(upErr)throw upErr;
+      chatPhotoPerf={decodeMs:packed.decodeMs,encodeMs:packed.encodeMs,uploadMs:Math.round(performance.now()-uploadStart),totalMs:Math.round(performance.now()-totalStart)}
     }
     const {error}=await sb.from("ktak_chat_messages").insert({
       room_id:currentRoomUuid,sender_id:currentUserId,sender_name:displayName(),text:t,image_path:imagePath
     });
     if(error)throw error;
-    $("chatInput").value='';clearChatPhoto()
+    $("chatInput").value='';clearChatPhoto();
+    if(chatPhotoPerf)toast(`照片完成：解碼 ${chatPhotoPerf.decodeMs}ms／壓縮 ${chatPhotoPerf.encodeMs}ms／上傳 ${chatPhotoPerf.uploadMs}ms／總計 ${(chatPhotoPerf.totalMs/1000).toFixed(1)}s`)
   }catch(e){
     console.error(e);
     if(imagePath)await sb.storage.from("ktak-chat").remove([imagePath]).catch(()=>{});
@@ -3002,6 +3035,18 @@ function openQuickBrief(){
 function closeQuickBrief(){
   $("quickBriefModal").classList.remove("open");$("quickBriefModal").setAttribute("aria-hidden","true")
 }
+const quickBriefDockStateKey="ktak.quickBriefDockCollapsed";
+function setQuickBriefDockCollapsed(collapsed){
+  const dock=$("quickBriefDock");if(!dock)return;
+  dock.classList.toggle("collapsed",!!collapsed);
+  $("quickBriefToggle").textContent=collapsed?"◀":"▶";
+  try{localStorage.setItem(quickBriefDockStateKey,collapsed?"1":"0")}catch{}
+}
+$("quickBriefToggle").onclick=()=>setQuickBriefDockCollapsed(!$("quickBriefDock").classList.contains("collapsed"));
+try{
+  const saved=localStorage.getItem(quickBriefDockStateKey);
+  setQuickBriefDockCollapsed(saved===null?matchMedia("(max-width:600px)").matches:saved==="1")
+}catch{setQuickBriefDockCollapsed(matchMedia("(max-width:600px)").matches)}
 $("quickBriefFab").onclick=openQuickBrief;
 $("quickBriefClose").onclick=closeQuickBrief;
 $("quickBriefModal").addEventListener("click",e=>{if(e.target===$("quickBriefModal"))closeQuickBrief()});
@@ -3180,7 +3225,7 @@ function applyRoleUI(){
     if('disabled' in el)el.disabled=!commander
   })
 }
-function renderAll(){if(!state)return;$("quickBriefFab").classList.remove("hidden");$("headerRoom").textContent=roomId;$("headerNick").textContent=displayName();$("headerRole").textContent=roles[role()];fillBrief();setBriefEdit(false);renderMapItems();if(!state.board.pages.length)state.board.pages=[{id:uid(),name:'1F',objects:[]}];state.board.active=Math.min(state.board.active,state.board.pages.length-1);renderBoard();renderChat();renderPermissions();applyRoleUI();renderMembers()}
+function renderAll(){if(!state)return;$("quickBriefDock").classList.remove("hidden");$("headerRoom").textContent=roomId;$("headerNick").textContent=displayName();$("headerRole").textContent=roles[role()];fillBrief();setBriefEdit(false);renderMapItems();if(!state.board.pages.length)state.board.pages=[{id:uid(),name:'1F',objects:[]}];state.board.active=Math.min(state.board.active,state.board.pages.length-1);renderBoard();renderChat();renderPermissions();applyRoleUI();renderMembers()}
 
 /* restore online room session if possible */
 (async()=>{
@@ -3190,6 +3235,7 @@ function renderAll(){if(!state)return;$("quickBriefFab").classList.remove("hidde
     const {data:{session}}=await sb.auth.getSession();
     const savedRoom=sessionStorage.getItem("ktak.v16.roomUuid");
     if(session?.user&&savedRoom){
+      showEntry("restore");
       currentUserId=session.user.id;
       const {data:member,error}=await sb.from("ktak_room_members").select("user_id,approved").eq("room_id",savedRoom).eq("user_id",currentUserId).maybeSingle();
       if(!error&&member){
