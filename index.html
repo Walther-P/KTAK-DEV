@@ -13,7 +13,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<title>KTAK Mission Room V2.1 DEV6-C3</title>
+<title>KTAK Mission Room V2.1 DEV6-C3.1</title>
 <style>
 :root{--bg:#0a1014;--panel:#111a20;--panel2:#17232b;--line:#30424d;--text:#eff6f8;--muted:#98aab4;--blue:#45aff2;--green:#55d572;--yellow:#ffc650;--red:#f25c5c;--orange:#ff944c;--safe:env(safe-area-inset-bottom,0px);--safeTop:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -30,238 +30,6 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 #mapPage{overflow:hidden}.mapLayout{height:100%;display:grid;grid-template-columns:340px 1fr}.mapSidebar{background:#10191f;border-right:1px solid var(--line);padding:10px;overflow:auto}#map{height:100%;width:100%;background:#0e1519}.toolGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.toolGrid button.active{outline:2px solid var(--blue);background:#19445c}.iconGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.iconGrid button{font-size:11px;padding:8px 6px}.iconGrid button.active{outline:2px solid var(--yellow)}.searchRow{display:grid;grid-template-columns:1fr auto;gap:6px}.leaflet-container{font-family:inherit}.leaflet-control-zoom a{background:#142027!important;color:white!important;border-color:#30414b!important}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#121d24;color:#eef5f8}.tac-icon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#152129;border:2px solid white;box-shadow:0 3px 10px #000a;font-size:18px}.tac-inner{display:grid;place-items:center;width:100%;height:100%;transform-origin:center}.photoPin{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:#2b2236;border:2px solid #fff;box-shadow:0 3px 10px #000a;font-size:18px}.photoThumb{max-width:240px;max-height:180px;border-radius:8px;display:block;margin-top:7px}#mapHint{font-size:11px;color:var(--muted);line-height:1.45;margin-top:8px}.mapTopMobile{display:none}.palette{display:flex;gap:6px;flex-wrap:wrap}.colorDot{width:30px;height:30px;border-radius:50%;border:2px solid #fff;padding:0}.colorDot.active{outline:3px solid var(--blue);outline-offset:2px}.objectEditor{border:1px solid #496171;background:#0e181e}.objectEditor .row button{flex:1}.mapPopupActions{display:flex;gap:5px;margin-top:7px}.mapPopupActions button{font-size:11px;padding:5px 7px}.customIconPreview{font-size:25px;text-align:center;padding:6px}
 /* board */
 #boardPage{overflow:hidden}.boardLayout{height:100%;display:grid;grid-template-columns:310px 1fr}.boardSidebar{background:#10191f;border-right:1px solid var(--line);padding:10px;overflow:auto}.boardStage{height:100%;display:grid;place-items:center;background:#080d10;overflow:auto;padding:14px}#boardWrap{position:relative;background:#f7f7f4;box-shadow:0 6px 24px #0009;max-width:100%}#boardCanvas{display:block;max-width:100%;height:auto;touch-action:none}.boardToolGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.boardToolGrid button{font-size:11px;padding:8px 5px}.boardToolGrid button.active{outline:2px solid var(--blue);background:#19445c}.floorControls{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center}.selectedBoardEditor{border:1px solid #496171;background:#0e181e}.selectedBoardEditor .grid3 button{padding:7px 4px;font-size:11px}
-
-/* DEV6-C3 Web Push */
-function isIosLike(){
-  return /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
-    (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1)
-}
-function isStandaloneWebApp(){
-  return window.matchMedia?.("(display-mode: standalone)")?.matches ||
-    navigator.standalone===true
-}
-function pushPreviewPreference(){
-  try{
-    const v=localStorage.getItem(PUSH_PREVIEW_KEY);
-    return v===null?true:v==="1"
-  }catch{return true}
-}
-function setPushPreviewPreference(v){
-  try{localStorage.setItem(PUSH_PREVIEW_KEY,v?"1":"0")}catch{}
-}
-function pushCapability(){
-  if(!window.isSecureContext)return {ok:false,reason:"HTTPS_REQUIRED"};
-  if(isIosLike()&&!isStandaloneWebApp())return {ok:false,reason:"IOS_HOME_SCREEN"};
-  if(!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)){
-    return {ok:false,reason:"UNSUPPORTED"}
-  }
-  return {ok:true,reason:"OK"}
-}
-function base64UrlToUint8Array(base64String){
-  const padding="=".repeat((4-base64String.length%4)%4);
-  const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
-  const raw=atob(base64),out=new Uint8Array(raw.length);
-  for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
-  return out
-}
-async function pushRegistration(){
-  const reg=await (window.KTAK_SW_READY||navigator.serviceWorker.ready);
-  if(!reg)throw new Error("Service Worker 尚未就緒");
-  return reg
-}
-async function getVapidPublicKey(){
-  if(pushPublicKeyCache)return pushPublicKeyCache;
-  if(!sb)throw new Error("Supabase 尚未連線");
-  const {data,error}=await sb.functions.invoke("ktak-push",{body:{action:"vapid-public-key"}});
-  if(error)throw error;
-  if(!data?.ok||!data?.publicKey)throw new Error(data?.error||"無法取得 Push Public Key");
-  pushPublicKeyCache=String(data.publicKey);
-  return pushPublicKeyCache
-}
-async function savePushSubscription(sub,previewEnabled){
-  const raw=sub.toJSON();
-  const p256dh=raw?.keys?.p256dh,auth=raw?.keys?.auth;
-  if(!raw?.endpoint||!p256dh||!auth)throw new Error("瀏覽器沒有提供完整 PushSubscription");
-  const {error}=await sb.from("ktak_push_subscriptions").upsert({
-    user_id:currentUserId,
-    endpoint:raw.endpoint,
-    p256dh,
-    auth,
-    enabled:true,
-    preview_enabled:!!previewEnabled,
-    user_agent:navigator.userAgent
-  },{onConflict:"endpoint"});
-  if(error)throw error
-}
-async function currentPushSubscription(){
-  const cap=pushCapability();
-  if(!cap.ok)return null;
-  const reg=await pushRegistration();
-  return await reg.pushManager.getSubscription()
-}
-function setPushUi(status,label,help,buttonText,buttonDisabled=false){
-  const s=$("pushStatus"),b=$("pushToggleBtn"),h=$("pushHelp");
-  if(!s||!b||!h)return;
-  s.textContent=label;
-  s.className="pushStatus"+(status==="on"?" on":status==="warn"?" warn":"");
-  b.textContent=buttonText;
-  b.disabled=buttonDisabled||pushUiBusy;
-  h.textContent=help
-}
-async function refreshPushUi(){
-  if(!$("pushToggleBtn"))return;
-  const preview=$("pushPreviewToggle");
-  preview.checked=pushPreviewPreference();
-  preview.disabled=true;
-
-  const cap=pushCapability();
-  if(cap.reason==="IOS_HOME_SCREEN"){
-    pushEnabledCurrent=false;
-    setPushUi("warn","需加入主畫面","iPhone／iPad 的 Web Push 只在「加入主畫面」後的 KTAK Web App 使用。請先從瀏覽器選單把 KTAK 加到主畫面，再由主畫面圖示開啟。","如何開啟",false);
-    return
-  }
-  if(cap.reason==="HTTPS_REQUIRED"){
-    pushEnabledCurrent=false;
-    setPushUi("warn","需要 HTTPS","通知功能只能在 HTTPS 安全連線使用。","無法開啟",true);
-    return
-  }
-  if(!cap.ok){
-    pushEnabledCurrent=false;
-    setPushUi("warn","不支援","目前瀏覽器沒有完整支援 Service Worker / PushManager / Notification。請使用新版 Chrome、Safari、Edge 或 Firefox。","不支援",true);
-    return
-  }
-
-  if(Notification.permission==="denied"){
-    pushEnabledCurrent=false;
-    setPushUi("warn","已拒絕","通知權限已被瀏覽器或系統拒絕。網頁無法強制重新跳出詢問，請在瀏覽器／系統通知設定重新允許 KTAK。","重新檢查",false);
-    return
-  }
-
-  try{
-    const sub=await currentPushSubscription();
-    pushEnabledCurrent=!!sub;
-    preview.disabled=!sub;
-    if(sub){
-      setPushUi("on","已開啟","這台裝置會接收同房其他成員的新聊天訊息。通知是每台裝置分開設定。","關閉通知",false)
-    }else{
-      setPushUi("","未開啟","按「開啟通知」後，瀏覽器會跳出系統通知權限詢問；允許後才會建立此裝置的 Push 訂閱。","開啟通知",false)
-    }
-  }catch(e){
-    console.warn("refresh push",e);
-    pushEnabledCurrent=false;
-    setPushUi("warn","檢查失敗","無法確認這台裝置的通知狀態："+(e.message||e),"重新檢查",false)
-  }
-}
-async function enablePushNotifications(){
-  const cap=pushCapability();
-  if(cap.reason==="IOS_HOME_SCREEN"){
-    toast("請先把 KTAK 加到 iPhone／iPad 主畫面，再由主畫面圖示開啟");
-    return
-  }
-  if(!cap.ok){toast("目前環境無法使用 Web Push");return}
-  if(!currentUserId){toast("請先加入任務房間");return}
-
-  let permission=Notification.permission;
-  if(permission==="default")permission=await Notification.requestPermission();
-  if(permission!=="granted"){
-    await refreshPushUi();
-    toast(permission==="denied"?"通知權限被拒絕":"尚未取得通知權限");
-    return
-  }
-
-  const reg=await pushRegistration();
-  let sub=await reg.pushManager.getSubscription();
-  if(!sub){
-    const publicKey=await getVapidPublicKey();
-    sub=await reg.pushManager.subscribe({
-      userVisibleOnly:true,
-      applicationServerKey:base64UrlToUint8Array(publicKey)
-    })
-  }
-  const preview=$("pushPreviewToggle")?.checked!==false;
-  setPushPreviewPreference(preview);
-  await savePushSubscription(sub,preview);
-  pushEnabledCurrent=true;
-  await refreshPushUi();
-  toast("聊天通知已開啟")
-}
-async function disablePushNotifications(){
-  const cap=pushCapability();
-  if(!cap.ok)return;
-  const reg=await pushRegistration();
-  const sub=await reg.pushManager.getSubscription();
-  if(sub){
-    const endpoint=sub.endpoint;
-    try{
-      const {error}=await sb.from("ktak_push_subscriptions")
-        .delete().eq("user_id",currentUserId).eq("endpoint",endpoint);
-      if(error)console.warn("delete push row",error)
-    }catch(e){console.warn("delete push row",e)}
-    try{await sub.unsubscribe()}catch(e){console.warn("unsubscribe push",e)}
-  }
-  pushEnabledCurrent=false;
-  await refreshPushUi();
-  toast("這台裝置的聊天通知已關閉")
-}
-async function updatePushPreviewPreference(){
-  const v=!!$("pushPreviewToggle")?.checked;
-  setPushPreviewPreference(v);
-  if(!pushEnabledCurrent)return;
-  try{
-    const sub=await currentPushSubscription();
-    if(!sub)return;
-    const {error}=await sb.from("ktak_push_subscriptions")
-      .update({preview_enabled:v})
-      .eq("user_id",currentUserId)
-      .eq("endpoint",sub.endpoint);
-    if(error)throw error;
-    toast(v?"通知會顯示訊息內容":"通知已隱藏訊息內容")
-  }catch(e){
-    toast("通知預覽設定失敗："+(e.message||e))
-  }
-}
-async function triggerChatPush(messageId){
-  if(!messageId||!sb||!currentRoomUuid)return;
-  try{
-    const {data,error}=await sb.functions.invoke("ktak-push",{
-      body:{roomId:currentRoomUuid,messageId}
-    });
-    if(error)throw error;
-    if(!data?.ok)throw new Error(data?.error||"PUSH_FAILED");
-    console.info("KTAK push",data)
-  }catch(e){
-    // Chat itself is already stored successfully. Push failure must never roll back the message.
-    console.warn("KTAK push failed",e)
-  }
-}
-$("pushToggleBtn").onclick=async()=>{
-  if(pushUiBusy)return;
-  pushUiBusy=true;
-  try{
-    const cap=pushCapability();
-    if(cap.reason==="IOS_HOME_SCREEN"){
-      toast("請先將 KTAK 加到主畫面，並從主畫面圖示開啟");
-      return
-    }
-    if(Notification.permission==="denied"){
-      await refreshPushUi();
-      toast("請先到瀏覽器／系統通知設定重新允許 KTAK");
-      return
-    }
-    if(pushEnabledCurrent)await disablePushNotifications();
-    else await enablePushNotifications()
-  }catch(e){
-    console.error("push toggle",e);
-    toast("通知設定失敗："+(e.message||e))
-  }finally{
-    pushUiBusy=false;
-    await refreshPushUi()
-  }
-};
-$("pushPreviewToggle").onchange=updatePushPreviewPreference;
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&state)refreshPushUi().catch(()=>{})});
-
-
 /* chat */
 .chatShell{height:100%;max-width:900px;margin:0 auto;padding:12px;display:grid;grid-template-rows:auto 1fr auto;gap:8px}.chatInfo{display:flex;justify-content:space-between;align-items:center;gap:8px}#chatLog{overflow:auto;background:#0c1317;border:1px solid #293c47;border-radius:12px;padding:10px}.chatMsg{max-width:82%;padding:8px 10px;border-radius:11px;background:#192831;margin-bottom:7px;font-size:13px;line-height:1.4;position:relative}.chatMsg.me{margin-left:auto;background:#15405a}.chatMsg .meta{font-size:10px;color:#9eb0ba;margin-bottom:3px}.chatMsg .deleteChat{position:absolute;right:5px;top:5px;background:#572727;padding:3px 6px;font-size:10px}.chatInput{display:grid;grid-template-columns:1fr auto;gap:7px}.memberList{display:flex;gap:5px;flex-wrap:wrap}
 /* permission */
@@ -771,7 +539,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&state)ref
 
 
 
-/* V2.1 DEV6-C3 chat push notifications + location + avatar */
+/* V2.1 DEV6-C3.1 chat push + location + avatar */
 .locationCard .row button{flex:1}
 .locationState{font-size:10px;border:1px solid #3b515c;background:#17242b;border-radius:999px;padding:3px 7px;white-space:nowrap}
 .locationState.live{border-color:#2f8d62;background:#123525;color:#bdf6d7}
@@ -821,28 +589,34 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&state)ref
 .avatarCropActions button{min-height:42px}
 
 
-/* DEV6-C3 chat push */
+/* DEV6-C3.1 chat push */
+.chatShell{grid-template-rows:auto auto 1fr auto}
 .pushCard{
-  border:1px solid #314752;background:#101a20;border-radius:12px;padding:9px 10px;
-  display:grid;gap:8px
+  border:1px solid #314752;background:#101a20;border-radius:12px;padding:8px 10px;
+  display:grid;gap:7px
 }
 .pushHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.pushHead b{font-size:13px}
-.pushStatus{font-size:10px;padding:4px 7px;border-radius:999px;border:1px solid #405763;color:#bbcad1}
+.pushHead b{font-size:12px}
+.pushStatus{font-size:10px;padding:3px 7px;border-radius:999px;border:1px solid #405763;color:#bbcad1}
 .pushStatus.on{border-color:#337d59;color:#91e0b1;background:#103021}
 .pushStatus.warn{border-color:#83663d;color:#ffd28a;background:#2a2112}
-.pushActions{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
-.pushPreviewLabel{display:flex;align-items:center;gap:7px;font-size:11px;white-space:nowrap}
-.pushPreviewLabel input{width:18px;height:18px}
-.pushHelp{font-size:10px;color:#9fb1ba;line-height:1.5}
-@media(max-width:620px){.pushActions{grid-template-columns:1fr}.pushPreviewLabel{justify-content:flex-start}}
+.pushActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pushActions button{width:auto;min-width:120px;padding:7px 12px}
+.pushPreviewLabel{display:flex;align-items:center;gap:6px;font-size:11px;white-space:nowrap}
+.pushPreviewLabel input{width:17px;height:17px}
+.pushHelp{font-size:10px;color:#9fb1ba;line-height:1.45}
+@media(max-width:620px){
+  .pushActions{align-items:stretch}
+  .pushActions button{width:100%}
+  .pushPreviewLabel{white-space:normal}
+}
 
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-C3 · 聊天 Push 通知版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-C3.1 · Push 前端修正版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -1076,7 +850,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&state)ref
     <button id="pushToggleBtn" type="button">開啟通知</button>
     <label class="pushPreviewLabel"><input id="pushPreviewToggle" type="checkbox" checked>通知顯示訊息內容</label>
   </div>
-  <div id="pushHelp" class="pushHelp">通知是每台裝置分開設定；關閉訊息預覽後，鎖定畫面只會顯示「你有一則新的任務訊息」。</div>
+  <div id="pushHelp" class="pushHelp">通知是每台裝置分開設定；關閉預覽後，鎖定畫面只顯示有新任務訊息。</div>
 </div>
 <div id="chatLog"></div>
 <div><div id="chatPhotoPreview" class="chatPhotoPreview hidden"><img id="chatPhotoPreviewImg"><div class="photoInfo"><div class="label">待傳送照片</div><div id="chatPhotoName" class="photoName"></div></div><button id="chatPhotoClearBtn" class="danger">移除</button></div><div class="chatInput"><input id="chatPhotoInput" class="hidden" type="file" accept="image/*"><button id="chatPhotoBtn" class="chatPhotoBtn" title="插入照片">📷</button><input id="chatInput" placeholder="輸入訊息…"><button id="chatSendBtn" class="primary">送出</button></div></div>
@@ -1229,13 +1003,13 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&state)ref
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-/* DEV6-C3: Web Push requires a persistent service worker.
-   Keep network-first behavior in sw.js, but do not unregister the worker on page load. */
-window.KTAK_SW_READY = (async()=>{
+/* DEV6-C3.1: Push requires a persistent service worker. */
+window.KTAK_SW_READY=(async()=>{
   if(!("serviceWorker" in navigator))return null;
   try{
-    await navigator.serviceWorker.register("./sw.js",{scope:"./"});
-    return await navigator.serviceWorker.ready
+    const reg=await navigator.serviceWorker.register("./sw.js",{scope:"./"});
+    await navigator.serviceWorker.ready;
+    return reg
   }catch(e){
     console.warn("KTAK service worker",e);
     return null
@@ -3707,6 +3481,235 @@ document.addEventListener('pointerdown',e=>{
   if(!e.target.closest('#mapContextMenu')&&!e.target.closest('.leaflet-marker-icon')&&!e.target.closest('.leaflet-interactive')&&!e.target.closest('.map-transform-handle'))hideMapMenu();
   if(!e.target.closest('#boardContextMenu')&&e.target!==canvas)hideBoardMenu()
 });
+
+
+/* DEV6-C3.1 Web Push */
+function isIosLike(){
+  return /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1)
+}
+function isStandaloneWebApp(){
+  return window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    navigator.standalone===true
+}
+function pushPreviewPreference(){
+  try{
+    const v=localStorage.getItem(PUSH_PREVIEW_KEY);
+    return v===null?true:v==="1"
+  }catch{return true}
+}
+function setPushPreviewPreference(v){
+  try{localStorage.setItem(PUSH_PREVIEW_KEY,v?"1":"0")}catch{}
+}
+function pushCapability(){
+  if(!window.isSecureContext)return {ok:false,reason:"HTTPS_REQUIRED"};
+  if(isIosLike()&&!isStandaloneWebApp())return {ok:false,reason:"IOS_HOME_SCREEN"};
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
+    return {ok:false,reason:"UNSUPPORTED"}
+  }
+  return {ok:true,reason:"OK"}
+}
+function base64UrlToUint8Array(base64String){
+  const padding="=".repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  const raw=atob(base64),out=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out
+}
+async function pushRegistration(){
+  const reg=await (window.KTAK_SW_READY||navigator.serviceWorker.ready);
+  if(!reg)throw new Error("Service Worker 尚未就緒");
+  return reg
+}
+async function getVapidPublicKey(){
+  if(pushPublicKeyCache)return pushPublicKeyCache;
+  const {data,error}=await sb.functions.invoke("ktak-push",{body:{action:"vapid-public-key"}});
+  if(error)throw error;
+  if(!data?.ok||!data?.publicKey)throw new Error(data?.error||"無法取得 Push Public Key");
+  pushPublicKeyCache=String(data.publicKey);
+  return pushPublicKeyCache
+}
+async function savePushSubscription(sub,previewEnabled){
+  const raw=sub.toJSON();
+  const p256dh=raw?.keys?.p256dh,auth=raw?.keys?.auth;
+  if(!raw?.endpoint||!p256dh||!auth)throw new Error("瀏覽器沒有提供完整 PushSubscription");
+  const {error}=await sb.from("ktak_push_subscriptions").upsert({
+    user_id:currentUserId,
+    endpoint:raw.endpoint,
+    p256dh,
+    auth,
+    enabled:true,
+    preview_enabled:!!previewEnabled,
+    user_agent:navigator.userAgent
+  },{onConflict:"endpoint"});
+  if(error)throw error
+}
+async function currentPushSubscription(){
+  const cap=pushCapability();
+  if(!cap.ok)return null;
+  const reg=await pushRegistration();
+  return await reg.pushManager.getSubscription()
+}
+function setPushUi(status,label,help,buttonText,buttonDisabled=false){
+  const s=$("pushStatus"),b=$("pushToggleBtn"),h=$("pushHelp");
+  if(!s||!b||!h)return;
+  s.textContent=label;
+  s.className="pushStatus"+(status==="on"?" on":status==="warn"?" warn":"");
+  b.textContent=buttonText;
+  b.disabled=buttonDisabled||pushUiBusy;
+  h.textContent=help
+}
+async function refreshPushUi(){
+  const button=$("pushToggleBtn"),preview=$("pushPreviewToggle");
+  if(!button||!preview)return;
+
+  preview.checked=pushPreviewPreference();
+  preview.disabled=true;
+
+  const cap=pushCapability();
+
+  if(cap.reason==="IOS_HOME_SCREEN"){
+    pushEnabledCurrent=false;
+    setPushUi("warn","需加入主畫面",
+      "iPhone／iPad 的 Web Push 必須從「加入主畫面」後的 KTAK Web App 使用。",
+      "需加入主畫面",true);
+    return
+  }
+  if(cap.reason==="HTTPS_REQUIRED"){
+    pushEnabledCurrent=false;
+    setPushUi("warn","需要 HTTPS","通知只能在 HTTPS 安全連線使用。","無法開啟",true);
+    return
+  }
+  if(!cap.ok){
+    pushEnabledCurrent=false;
+    setPushUi("warn","不支援","目前瀏覽器沒有完整 Web Push 支援。","不支援",true);
+    return
+  }
+  if(Notification.permission==="denied"){
+    pushEnabledCurrent=false;
+    setPushUi("warn","已拒絕",
+      "通知權限已被瀏覽器或系統拒絕；請在瀏覽器／系統通知設定重新允許 KTAK。",
+      "重新檢查",false);
+    return
+  }
+
+  try{
+    const sub=await currentPushSubscription();
+    pushEnabledCurrent=!!sub;
+    preview.disabled=!sub;
+    if(sub){
+      setPushUi("on","已開啟",
+        "這台裝置會接收同房其他成員的新聊天訊息。",
+        "關閉通知",false)
+    }else{
+      setPushUi("","未開啟",
+        "按開啟通知後，瀏覽器會要求系統通知權限。",
+        "開啟通知",false)
+    }
+  }catch(e){
+    console.warn("refresh push",e);
+    pushEnabledCurrent=false;
+    setPushUi("warn","檢查失敗","通知狀態檢查失敗："+(e.message||e),"重新檢查",false)
+  }
+}
+async function enablePushNotifications(){
+  const cap=pushCapability();
+  if(!cap.ok)throw new Error(cap.reason==="IOS_HOME_SCREEN"?"請先把 KTAK 加到主畫面":"目前環境無法使用 Web Push");
+  if(!currentUserId)throw new Error("請先加入任務房間");
+
+  let permission=Notification.permission;
+  if(permission==="default")permission=await Notification.requestPermission();
+  if(permission!=="granted")throw new Error(permission==="denied"?"通知權限被拒絕":"尚未取得通知權限");
+
+  const reg=await pushRegistration();
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub){
+    const publicKey=await getVapidPublicKey();
+    sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:base64UrlToUint8Array(publicKey)
+    })
+  }
+
+  const preview=$("pushPreviewToggle")?.checked!==false;
+  setPushPreviewPreference(preview);
+  await savePushSubscription(sub,preview);
+  pushEnabledCurrent=true;
+  await refreshPushUi();
+  toast("聊天通知已開啟")
+}
+async function disablePushNotifications(){
+  const reg=await pushRegistration();
+  const sub=await reg.pushManager.getSubscription();
+
+  if(sub){
+    const endpoint=sub.endpoint;
+    const {error}=await sb.from("ktak_push_subscriptions")
+      .delete().eq("user_id",currentUserId).eq("endpoint",endpoint);
+    if(error)console.warn("delete push row",error);
+    try{await sub.unsubscribe()}catch(e){console.warn("unsubscribe push",e)}
+  }
+
+  pushEnabledCurrent=false;
+  await refreshPushUi();
+  toast("這台裝置的聊天通知已關閉")
+}
+async function updatePushPreviewPreference(){
+  const enabled=!!$("pushPreviewToggle")?.checked;
+  setPushPreviewPreference(enabled);
+  if(!pushEnabledCurrent)return;
+
+  try{
+    const sub=await currentPushSubscription();
+    if(!sub)return;
+    const {error}=await sb.from("ktak_push_subscriptions")
+      .update({preview_enabled:enabled})
+      .eq("user_id",currentUserId)
+      .eq("endpoint",sub.endpoint);
+    if(error)throw error;
+    toast(enabled?"通知會顯示訊息內容":"通知已隱藏訊息內容")
+  }catch(e){
+    toast("通知預覽設定失敗："+(e.message||e))
+  }
+}
+async function triggerChatPush(messageId){
+  if(!messageId||!sb||!currentRoomUuid)return;
+  try{
+    const {data,error}=await sb.functions.invoke("ktak-push",{
+      body:{roomId:currentRoomUuid,messageId}
+    });
+    if(error)throw error;
+    if(!data?.ok)throw new Error(data?.error||"PUSH_FAILED");
+    console.info("KTAK push",data)
+  }catch(e){
+    /* Chat has already been stored. Push failure must not fail the chat send. */
+    console.warn("KTAK push failed",e)
+  }
+}
+
+const pushToggleBtn=$("pushToggleBtn");
+if(pushToggleBtn)pushToggleBtn.onclick=async()=>{
+  if(pushUiBusy)return;
+  pushUiBusy=true;
+  try{
+    if(pushEnabledCurrent)await disablePushNotifications();
+    else await enablePushNotifications()
+  }catch(e){
+    console.error("push toggle",e);
+    toast("通知設定失敗："+(e.message||e))
+  }finally{
+    pushUiBusy=false;
+    await refreshPushUi()
+  }
+};
+
+const pushPreviewToggle=$("pushPreviewToggle");
+if(pushPreviewToggle)pushPreviewToggle.onchange=updatePushPreviewPreference;
+
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden&&state)refreshPushUi().catch(()=>{})
+});
+
 
 /* chat */
 let pendingChatPhoto=null,chatImageUrlCache=new Map();
