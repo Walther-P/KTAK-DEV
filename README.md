@@ -1,15 +1,15 @@
-# KTAK V2.1 DEV6-B6.1 — 手機工具修正版
+# KTAK V2.1 DEV6-B6.2 — 頭像裁切輸出修正版
 
-修正 DEV6-B6 的前端初始化錯誤：
-- 頭像裁切 DOM 原本被放在主 JavaScript 後方。
-- JavaScript 啟動時抓不到裁切元件，造成 runtime error，後續地圖/戰術板工具事件沒有完成綁定。
-- 已把裁切 DOM 移到所有 JavaScript 之前。
-- 同時增加 null guard，避免未來裁切 UI 異常時拖垮整個 KTAK 工具列。
+問題定位：
+如果裁切畫面顯示正確，但地圖頭像卻顯示成照片其他角落，代表問題發生在「裁切確認」之後。
+舊流程會把已裁好的 512×512 JPEG 再 decode / canvas / JPEG 一次，這是多餘且可能受 iOS/WebKit 圖片方向處理影響的步驟。
 
-保留：
-- DEV6-B6 頭像裁切
-- DEV6-B5 跨瀏覽器定位權限
-- DEV6-B4 頭像載入驗證
+修正：
+- 使用者確認的 512×512 JPEG 直接上傳。
+- 不再對頭像做第二次 compressImageFile。
+- 頭像顯示固定 object-position:center。
+- 保留 signed URL 實際載入驗證。
+- 保留 B6.1 手機工具修正、B6 頭像裁切、B5 定位權限。
 
 部署：
 只覆蓋 index.html、sw.js、manifest.webmanifest、README.md；保留 config.js。
