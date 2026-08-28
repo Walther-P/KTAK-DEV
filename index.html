@@ -13,7 +13,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<title>KTAK Mission Room V2.1 DEV6-B6</title>
+<title>KTAK Mission Room V2.1 DEV6-B6.1</title>
 <style>
 :root{--bg:#0a1014;--panel:#111a20;--panel2:#17232b;--line:#30424d;--text:#eff6f8;--muted:#98aab4;--blue:#45aff2;--green:#55d572;--yellow:#ffc650;--red:#f25c5c;--orange:#ff944c;--safe:env(safe-area-inset-bottom,0px);--safeTop:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -593,7 +593,7 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 <body>
 <div id="app">
 <header>
-  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-B6 · 頭像裁切＋定位權限版</small></div></div>
+  <div class="brand"><div class="logo">K</div><div class="brandText"><b>KTAK Mission Room</b><small>V2.1 DEV6-B6.1 · 手機工具修正版</small></div></div>
   <div class="roomStatus"><span class="dot"></span><span id="headerRoom">ROOM</span><span>·</span><span id="headerNick">未登入</span><span id="headerRole" class="roleBadge">—</span><button id="leaveBtn" style="padding:6px 8px;font-size:10px">離開</button></div>
 </header>
 <nav>
@@ -946,6 +946,22 @@ main{position:relative;min-height:0;overflow:hidden}.page{display:none;height:10
 </div>
 
 <div id="toast"></div>
+<div id="avatarCropOverlay" class="avatarCropOverlay hidden" aria-hidden="true">
+  <div class="avatarCropPanel" role="dialog" aria-modal="true" aria-labelledby="avatarCropTitle">
+    <div id="avatarCropTitle" class="avatarCropTitle">調整頭像範圍</div>
+    <div class="avatarCropHint">拖曳照片調整位置，使用滑桿縮放。圓框內就是其他隊員看到的頭像。</div>
+    <div class="avatarCropStage">
+      <canvas id="avatarCropCanvas" width="640" height="640"></canvas>
+      <div class="avatarCropGuide"></div>
+    </div>
+    <label class="avatarCropZoom"><span>縮放</span><input id="avatarCropZoom" type="range" min="1" max="3" step="0.01" value="1"></label>
+    <div class="avatarCropActions">
+      <button id="avatarCropCancel" type="button">取消</button>
+      <button id="avatarCropUse" type="button" class="primary">使用這個範圍</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="./config.js"></script>
@@ -2228,7 +2244,8 @@ async function openAvatarCrop(file){
     img.src=url
   })
 }
-$("avatarCropZoom").oninput=e=>{
+const avatarCropZoomEl=$("avatarCropZoom");
+if(avatarCropZoomEl)avatarCropZoomEl.oninput=e=>{
   const old=avatarCropState.zoom;
   avatarCropState.zoom=Number(e.target.value)||1;
   if(old>0){
@@ -2237,8 +2254,10 @@ $("avatarCropZoom").oninput=e=>{
   }
   drawAvatarCrop()
 };
-$("avatarCropCancel").onclick=()=>closeAvatarCrop(null);
-$("avatarCropUse").onclick=async()=>{
+const avatarCropCancelEl=$("avatarCropCancel");
+if(avatarCropCancelEl)avatarCropCancelEl.onclick=()=>closeAvatarCrop(null);
+const avatarCropUseEl=$("avatarCropUse");
+if(avatarCropUseEl)avatarCropUseEl.onclick=async()=>{
   const c=avatarCropCanvas();
   if(!avatarCropState.img)return;
   drawAvatarCrop();
@@ -2253,6 +2272,7 @@ $("avatarCropUse").onclick=async()=>{
 };
 (()=>{
   const c=avatarCropCanvas();
+  if(!c)return;
   const pt=e=>{
     const r=c.getBoundingClientRect();
     return {x:(e.clientX-r.left)*(c.width/r.width),y:(e.clientY-r.top)*(c.height/r.height)}
@@ -3826,22 +3846,6 @@ function renderAll(){if(!state)return;if(!locationUiTimer)locationUiTimer=setInt
 
 })();
 </script>
-
-<div id="avatarCropOverlay" class="avatarCropOverlay hidden" aria-hidden="true">
-  <div class="avatarCropPanel" role="dialog" aria-modal="true" aria-labelledby="avatarCropTitle">
-    <div id="avatarCropTitle" class="avatarCropTitle">調整頭像範圍</div>
-    <div class="avatarCropHint">拖曳照片調整位置，使用滑桿縮放。圓框內就是其他隊員看到的頭像。</div>
-    <div class="avatarCropStage">
-      <canvas id="avatarCropCanvas" width="640" height="640"></canvas>
-      <div class="avatarCropGuide"></div>
-    </div>
-    <label class="avatarCropZoom"><span>縮放</span><input id="avatarCropZoom" type="range" min="1" max="3" step="0.01" value="1"></label>
-    <div class="avatarCropActions">
-      <button id="avatarCropCancel" type="button">取消</button>
-      <button id="avatarCropUse" type="button" class="primary">使用這個範圍</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
