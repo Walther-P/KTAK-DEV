@@ -1,0 +1,141 @@
+html,
+body,
+#app {
+  min-height: 100%;
+  background: #071117 !important;
+}
+
+html {
+  background: #071117 !important;
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(33, 87, 105, 0.22), transparent 42%),
+    #071117 !important;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.mapViewport {
+  background: #09161b !important;
+  border-color: #263a43 !important;
+  isolation: isolate;
+}
+
+#missionMap,
+capacitor-google-map#missionMap {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #09161b !important;
+}
+
+.ktakWebMapHost {
+  position: relative;
+  overflow: hidden;
+}
+
+.ktakWebMap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #102027;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.ktakWebMap:active {
+  cursor: grabbing;
+}
+
+.ktakWebMapTiles,
+.ktakWebMapOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ktakWebMapTiles {
+  overflow: hidden;
+  background: #102027;
+}
+
+.ktakWebMapTile {
+  position: absolute;
+  width: 256px;
+  height: 256px;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.ktakWebMapOverlay {
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.ktakWebMapControls {
+  position: absolute;
+  z-index: 6;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.ktakWebMapControls button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid #526c77;
+  border-radius: 10px;
+  background: rgba(8, 20, 25, 0.94);
+  color: #f0f7fa;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ktakWebMapAttribution {
+  position: absolute;
+  z-index: 6;
+  right: 6px;
+  bottom: 5px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(7, 17, 23, 0.78);
+  font-size: 10px;
+}
+
+.ktakWebMapAttribution a {
+  color: #c8d8df;
+  text-decoration: none;
+}
+
+@media (max-width: 620px) {
+  .shell {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .mapViewport {
+    height: min(58dvh, 470px) !important;
+    min-height: 360px;
+  }
+}

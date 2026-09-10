@@ -1,0 +1,12 @@
+{
+  "name": "KTAK V3.5 Police / Fire Command",
+  "short_name": "KTAK 3.5",
+  "description": "KTAK V3.5 Police / Fire Command Pack",
+  "start_url": "./?v=3.5-command",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#071117",
+  "theme_color": "#071117",
+  "orientation": "any",
+  "id": "./?app=ktak-v35-command"
+}

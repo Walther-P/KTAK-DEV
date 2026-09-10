@@ -1,0 +1,11 @@
+{
+  "name": "KTAK Native V3 DEV",
+  "short_name": "KTAK V3",
+  "description": "KTAK Native V3 development test build",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#071117",
+  "theme_color": "#071117",
+  "orientation": "any"
+}

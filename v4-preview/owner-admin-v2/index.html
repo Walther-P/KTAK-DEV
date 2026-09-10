@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<title>KTAK DEV 管理後台</title>
+<style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:#071117;color:#eef6f8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#071117;padding:18px}.shell{width:min(900px,100%);margin:0 auto}.card{background:#0d171d;border:1px solid #36505c;border-radius:16px;padding:16px;box-shadow:0 16px 44px #0008}.head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.head h1{font-size:20px;margin:0}.muted{font-size:12px;color:#9fb2bc;line-height:1.5}.status{margin:10px 0;padding:9px 11px;border:1px solid #36505c;border-radius:10px;background:#081218;font-size:12px}.status.good{border-color:#2d7754;color:#9be5b7}.status.bad{border-color:#8a4444;color:#ffaaaa}.panel{display:grid;gap:9px}.hidden{display:none!important}input,button{font:inherit}input{width:100%;padding:10px 11px;background:#091319;color:#fff;border:1px solid #3a505b;border-radius:10px;outline:none}button{padding:9px 12px;border-radius:10px;border:1px solid #3b5968;background:#19303b;color:#fff;font-weight:800;cursor:pointer}.primary{background:#0e6fa8;border-color:#278cc5}.danger{background:#7b2828;border-color:#b44747}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions{display:flex;gap:8px;flex-wrap:wrap}.rooms{display:grid;gap:9px;margin-top:10px}.room{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:11px;border:1px solid #2f4651;border-radius:12px;background:#091319}.code{font-weight:900;font-size:15px}.meta{font-size:11px;color:#9fb2bc;line-height:1.55;white-space:pre-line;margin-top:3px}.badge{padding:3px 7px;border-radius:999px;background:#5b4513;color:#ffe58b;font-size:10px;border:1px solid #9c7a22}@media(max-width:640px){body{padding:10px}.row{grid-template-columns:1fr}.room{grid-template-columns:1fr}.room button{width:100%}}
+</style>
+</head>
+<body data-owner-admin-version="v2">
+<div class="shell"><div class="card">
+  <div class="head"><div><h1>👑 KTAK DEV 管理後台 <span class="badge">OWNER</span></h1><div class="muted">此頁與 KTAK 任務介面分離，只處理 DEV 房間管理。</div></div><button id="backBtn">返回 KTAK</button></div>
+  <div id="status" class="status">管理頁已載入，正在確認 DEV 管理狀態…</div>
+  <div id="setup" class="panel">
+    <div class="muted">第一次啟用：輸入一次性啟用碼，再設定 8–12 位管理密碼。可用數字、大小寫英文與特殊符號，不含空白。</div>
+    <input id="bootstrap" type="password" autocomplete="off" placeholder="一次性啟用碼">
+    <div class="row"><input id="newPass" type="password" maxlength="12" autocomplete="new-password" placeholder="設定 8–12 位管理密碼"><input id="newPass2" type="password" maxlength="12" autocomplete="new-password" placeholder="再次輸入管理密碼"></div>
+    <button id="setupBtn" class="primary">啟用管理後台</button>
+  </div>
+  <div id="login" class="panel hidden">
+    <div class="muted">輸入管理密碼。連續錯誤 5 次會暫時鎖定 15 分鐘。</div>
+    <input id="password" type="password" maxlength="12" autocomplete="current-password" placeholder="管理密碼">
+    <button id="loginBtn" class="primary">登入管理後台</button>
+  </div>
+  <div id="roomsPanel" class="panel hidden">
+    <div class="actions"><button id="refreshBtn" class="primary">重新整理房間</button><button id="logoutBtn">登出</button></div>
+    <div id="rooms" class="rooms"></div>
+  </div>
+</div></div>
+<script src="../config.js"></script>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var cfg = window.KTAK_CONFIG || {};
+  var SESSION_KEY = 'ktak.admin.session.v1';
+  var DEVICE_KEY = 'ktak.admin.device.v1';
+  var token = '';
+
+  function status(text, kind){ var el=$('status'); el.textContent=text; el.className='status'+(kind?' '+kind:''); }
+  function show(id){ ['setup','login','roomsPanel'].forEach(function(x){ $(x).classList.toggle('hidden',x!==id); }); }
+  function passwordValid(v){ return /^[!-~]{8,12}$/.test(v||''); }
+  function deviceKey(){ var v=localStorage.getItem(DEVICE_KEY)||''; if(!v){ v=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)); localStorage.setItem(DEVICE_KEY,v); } return v; }
+  function saveToken(v){ token=v||''; if(token) sessionStorage.setItem(SESSION_KEY,token); else sessionStorage.removeItem(SESSION_KEY); }
+  function fmt(v){ if(!v)return '—'; try{return new Date(v).toLocaleString('zh-TW',{hour12:false});}catch(e){return String(v);} }
+  function headers(extra){ var h={'apikey':cfg.SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+cfg.SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'}; Object.keys(extra||{}).forEach(function(k){h[k]=extra[k];}); return h; }
+
+  async function request(url, options, timeoutMs){
+    var ctl=new AbortController();
+    var timer=setTimeout(function(){ctl.abort();},timeoutMs||8000);
+    try{
+      options=options||{}; options.signal=ctl.signal;
+      var res=await fetch(url,options);
+      var text=await res.text();
+      if(!res.ok) throw new Error('HTTP '+res.status+(text?' · '+text.slice(0,180):''));
+      if(!text)return null;
+      try{return JSON.parse(text);}catch(e){return text;}
+    }catch(e){ if(e&&e.name==='AbortError') throw new Error('連線逾時，請確認網路後重試'); throw e; }
+    finally{clearTimeout(timer);}
+  }
+
+  async function rpc(name,args){
+    if(!cfg.SUPABASE_URL||!cfg.SUPABASE_PUBLISHABLE_KEY) throw new Error('KTAK_CONFIG_MISSING');
+    return request(cfg.SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:headers(),body:JSON.stringify(args||{})},8000);
+  }
+
+  async function invoke(body){
+    if(!token) throw new Error('ADMIN_UNAUTHORIZED');
+    var payload=Object.assign({},body||{},{admin_token:token}); var data=await request(cfg.SUPABASE_URL+'/functions/v1/ktak-admin',{method:'POST',headers:headers(),body:JSON.stringify(payload)},10000);
+    if(data&&data.error){ if(data.error==='ADMIN_UNAUTHORIZED'){saveToken('');show('login');} throw new Error(data.error); }
+    return data;
+  }
+
+  async function loadRooms(){
+    var host=$('rooms'); host.innerHTML='<div class="muted">讀取房間中…</div>';
+    try{
+      var rows=await rpc('ktak_admin_list_rooms',{p_token:token}); var rooms=Array.isArray(rows)?rows:[]; host.innerHTML='';
+      if(!rooms.length){host.innerHTML='<div class="muted">目前沒有房間。</div>';return;}
+      rooms.forEach(function(room){
+        var row=document.createElement('div'); row.className='room';
+        var info=document.createElement('div'); var code=document.createElement('div'); code.className='code'; code.textContent=room.room_code||'ROOM';
+        var meta=document.createElement('div'); meta.className='meta'; meta.textContent='成員 '+(room.member_count||0)+' · 地圖 '+(room.map_item_count||0)+' · 戰術板 '+(room.board_item_count||0)+' · 聊天 '+(room.chat_count||0)+'\n建立：'+fmt(room.created_at)+'\n最後活動：'+fmt(room.last_activity);
+        info.append(code,meta);
+        var del=document.createElement('button'); del.className='danger'; del.textContent='刪除房間';
+        del.onclick=async function(){
+          var rc=String(room.room_code||'ROOM');
+          if(!confirm('確定永久刪除房間 '+rc+'？\n\n房間、成員、地圖、戰術板、聊天、定位與上傳檔案都會一起刪除。'))return;
+          var typed=(prompt('最後確認：請完整輸入房號 '+rc)||'').trim().toUpperCase(); if(typed!==rc.toUpperCase()){status('房號不一致，已取消刪除','bad');return;}
+          del.disabled=true;
+          try{var r=await invoke({action:'delete',room_id:room.room_id}); status('已刪除 '+((r&&r.room_code)||rc)+'，移除 '+((r&&r.removed_files)||0)+' 個上傳檔案','good'); await loadRooms();}
+          catch(e){status('刪除失敗：'+(e.message||e),'bad');del.disabled=false;}
+        };
+        row.append(info,del); host.appendChild(row);
+      });
+    }catch(e){host.innerHTML='<div class="muted">房間讀取失敗。</div>';status('房間讀取失敗：'+(e.message||e),'bad');}
+  }
+
+  async function initialize(){
+    if(!cfg.SUPABASE_URL||!cfg.SUPABASE_PUBLISHABLE_KEY){status('管理服務初始化失敗：KTAK_CONFIG_MISSING','bad');return;}
+    try{
+      var saved=sessionStorage.getItem(SESSION_KEY)||'';
+      if(saved){
+        var ok=await rpc('ktak_admin_verify',{p_token:saved});
+        if(ok===true){saveToken(saved);show('roomsPanel');status('管理員已登入','good');await loadRooms();return;}
+        saveToken('');
+      }
+      var configured=await rpc('ktak_admin_is_configured',{});
+      if(configured===true){show('login');status('管理服務正常，請輸入管理密碼','good');}
+      else {show('setup');status('管理服務正常。第一次啟用：請輸入一次性啟用碼並設定管理密碼','good');}
+    }catch(e){show('setup');status('管理後端連線失敗：'+(e.message||e)+'。表單仍可操作，按啟用會再次連線。','bad');}
+  }
+
+  $('setupBtn').onclick=async function(){
+    var bootstrap=$('bootstrap').value.trim(), p1=$('newPass').value, p2=$('newPass2').value;
+    if(!bootstrap){status('請輸入一次性啟用碼','bad');return;} if(!passwordValid(p1)){status('管理密碼需 8–12 位，且不能含空白','bad');return;} if(p1!==p2){status('兩次管理密碼不一致','bad');return;}
+    $('setupBtn').disabled=true; status('正在啟用管理後台…');
+    try{var data=await rpc('ktak_admin_setup',{p_bootstrap:bootstrap,p_password:p1,p_device_key:deviceKey()}); if(!data||data.status!=='OK')throw new Error((data&&data.status)||'SETUP_FAILED'); saveToken(data.token); show('roomsPanel'); status('管理後台啟用完成；一次性啟用碼已失效','good'); await loadRooms();}
+    catch(e){status('啟用失敗：'+(e.message||e),'bad');}
+    finally{$('setupBtn').disabled=false;}
+  };
+
+  $('loginBtn').onclick=async function(){
+    var p=$('password').value; if(!passwordValid(p)){status('請輸入 8–12 位管理密碼','bad');return;} $('loginBtn').disabled=true; status('正在驗證管理密碼…');
+    try{var data=await rpc('ktak_admin_login',{p_password:p,p_device_key:deviceKey()}); if(!data||data.status!=='OK'){if(data&&data.status==='LOCKED')throw new Error('錯誤次數過多，請 15 分鐘後再試');if(data&&data.status==='INVALID_PASSWORD')throw new Error('管理密碼錯誤；剩餘嘗試 '+(data.remaining_attempts==null?'—':data.remaining_attempts)+' 次');throw new Error((data&&data.status)||'LOGIN_FAILED');} saveToken(data.token); $('password').value=''; show('roomsPanel'); status('管理員已登入','good'); await loadRooms();}
+    catch(e){status('登入失敗：'+(e.message||e),'bad');}
+    finally{$('loginBtn').disabled=false;}
+  };
+
+  $('password').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginBtn').click();});
+  $('refreshBtn').onclick=loadRooms;
+  $('logoutBtn').onclick=async function(){try{if(token)await rpc('ktak_admin_logout',{p_token:token});}catch(e){} saveToken(''); show('login'); status('已登出管理後台');};
+  $('backBtn').onclick=function(){location.href='../';};
+
+  window.addEventListener('error',function(e){status('管理頁 JavaScript 錯誤：'+(e.message||'UNKNOWN'),'bad');});
+  initialize();
+})();
+</script>
+</body>
+</html>

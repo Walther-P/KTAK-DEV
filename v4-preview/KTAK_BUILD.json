@@ -1,0 +1,21 @@
+{
+  "version": "4.0.0-alpha.4",
+  "baseVersion": "3.5.11",
+  "interaction": "persistent-long-press-compact-hierarchy",
+  "fixes": [
+    "google-init-after-room-auth",
+    "recover-premature-google-gate",
+    "map-only-compact-search-hud",
+    "satellite-and-streetview-bridge",
+    "long-press-available-during-tools",
+    "compact-hierarchical-symbol-menu",
+    "route-finish-undo-cancel",
+    "board-draw-layout-merged",
+    "floorplan-only-layout-entry",
+    "board-map-gesture-parity",
+    "ios-longpress-stability"
+  ],
+  "commit": "465cb0909e4cdc62fd64b3e4f121e5003aafd786",
+  "hostingOrigin": "github-pages-v35-origin",
+  "previewPath": "/KTAK-DEV/v4-preview/"
+}

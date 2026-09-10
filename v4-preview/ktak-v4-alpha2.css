@@ -1,0 +1,104 @@
+/* KTAK V4 alpha.2 usability corrections */
+body.ktakV4 main{
+  position:relative!important;
+  min-height:0!important;
+}
+
+/* Operational pages are viewport surfaces, not descendants of the legacy height chain.
+   Portrait: below header and above bottom dock. Landscape: below header and right of side rail. */
+body.ktakV4 #mapPage.active,
+body.ktakV4 #boardPage.active{
+  position:fixed!important;
+  z-index:30!important;
+  top:calc(var(--v4-header-h) + env(safe-area-inset-top,0px))!important;
+  left:0!important;
+  right:0!important;
+  bottom:calc(var(--v4-dock-h) + env(safe-area-inset-bottom,0px))!important;
+  width:auto!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+body.ktakV4 #mapPage.active .mapLayout,
+body.ktakV4 #mapPage.active .mapLayout>div,
+body.ktakV4 #mapPage.active .mapStack,
+body.ktakV4 #boardPage.active .boardLayout,
+body.ktakV4 #boardPage.active .boardStage{
+  position:relative;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+}
+body.ktakV4 #mapPage #map,
+body.ktakV4 #mapPage #googleMapBase{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+}
+body.ktakV4 #commandPage{overflow:auto!important;-webkit-overflow-scrolling:touch;padding-bottom:10px}
+
+/* Alpha.1 let transparent/legacy layers steal touches. The fallback drawer is a deliberate
+   modal surface: it always wins hit testing, while its workspace is inert until it closes. */
+body.ktakV4 .v4Scrim{z-index:11900!important}
+body.ktakV4 .mapSidebar,
+body.ktakV4 .boardSidebar{z-index:12100!important}
+body.ktakV4 .mapSidebar.v4-open,
+body.ktakV4 .boardSidebar.v4-open{
+  z-index:2147483646!important;
+  pointer-events:auto!important;
+  touch-action:pan-y!important
+}
+body.ktakV4 #mapPage:has(.mapSidebar.v4-open) .mapStack,
+body.ktakV4 #boardPage:has(.boardSidebar.v4-open) .boardStage{pointer-events:none!important}
+body.ktakV4 #mapPage:has(.mapSidebar.v4-open) .mapSidebar,
+body.ktakV4 #boardPage:has(.boardSidebar.v4-open) .boardSidebar{pointer-events:auto!important}
+body.ktakV4 .v4Picker,
+body.ktakV4 .v4Sheet{z-index:12300!important}
+body.ktakV4 .v4Radial{z-index:12400!important}
+
+/* Dispatch/SOS is a primary operational destination, so V4 now has six primary targets. */
+body.ktakV4 .v4Dock{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+body.ktakV4 .v4Dock button{min-width:0}
+
+/* Tool choice is intentionally non-modal: choose, return to the workspace, act. */
+body.ktakV4 .v4Picker.v4NonBlockingPicker{
+  max-height:min(42dvh,310px)!important;
+  pointer-events:auto!important;
+}
+body.ktakV4 .v4Picker.v4NonBlockingPicker .v4PickerGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+.v4ModeChip{
+  position:fixed;z-index:12250;
+  left:50%;top:calc(var(--v4-header-h) + env(safe-area-inset-top,0px) + 8px);
+  transform:translateX(-50%);
+  display:none;align-items:center;gap:8px;
+  max-width:min(88vw,420px);min-height:38px;
+  padding:5px 6px 5px 11px;border-radius:999px;
+  background:rgba(12,24,31,.96);border:1px solid #4a7287;
+  box-shadow:0 5px 18px #0009;color:#eef7fa;font-size:11px;font-weight:850;
+}
+.v4ModeChip.open{display:flex}
+.v4ModeChip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v4ModeChip button{width:34px;height:34px;min-height:34px;padding:0;border-radius:50%;font-size:16px}
+
+@media (max-width:520px){
+  body.ktakV4 .v4Dock button{font-size:9px}
+  body.ktakV4 .v4Dock button .v4Icon{font-size:18px}
+  body.ktakV4 .v4Picker.v4NonBlockingPicker .v4PickerGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media (orientation:landscape) and (max-height:600px){
+  body.ktakV4 #mapPage.active,
+  body.ktakV4 #boardPage.active{
+    left:calc(var(--v4-rail-w) + env(safe-area-inset-left,0px))!important;
+    bottom:0!important
+  }
+  body.ktakV4 .v4Dock{grid-template-columns:1fr!important;grid-template-rows:repeat(6,minmax(0,1fr))!important}
+  .v4ModeChip{
+    left:calc(var(--v4-rail-w) + env(safe-area-inset-left,0px) + 12px);
+    top:calc(var(--v4-header-h) + env(safe-area-inset-top,0px) + 7px);
+    transform:none;max-width:min(50vw,360px)
+  }
+}

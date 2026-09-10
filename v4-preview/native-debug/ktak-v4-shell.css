@@ -1,0 +1,178 @@
+/* KTAK V4 interaction shell
+ * Principle: keep V3.5.11 capabilities, remove permanent chrome from the workspace.
+ */
+:root{
+  --v4-header-h:48px;
+  --v4-dock-h:62px;
+  --v4-rail-w:58px;
+  --v4-radius:14px;
+  --v4-touch:48px;
+  --v4-bg:rgba(10,17,22,.96);
+  --v4-line:#38515e;
+  --v4-accent:#45aff2;
+}
+body.ktakV4{
+  overscroll-behavior:none;
+  -webkit-text-size-adjust:100%;
+}
+body.ktakV4 #app{
+  height:100dvh;
+  min-height:100dvh;
+  grid-template-rows:auto 1fr;
+}
+body.ktakV4 header{
+  min-height:var(--v4-header-h);
+  padding:calc(5px + env(safe-area-inset-top,0px)) 8px 5px;
+  background:rgba(9,15,19,.94);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+body.ktakV4 header .logo{width:32px;height:32px;border-radius:9px}
+body.ktakV4 header .brandText b{font-size:13px}
+body.ktakV4 header .brandText small{font-size:10px}
+body.ktakV4 header .roomStatus{font-size:11px;gap:5px}
+body.ktakV4 header #leaveBtn{display:none}
+body.ktakV4 > #app > nav{display:none!important}
+body.ktakV4 main{min-height:0;overflow:hidden;padding-bottom:calc(var(--v4-dock-h) + env(safe-area-inset-bottom,0px))}
+
+/* Full-screen operational surfaces */
+body.ktakV4 #mapPage,
+body.ktakV4 #boardPage{overflow:hidden}
+body.ktakV4 .mapLayout,
+body.ktakV4 .boardLayout{height:100%;grid-template-columns:1fr!important}
+body.ktakV4 .mapLayout>div,
+body.ktakV4 .boardStage{min-width:0;min-height:0}
+body.ktakV4 .mapTopMobile{display:none!important}
+body.ktakV4 #map,
+body.ktakV4 .mapStack,
+body.ktakV4 #googleMapBase{width:100%;height:100%}
+body.ktakV4 .boardStage{padding:4px;place-items:center;background:#080d10}
+body.ktakV4 .boardPaperArea{max-width:100%;max-height:100%}
+body.ktakV4 #boardWrap{max-width:100%;max-height:100%}
+body.ktakV4 #quickBriefDock{display:none!important}
+
+/* V3 sidebars become on-demand sheets, never permanent columns. */
+body.ktakV4 .mapSidebar,
+body.ktakV4 .boardSidebar{
+  display:none!important;
+  position:fixed!important;
+  z-index:12050!important;
+  left:max(8px,env(safe-area-inset-left,0px));
+  right:max(8px,env(safe-area-inset-right,0px));
+  bottom:calc(var(--v4-dock-h) + env(safe-area-inset-bottom,0px) + 6px);
+  width:auto!important;
+  max-height:min(70dvh,720px)!important;
+  overflow:auto!important;
+  padding:8px!important;
+  border:1px solid var(--v4-line)!important;
+  border-radius:var(--v4-radius)!important;
+  background:rgba(12,20,25,.98)!important;
+  box-shadow:0 18px 48px rgba(0,0,0,.7)!important;
+  -webkit-overflow-scrolling:touch;
+}
+body.ktakV4 .mapSidebar.v4-open,
+body.ktakV4 .boardSidebar.v4-open{display:block!important}
+body.ktakV4 .mapSidebar .card,
+body.ktakV4 .boardSidebar .card{padding:10px;margin-bottom:8px}
+body.ktakV4 .mapSidebar .card h3,
+body.ktakV4 .boardSidebar .card h3{font-size:13px;margin-bottom:7px}
+body.ktakV4 .mapSidebar button,
+body.ktakV4 .boardSidebar button{min-height:42px;font-size:12px}
+
+/* Unified navigation */
+.v4Dock{
+  position:fixed;z-index:12000;
+  left:0;right:0;bottom:0;
+  min-height:calc(var(--v4-dock-h) + env(safe-area-inset-bottom,0px));
+  padding:5px max(6px,env(safe-area-inset-right,0px)) calc(5px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));
+  display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
+  background:rgba(8,14,18,.94);border-top:1px solid #314854;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)
+}
+.v4Dock button{
+  min-width:0;min-height:50px;padding:4px 2px;border:0;border-radius:11px;
+  display:grid;place-items:center;align-content:center;gap:1px;
+  background:transparent;color:#b8c8d0;font-size:10px;font-weight:750
+}
+.v4Dock button .v4Icon{font-size:20px;line-height:1}
+.v4Dock button.active{background:#173a4d;color:#fff;outline:1px solid #2f7599}
+
+/* Radial long-press menu */
+.v4Radial{
+  position:fixed;z-index:13000;width:228px;height:228px;
+  transform:translate(-50%,-50%);display:none;pointer-events:none
+}
+.v4Radial.open{display:block}
+.v4RadialCenter{
+  position:absolute;left:50%;top:50%;width:58px;height:58px;transform:translate(-50%,-50%);
+  border-radius:50%;display:grid;place-items:center;background:#0d171d;border:1px solid #4c6674;
+  box-shadow:0 8px 24px #000b;color:#aebfc7;font-size:11px;pointer-events:auto
+}
+.v4RadialAction{
+  position:absolute;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;
+  padding:4px!important;display:grid;place-items:center;align-content:center;gap:2px;
+  background:rgba(15,31,40,.98)!important;border:1px solid #4f7182!important;
+  box-shadow:0 8px 22px #000c;pointer-events:auto!important;font-size:10px!important
+}
+.v4RadialAction .v4Icon{font-size:22px;line-height:1}
+.v4RadialAction:nth-of-type(1){left:50%;top:8%}
+.v4RadialAction:nth-of-type(2){left:88%;top:38%}
+.v4RadialAction:nth-of-type(3){left:73%;top:82%}
+.v4RadialAction:nth-of-type(4){left:27%;top:82%}
+.v4RadialAction:nth-of-type(5){left:12%;top:38%}
+.v4Scrim{position:fixed;inset:0;z-index:12500;background:rgba(0,0,0,.12);display:none}
+.v4Scrim.open{display:block}
+
+/* Compact picker used after a long press. */
+.v4Picker{
+  position:fixed;z-index:13100;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));
+  bottom:calc(var(--v4-dock-h) + env(safe-area-inset-bottom,0px) + 8px);
+  max-height:min(62dvh,540px);display:none;overflow:auto;padding:10px;
+  border-radius:16px;border:1px solid #45616f;background:rgba(10,18,23,.985);box-shadow:0 18px 50px #000d;
+  -webkit-overflow-scrolling:touch
+}
+.v4Picker.open{display:block}
+.v4PickerHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.v4PickerTitle{font-size:14px;font-weight:900}
+.v4PickerGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.v4PickerGrid button{min-height:54px;padding:6px;font-size:11px}
+.v4PickerGrid button svg{max-width:30px;max-height:30px}
+.v4PickerClose{width:42px;height:42px;padding:0!important}
+
+/* Unified typography/touch targets for V4 chrome. */
+.v4Sheet{
+  position:fixed;z-index:13100;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));
+  bottom:calc(var(--v4-dock-h) + env(safe-area-inset-bottom,0px) + 8px);
+  display:none;padding:10px;border-radius:16px;border:1px solid #45616f;
+  background:rgba(10,18,23,.985);box-shadow:0 18px 50px #000d
+}
+.v4Sheet.open{display:block}
+.v4SheetGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.v4Sheet button{min-height:var(--v4-touch);font-size:12px}
+.v4Hint{font-size:10px;color:#9db0ba;line-height:1.45;margin-top:7px}
+
+/* iOS landscape: side rail keeps the short screen usable. */
+@media (orientation:landscape) and (max-height:600px){
+  body.ktakV4 main{padding-bottom:0;padding-left:calc(var(--v4-rail-w) + env(safe-area-inset-left,0px))}
+  .v4Dock{
+    left:0;right:auto;top:calc(var(--v4-header-h) + env(safe-area-inset-top,0px));bottom:0;
+    width:calc(var(--v4-rail-w) + env(safe-area-inset-left,0px));min-height:0;
+    padding:4px 4px max(4px,env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px));
+    grid-template-columns:1fr;grid-template-rows:repeat(5,1fr);border-top:0;border-right:1px solid #314854
+  }
+  .v4Dock button{min-height:0;height:auto}
+  .v4Dock button .v4Icon{font-size:18px}
+  body.ktakV4 .mapSidebar,
+  body.ktakV4 .boardSidebar,
+  .v4Picker,.v4Sheet{left:calc(var(--v4-rail-w) + env(safe-area-inset-left,0px) + 7px);bottom:max(7px,env(safe-area-inset-bottom,0px))}
+}
+
+@media (max-width:520px){
+  body.ktakV4 header .brandText small{display:none}
+  body.ktakV4 header .roomStatus span:nth-of-type(2){display:none}
+  .v4PickerGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .v4Radial,.v4Picker,.v4Sheet{transition:none!important}
+}
