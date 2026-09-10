@@ -1,0 +1,134 @@
+name: Publish isolated KTAK V4 preview
+
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-v4-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ktak-v4-github-pages-preview
+  cancel-in-progress: true
+
+jobs:
+  publish-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ARTIFACT_URL: 'https://sdmntprcentralus.oaiusercontent.com/files/00000000-5264-81f5-b68a-e1b3337a751b/raw?se=2026-09-10T13%3A11%3A35Z&sp=r&sv=2026-02-06&sr=b&scid=4a8a74be-3c90-5a9a-81ea-b1ab76e30054&skoid=0765b554-4b90-4fa2-9d6d-0055a2427910&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-10T03%3A13%3A41Z&ske=2026-09-11T03%3A13%3A41Z&sks=b&skv=2026-02-06&sig=slkT%2Bkn6FFYJAJuEHeVmVuwWyvWgiNURjzc4II2tRig%3D'
+      PREVIEW_URL: 'https://walther-p.github.io/KTAK-DEV/v4-preview/'
+
+    steps:
+      - name: Checkout stable V3.5 site
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download verified V4 alpha.4 artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/ktak-v4 /tmp/ktak-v4.zip
+          mkdir -p /tmp/ktak-v4
+          curl -fL --retry 4 --retry-delay 2 --retry-all-errors "$ARTIFACT_URL" -o /tmp/ktak-v4.zip
+          unzip -q /tmp/ktak-v4.zip -d /tmp/ktak-v4
+          jq -e '.version == "4.0.0-alpha.4" and .baseVersion == "3.5.11"' /tmp/ktak-v4/KTAK_BUILD.json >/dev/null
+          grep -Fq './ktak-v4-alpha4.js' /tmp/ktak-v4/index.html
+          grep -Fq "window.__KTAK35_V3511={version:'3.5.11'" /tmp/ktak-v4/index.html
+
+      - name: Install preview without touching V3.5 root
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --quiet -- index.html config.js manifest.webmanifest sw.js README.md
+          rm -rf v4-preview
+          mkdir -p v4-preview
+          cp -a /tmp/ktak-v4/. v4-preview/
+          find v4-preview -type f \( -name '*.html' -o -name '*.js' -o -name '*.webmanifest' \) -print0 | xargs -0 sed -i \
+            -e 's#/ktak-icons/#/KTAK-DEV/v4-preview/ktak-icons/#g' \
+            -e 's#/owner-admin-v3/#/KTAK-DEV/v4-preview/owner-admin-v3/#g'
+          jq '. + {hostingOrigin:"github-pages-v35-origin", previewPath:"/KTAK-DEV/v4-preview/"}' v4-preview/KTAK_BUILD.json > /tmp/build.json
+          mv /tmp/build.json v4-preview/KTAK_BUILD.json
+          git diff --quiet -- index.html config.js manifest.webmanifest sw.js README.md
+
+      - name: Commit isolated preview directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add v4-preview
+          if git diff --cached --quiet; then
+            echo 'Preview already current.'
+          else
+            git commit -m 'preview(v4): publish alpha.4 under V3.5 GitHub Pages origin'
+            git push origin HEAD:main
+          fi
+
+      - name: Wait for GitHub Pages publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 45); do
+            if curl -fsS --retry 2 --retry-delay 1 "${PREVIEW_URL}KTAK_BUILD.json?probe=${GITHUB_RUN_ID}-${i}" >/tmp/live-build.json; then
+              if jq -e '.version == "4.0.0-alpha.4" and .baseVersion == "3.5.11" and .hostingOrigin == "github-pages-v35-origin"' /tmp/live-build.json >/dev/null 2>&1; then
+                ok=1
+                break
+              fi
+            fi
+            sleep 4
+          done
+          test "$ok" = 1 || { echo 'GitHub Pages preview did not become current in time'; exit 1; }
+          curl -fsS "${PREVIEW_URL}?probe=${GITHUB_RUN_ID}" >/tmp/live-index.html
+          grep -Fq './ktak-v4-alpha4.js' /tmp/live-index.html
+
+      - name: Install browser E2E dependency
+        run: npm install --no-save --package-lock=false puppeteer-core@24
+
+      - name: Verify V4 interactions and Google Maps on allowed origin
+        shell: bash
+        env:
+          KTAK_E2E_URL: 'https://walther-p.github.io/KTAK-DEV/v4-preview/?alpha4e2e=1'
+        run: |
+          cat > /tmp/e2e-v4-pages.mjs <<'NODE'
+          import fs from 'node:fs';
+          import puppeteer from 'puppeteer-core';
+          const exe=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'].find(fs.existsSync);if(!exe)throw new Error('No Chrome/Chromium executable found');
+          const browser=await puppeteer.launch({headless:true,executablePath:exe,args:['--no-sandbox','--disable-dev-shm-usage']});
+          const page=await browser.newPage();page.setDefaultTimeout(20000);const errors=[];page.on('pageerror',e=>errors.push('pageerror: '+e.message));page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});const wait=ms=>new Promise(r=>setTimeout(r,ms));
+          try{
+            await page.setViewport({width:390,height:844,deviceScaleFactor:3,isMobile:true,hasTouch:true});
+            await page.goto(process.env.KTAK_E2E_URL+'&run='+Date.now(),{waitUntil:'domcontentloaded',timeout:30000});
+            await page.waitForFunction(()=>window.__KTAK_V4?.version==='4.0.0-alpha.4'&&window.__KTAK_V4_BRIDGE?.baseVersion==='3.5.11');
+            await page.evaluate(()=>document.querySelectorAll('.overlay,.pendingOverlay,.securityModal').forEach(el=>el.style.display='none'));
+            const early=await page.evaluate(()=>window.__KTAK_V4_BRIDGE.googleStatus());if(early.gateDenied)throw new Error('Google gate poisoned before auth: '+JSON.stringify(early));
+            await page.evaluate(()=>document.querySelector('.v4Dock4 [data-page="mapPage"]')?.click());await wait(250);
+            const layout=await page.evaluate(()=>{const r=document.getElementById('map').getBoundingClientRect(),h=document.querySelector('.v4MapHud4').getBoundingClientRect();return{w:r.width,h:r.height,hudW:h.width}});if(layout.w<300||layout.h<500||layout.hudW>350)throw new Error('Map layout unusable: '+JSON.stringify(layout));
+            const draw=await page.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));window.__KTAK_V4.showRadial('map',205,390);await w(20);[...document.querySelectorAll('.v4Radial4.open button')].find(b=>b.textContent.includes('繪圖'))?.click();await w(30);const m=document.querySelector('.v4Menu4.open'),r=m?.getBoundingClientRect();return{w:r?.width||0,l:[...(m?.querySelectorAll('.v4MenuList button')||[])].map(b=>b.textContent.trim())}});if(draw.w>320||!draw.l.some(x=>x.includes('直線'))||!draw.l.some(x=>x.includes('導航路線')))throw new Error('Map draw menu invalid: '+JSON.stringify(draw));
+            const mapHold=await page.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));document.querySelector('.v4Menu4')?.classList.remove('open');const armed=window.__KTAK_V4_BRIDGE.e2eSetTool('map','line');const el=document.getElementById('map'),r=el.getBoundingClientRect(),x=r.left+r.width*.58,y=r.top+r.height*.62;el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:91,pointerType:'touch',button:0,clientX:x,clientY:y}));await w(620);const beforeUp=!!document.querySelector('.v4Radial4.open');el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:91,pointerType:'touch',button:0,clientX:x,clientY:y}));el.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:x,clientY:y}));await w(100);return{armed,beforeUp,open:!!document.querySelector('.v4Radial4.open'),tool:window.__KTAK_V4_BRIDGE.mapTool()}});if(!mapHold.armed||!mapHold.beforeUp||!mapHold.open||mapHold.tool!=='pan')throw new Error('Map long press recovery failed: '+JSON.stringify(mapHold));
+            const symbols=await page.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));[...document.querySelectorAll('.v4Radial4.open button')].find(b=>b.textContent.includes('圖樣'))?.click();await w(40);const m=document.querySelector('.v4Menu4.open'),r=m?.getBoundingClientRect();return{w:r?.width||0,l:[...(m?.querySelectorAll('.v4MenuList>button span')||[])].map(x=>x.textContent.trim())}});if(symbols.w>320||!symbols.l.some(x=>x.includes('人員'))||!symbols.l.some(x=>x.includes('車輛')))throw new Error('Symbol hierarchy invalid: '+JSON.stringify(symbols));
+            const hud=await page.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));document.querySelector('.v4Menu4')?.classList.remove('open');let opened='';const oo=window.open;window.open=u=>{opened=String(u);return null};const before=window.__KTAK_V4_BRIDGE.satelliteState();document.querySelector('.v4MapSearch4 button[title="道路／衛星"]')?.click();await w(30);const after=window.__KTAK_V4_BRIDGE.satelliteState();document.querySelector('.v4MapSearch4 button[title="Google 街景"]')?.click();await w(30);window.open=oo;return{before,after,opened}});if(hud.before===hud.after||!hud.opened.includes('map_action=pano'))throw new Error('Satellite/Street View bridge failed: '+JSON.stringify(hud));
+            await page.evaluate(()=>document.querySelector('.v4Dock4 [data-page="boardPage"]')?.click());await wait(220);
+            const boardHold=await page.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));const armed=window.__KTAK_V4_BRIDGE.e2eSetTool('board','line');const el=document.getElementById('boardCanvas'),r=el.getBoundingClientRect(),x=r.left+r.width*.72,y=r.top+r.height*.72;el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:92,pointerType:'touch',button:0,clientX:x,clientY:y}));await w(620);const beforeUp=!!document.querySelector('.v4Radial4.open');el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:92,pointerType:'touch',button:0,clientX:x,clientY:y}));el.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:x,clientY:y}));await w(100);return{armed,beforeUp,open:!!document.querySelector('.v4Radial4.open'),tool:window.__KTAK_V4_BRIDGE.boardTool(),labels:[...document.querySelectorAll('.v4Radial4.open button')].map(b=>b.textContent.trim())}});if(!boardHold.armed||!boardHold.beforeUp||!boardHold.open||boardHold.tool!=='select'||boardHold.labels.some(x=>x.includes('格局'))||!boardHold.labels.some(x=>x.includes('平面圖')))throw new Error('Board long press recovery failed: '+JSON.stringify(boardHold));
+            await page.setViewport({width:844,height:390,deviceScaleFactor:3,isMobile:true,hasTouch:true});await page.evaluate(()=>{window.dispatchEvent(new Event('resize'));window.dispatchEvent(new Event('orientationchange'));document.querySelector('.v4Dock4 [data-page="mapPage"]')?.click()});await wait(350);
+            const land=await page.evaluate(()=>{const m=document.getElementById('map').getBoundingClientRect(),d=document.querySelector('.v4Dock4').getBoundingClientRect(),h=document.querySelector('.v4MapHud4').getBoundingClientRect();window.__KTAK_V4.showRadial('map',innerWidth-18,innerHeight-18);const r=document.querySelector('.v4Radial4').getBoundingClientRect();return{mw:m.width,mh:m.height,dw:d.width,dh:d.height,hw:h.width,rl:r.left,rt:r.top,rr:r.right,rb:r.bottom,vw:innerWidth,vh:innerHeight}});if(land.mw<650||land.mh<250||land.dw>85||land.dh<250||land.hw>land.vw*.58||land.rl<0||land.rt<0||land.rr>land.vw||land.rb>land.vh)throw new Error('iPhone landscape failed: '+JSON.stringify(land));
+            const google=await page.evaluate(async()=>{const key=window.KTAK_CONFIG?.GOOGLE_MAPS_API_KEY;if(!key)return{ok:false,reason:'missing-key'};if(!window.google?.maps){await new Promise((resolve,reject)=>{let settled=false;const done=f=>{if(settled)return;settled=true;f()};const cb='__ktakE2eGoogle'+Date.now();window[cb]=()=>done(()=>{delete window[cb];resolve()});const s=document.createElement('script');s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+'&callback='+cb+'&v=weekly&language=zh-TW&region=TW';s.onerror=()=>done(()=>reject(new Error('script-load')));document.head.appendChild(s);setTimeout(()=>done(()=>reject(new Error('timeout'))),12000)})}const d=document.createElement('div');d.style.cssText='position:fixed;left:-1000px;top:-1000px;width:320px;height:240px';document.body.append(d);new google.maps.Map(d,{center:{lat:23,lng:120.21},zoom:16,disableDefaultUI:true});await new Promise(r=>setTimeout(r,1800));const authErr=!!d.querySelector('.gm-err-container,.gm-err-content');d.remove();return{ok:!!window.google?.maps&&!authErr,authErr}}).catch(e=>({ok:false,reason:String(e.message||e)}));
+            const gerr=errors.filter(x=>/Google Maps JavaScript API error|RefererNotAllowedMapError|ApiNotActivatedMapError|InvalidKeyMapError/i.test(x));if(!google.ok||gerr.length)throw new Error('GitHub Pages origin cannot render Google Maps: '+JSON.stringify({google,gerr}));
+            const fatal=errors.filter(x=>!x.includes('Failed to load resource')&&!x.includes('net::ERR_')&&!x.includes('Turnstile')&&!/Google Maps JavaScript API warning/i.test(x));if(fatal.length)throw new Error('Browser console errors: '+fatal.join(' | '));
+            console.log('KTAK V4 alpha.4 GitHub Pages E2E passed: map, board, long-press recovery, hierarchy, satellite/Street View, iPhone landscape and Google Maps authorization.');
+          } finally {await browser.close()}
+          NODE
+          node /tmp/e2e-v4-pages.mjs
+
+      - name: Verify V3.5 root files stayed untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git show origin/main:index.html | sha256sum | cut -d' ' -f1)" = "$(git show 2ee5187ce911c4e9880a4717c63fc5572a948706:index.html | sha256sum | cut -d' ' -f1)"
+          test "$(git show origin/main:config.js | sha256sum | cut -d' ' -f1)" = "$(git show 2ee5187ce911c4e9880a4717c63fc5572a948706:config.js | sha256sum | cut -d' ' -f1)"
+          echo 'V3.5 production root unchanged; V4 preview verified.'
