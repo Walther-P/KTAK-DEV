@@ -1,0 +1,106 @@
+name: Verify KTAK V4 alpha6 live
+
+on:
+  push:
+    paths:
+      - 'v4-preview/index.html'
+      - 'v4-preview/ktak-v4-alpha6.js'
+      - 'v4-preview/ktak-v4-alpha6.css'
+      - 'v4-preview/KTAK_BUILD.json'
+      - '.github/workflows/verify-v4-alpha6-live.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-alpha6:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Static syntax and safety checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check v4-preview/ktak-v4-alpha6.js
+          grep -Fq "4.0.0-alpha.6-input" v4-preview/ktak-v4-alpha6.js
+          grep -Fq "map-line-rect-circle-drag-release" v4-preview/KTAK_BUILD.json
+          git fetch origin archive/pre-v4-alpha6-input-20260911
+          git diff --exit-code origin/archive/pre-v4-alpha6-input-20260911 -- index.html config.js manifest.webmanifest sw.js README.md
+          echo 'V3.5 production root unchanged.'
+
+      - name: Wait for deployed alpha6 revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://walther-p.github.io/KTAK-DEV/v4-preview/'
+          ok=0
+          for i in $(seq 1 36); do
+            INDEX="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}?alpha6-run=${GITHUB_RUN_ID}-${i}" || true)"
+            INPUT="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}ktak-v4-alpha6.js?alpha6-run=${GITHUB_RUN_ID}-${i}" || true)"
+            if grep -Fq '20260911e' <<<"$INDEX" && grep -Fq 'ktak-v4-alpha6-input' <<<"$INDEX" && grep -Fq '4.0.0-alpha.6-input' <<<"$INPUT"; then
+              ok=1
+              break
+            fi
+            sleep 4
+          done
+          test "$ok" -eq 1
+
+      - name: Install browser dependency
+        run: npm install --no-save --package-lock=false puppeteer-core@24
+
+      - name: Verify live mobile bootstrap and alpha6 UI hooks
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import puppeteer from 'puppeteer-core';
+          const exe=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'].find(fs.existsSync);
+          if(!exe) throw new Error('No Chrome/Chromium executable found');
+          const browser=await puppeteer.launch({headless:true,executablePath:exe,args:['--no-sandbox','--disable-dev-shm-usage']});
+          const page=await browser.newPage();
+          page.setDefaultTimeout(40000);
+          const pageErrors=[];
+          page.on('pageerror',e=>pageErrors.push(e.message));
+          try{
+            await page.setViewport({width:390,height:844,deviceScaleFactor:3,isMobile:true,hasTouch:true});
+            await page.goto('https://walther-p.github.io/KTAK-DEV/v4-preview/?alpha6-live='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
+            await page.waitForFunction(()=>{
+              const w=document.getElementById('ktakAppFrame')?.contentWindow;
+              return w?.__KTAK_V4_INPUT?.version==='4.0.0-alpha.6-input';
+            });
+            const result=await page.evaluate(async()=>{
+              const f=document.getElementById('ktakAppFrame'),w=f.contentWindow,d=f.contentDocument;
+              d.body.classList.add('v4MapActive');d.body.classList.remove('v4BoardActive');
+              w.__KTAK_V4.openMapDraw();
+              await new Promise(r=>setTimeout(r,40));
+              const mapTriangle=!!d.querySelector('.v4Menu4.open [data-alpha6-triangle]');
+              d.querySelector('.v4Menu4')?.classList.remove('open');
+              d.body.classList.remove('v4MapActive');d.body.classList.add('v4BoardActive');
+              w.__KTAK_V4.openBoardDraw();
+              await new Promise(r=>setTimeout(r,40));
+              const boardTriangle=!!d.querySelector('.v4Menu4.open [data-alpha6-triangle]');
+              const dock=d.querySelector('.v4Dock4');
+              const blur=dock ? (w.getComputedStyle(dock).backdropFilter||w.getComputedStyle(dock).webkitBackdropFilter||'') : '';
+              return {
+                version:w.__KTAK_V4_INPUT?.version,
+                directDragShapes:w.__KTAK_V4_INPUT?.directDragShapes,
+                touchRouteSegments:w.__KTAK_V4_INPUT?.touchRouteSegments,
+                pinchSafeLongPress:w.__KTAK_V4_INPUT?.pinchSafeLongPress,
+                releaseGuard:w.__KTAK_V4_INPUT?.releaseGuard,
+                mapTriangle,boardTriangle,blur,
+                bodyClass:d.body.className
+              };
+            });
+            if(result.version!=='4.0.0-alpha.6-input')throw new Error('alpha6 missing');
+            if(!result.directDragShapes||!result.touchRouteSegments||!result.pinchSafeLongPress||!result.releaseGuard)throw new Error('alpha6 capability flag missing');
+            if(!result.mapTriangle||!result.boardTriangle)throw new Error('triangle parity menu missing');
+            if(pageErrors.length)throw new Error('page errors: '+JSON.stringify(pageErrors));
+            console.log(JSON.stringify(result));
+          } finally {await browser.close()}
+          NODE
