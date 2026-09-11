@@ -15,40 +15,46 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Patch V4 cache and observer hot paths
+      - name: Patch Google page watcher and cache revision
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          shell = Path('v4-preview/app-shell-alpha4.html')
-          s = shell.read_text(encoding='utf-8')
-          old = '<script src="./ktak-v4-alpha4.js"></script>'
-          new = '<script src="./ktak-v4-alpha4.js?v=20260911f"></script>'
-          if old not in s and new not in s:
-              raise SystemExit('alpha4 script tag not found')
-          shell.write_text(s.replace(old, new), encoding='utf-8')
-
           index = Path('v4-preview/index.html')
           s = index.read_text(encoding='utf-8')
-          if '20260911e' not in s and '20260911f' not in s:
+          if '20260911f' not in s and '20260911g' not in s:
               raise SystemExit('preview build revision not found')
-          index.write_text(s.replace('20260911e', '20260911f'), encoding='utf-8')
+          index.write_text(s.replace('20260911f', '20260911g'), encoding='utf-8')
 
           a6 = Path('v4-preview/ktak-v4-alpha6.js')
           s = a6.read_text(encoding='utf-8')
-          old = "if(label)label.textContent=coarse?'導航路線：拖一段，放開成節點，再繼續拖':'導航路線：點地圖加入節點';"
-          new = "const nextLabel=coarse?'導航路線：拖一段，放開成節點，再繼續拖':'導航路線：點地圖加入節點';if(label&&label.textContent!==nextLabel)label.textContent=nextLabel;"
+          old = '''function watchPageChanges(){
+  document.addEventListener('click',e=>{
+    const target=e.target?.closest?.('[data-page="mapPage"],.navBtn[data-page="mapPage"]');
+    if(target)setTimeout(()=>ensureGoogleDark(0),180);
+  },true);
+  const bodyObserver=new MutationObserver(()=>{
+    if(document.body.classList.contains('v4MapActive'))setTimeout(()=>ensureGoogleDark(0),180);
+    else{clearRoutePreview();clearMapGesture(true)}
+    if(!document.body.classList.contains('v4BoardActive'))clearBoardGesture(true);
+  });
+  bodyObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+}'''
+          new = '''function watchPageChanges(){
+  const mapPage=$('mapPage'),boardPage=$('boardPage');
+  const syncMap=()=>{
+    if(mapPage?.classList.contains('active'))setTimeout(()=>ensureGoogleDark(0),180);
+    else{clearRoutePreview();clearMapGesture(true)}
+  };
+  const syncBoard=()=>{if(!boardPage?.classList.contains('active'))clearBoardGesture(true)};
+  if(mapPage)new MutationObserver(syncMap).observe(mapPage,{attributes:true,attributeFilter:['class']});
+  if(boardPage)new MutationObserver(syncBoard).observe(boardPage,{attributes:true,attributeFilter:['class']});
+}'''
           if old in s:
               s = s.replace(old, new)
           elif new not in s:
-              raise SystemExit('route label patch point not found')
-          old = "const mode=document.querySelector('.v4Mode4');if(mode)new MutationObserver(patchRouteMode).observe(mode,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});"
-          new = "const mode=document.querySelector('.v4Mode4');if(mode)new MutationObserver(()=>{if(bridge()?.mapTool?.()==='route')patchRouteMode()}).observe(mode,{attributes:true,attributeFilter:['class']});"
-          if old in s:
-              s = s.replace(old, new)
-          elif new not in s:
-              raise SystemExit('route observer patch point not found')
+              raise SystemExit('page watcher patch point not found')
           a6.write_text(s, encoding='utf-8')
           PY
       - name: Commit hotfix
@@ -56,10 +62,10 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add v4-preview/app-shell-alpha4.html v4-preview/index.html v4-preview/ktak-v4-alpha6.js
+          git add v4-preview/index.html v4-preview/ktak-v4-alpha6.js
           if git diff --cached --quiet; then
             echo 'No changes required.'
             exit 0
           fi
-          git commit -m 'fix(v4): eliminate map mutation storm and bust cached shell'
+          git commit -m 'fix(v4): scope Google watcher to map page activity'
           git push origin HEAD:main
