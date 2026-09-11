@@ -3,6 +3,10 @@ name: Verify KTAK V4 Google live
 on:
   push:
     paths:
+      - 'v4-preview/index.html'
+      - 'v4-preview/app-shell-alpha4.html'
+      - 'v4-preview/ktak-v4-alpha5.js'
+      - 'v4-preview/ktak-v4-alpha5.css'
       - '.github/workflows/verify-v4-google-live.yml'
   workflow_dispatch:
 
@@ -19,15 +23,24 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify live preview identity
+      - name: Wait for live preview identity
         shell: bash
         run: |
           set -euo pipefail
           BASE='https://walther-p.github.io/KTAK-DEV/v4-preview/'
+          ok=0
+          for i in $(seq 1 30); do
+            INDEX="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}?google-run=${GITHUB_RUN_ID}-${i}" || true)"
+            if grep -Fq 'app-shell-alpha4.html?boot=' <<<"$INDEX" && grep -Fq '20260911b' <<<"$INDEX"; then
+              ok=1
+              break
+            fi
+            sleep 3
+          done
+          test "$ok" -eq 1
           curl -fsS --retry 4 --retry-delay 2 "${BASE}KTAK_BUILD.json?run=${GITHUB_RUN_ID}" >/tmp/build.json
           jq -e '.version=="4.0.0-alpha.4" and .baseVersion=="3.5.11" and .hostingOrigin=="github-pages-v35-origin"' /tmp/build.json >/dev/null
-          curl -fsS --retry 4 --retry-delay 2 "${BASE}?run=${GITHUB_RUN_ID}" >/tmp/index.html
-          grep -Fq './ktak-v4-alpha4.js' /tmp/index.html
+          curl -fsS "${BASE}app-shell-alpha4.html?run=${GITHUB_RUN_ID}" | grep -Fq './ktak-v4-alpha4.js'
 
       - name: Install browser dependency
         run: npm install --no-save --package-lock=false puppeteer-core@24
@@ -42,13 +55,14 @@ jobs:
           if(!exe) throw new Error('No Chrome/Chromium executable found');
           const browser=await puppeteer.launch({headless:true,executablePath:exe,args:['--no-sandbox','--disable-dev-shm-usage']});
           const page=await browser.newPage();
-          page.setDefaultTimeout(20000);
+          page.setDefaultTimeout(30000);
           const googleErrors=[];
           page.on('console',m=>{if(m.type()==='error'&&/Google Maps JavaScript API error|RefererNotAllowedMapError|ApiNotActivatedMapError|InvalidKeyMapError/i.test(m.text()))googleErrors.push(m.text())});
           try{
             await page.setViewport({width:390,height:844,deviceScaleFactor:3,isMobile:true,hasTouch:true});
-            await page.goto('https://walther-p.github.io/KTAK-DEV/v4-preview/?google-live-check='+Date.now(),{waitUntil:'domcontentloaded',timeout:30000});
+            await page.goto('https://walther-p.github.io/KTAK-DEV/v4-preview/?google-live-check='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
             await page.waitForFunction(()=>window.__KTAK_V4?.version==='4.0.0-alpha.4'&&window.__KTAK_V4_BRIDGE?.baseVersion==='3.5.11');
+            await page.waitForFunction(()=>window.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine');
             const result=await page.evaluate(async()=>{
               const key=window.KTAK_CONFIG?.GOOGLE_MAPS_API_KEY;
               if(!key)return{ok:false,reason:'missing-key'};
@@ -75,7 +89,7 @@ jobs:
               return{ok:!!window.google?.maps&&rendered&&!authErr,authErr,rendered};
             }).catch(e=>({ok:false,reason:String(e?.message||e)}));
             if(!result.ok||googleErrors.length)throw new Error('Google Maps live authorization/render failed: '+JSON.stringify({result,googleErrors}));
-            console.log('Google Maps renders successfully on the live V4 GitHub Pages origin.');
+            console.log('Google Maps renders successfully on the live V4 GitHub Pages origin with alpha.5 refinement.');
           } finally {await browser.close()}
           NODE
 
