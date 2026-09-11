@@ -155,7 +155,7 @@ function boot(){
   syncRoomChip();
   scheduleGuide();
   window.__KTAK_V4.uiRevision=REV;
-  window.__KTAK_V4_REFINEMENT={version:REV,showHelp,showGuide,resetSeen,syncRoomChip};
+  window.__KTAK_V4_REFINEMENT={version:REV,showHelp:openHelp,showGuide,resetSeen,syncRoomChip};
   console.info('[KTAK V4] refinement ready',REV);
 }
 
