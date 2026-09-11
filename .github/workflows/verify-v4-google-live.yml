@@ -43,8 +43,10 @@ jobs:
           test "$ok" -eq 1
           curl -fsS --retry 4 --retry-delay 2 "${BASE}KTAK_BUILD.json?run=${GITHUB_RUN_ID}" >/tmp/build.json
           jq -e '.version=="4.0.0-alpha.4" and .baseVersion=="3.5.11" and .inputRevision=="4.0.0-alpha.6-input" and .hostingOrigin=="github-pages-v35-origin"' /tmp/build.json >/dev/null
-          curl -fsS "${BASE}app-shell-alpha4.html?run=${GITHUB_RUN_ID}" | grep -Fq './ktak-v4-alpha4.js'
-          curl -fsS "${BASE}ktak-v4-alpha6.js?run=${GITHUB_RUN_ID}" | grep -Fq 'DARK_GOOGLE_STYLES'
+          curl -fsS "${BASE}app-shell-alpha4.html?run=${GITHUB_RUN_ID}" >/tmp/app-shell.html
+          grep -Fq './ktak-v4-alpha4.js' /tmp/app-shell.html
+          curl -fsS "${BASE}ktak-v4-alpha6.js?run=${GITHUB_RUN_ID}" >/tmp/alpha6.js
+          grep -Fq 'DARK_GOOGLE_STYLES' /tmp/alpha6.js
 
       - name: Install browser dependency
         run: npm install --no-save --package-lock=false puppeteer-core@24
