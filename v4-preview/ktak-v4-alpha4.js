@@ -117,7 +117,14 @@ function syncTeamStrip(){if(!teamStrip)return;teamStrip.innerHTML='';$$('#locati
 function openSettings(){const items=[];if($('permissionPage')&&!$('permissionTab')?.classList.contains('hidden'))items.push({icon:'🔐',label:'權限',action:()=>nav('permissionPage')});items.push({icon:'↩',label:'離開房間',action:()=>{closeMenus();$('leaveBtn')?.click()}});openChoices('設定',items)}
 function installModeCleanup(){$('map')?.addEventListener('click',()=>setTimeout(()=>{if(core()?.mapTool?.()==='pan')clearMode()},140),true);$('boardCanvas')?.addEventListener('pointerup',()=>setTimeout(()=>{if(core()?.boardTool?.()==='select')clearMode()},160),true);document.addEventListener('click',e=>{if(e.target?.closest?.('.navBtn,.v4Dock4'))clearMode()},true)}
 function boot(){
-  if(!core())throw new Error('KTAK V4 bridge unavailable');document.body.classList.remove('ktakV4','ktakV4A3');document.body.classList.add('ktakV4A4');buildDock();buildOverlays();buildMapHud();installLongPress($('map'),'map');installLongPress($('boardCanvas'),'board');installModeCleanup();syncPage();const main=document.querySelector('main');if(main)new MutationObserver(syncPage).observe(main,{subtree:true,attributes:true,attributeFilter:['class']});window.addEventListener('orientationchange',()=>setTimeout(()=>{syncPage();closeMenus()},150));window.__KTAK_V4={version:VERSION,baseVersion:'3.5.11',interaction:'persistent-long-press-compact-hierarchy',openSymbols,openMapDraw,openBoardDraw,openFloors,openFloorplan,showRadial,syncPage}
+  if(!core())throw new Error('KTAK V4 bridge unavailable');
+  document.body.classList.remove('ktakV4','ktakV4A3');
+  document.body.classList.add('ktakV4A4');
+  buildDock();buildOverlays();buildMapHud();installLongPress($('map'),'map');installLongPress($('boardCanvas'),'board');installModeCleanup();syncPage();
+  const pageObserver=new MutationObserver(()=>syncPage());
+  document.querySelectorAll('.page').forEach(page=>pageObserver.observe(page,{attributes:true,attributeFilter:['class']}));
+  window.addEventListener('orientationchange',()=>setTimeout(()=>{syncPage();closeMenus()},150));
+  window.__KTAK_V4={version:VERSION,baseVersion:'3.5.11',interaction:'persistent-long-press-compact-hierarchy',openSymbols,openMapDraw,openBoardDraw,openFloors,openFloorplan,showRadial,syncPage}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,0),{once:true});else setTimeout(boot,0);
 })();
