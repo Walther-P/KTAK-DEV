@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'v4-preview/index.html'
+      - 'v4-preview/ktak-v4-alpha4.js'
+      - 'v4-preview/app-shell-alpha4.html'
       - 'v4-preview/ktak-v4-alpha6.js'
       - 'v4-preview/ktak-v4-alpha6.css'
       - 'v4-preview/KTAK_BUILD.json'
@@ -27,14 +29,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --check v4-preview/ktak-v4-alpha4.js
           node --check v4-preview/ktak-v4-alpha6.js
           grep -Fq "4.0.0-alpha.6-input" v4-preview/ktak-v4-alpha6.js
           grep -Fq "map-line-rect-circle-drag-release" v4-preview/KTAK_BUILD.json
+          grep -Fq "pageObserver.observe(page,{attributes:true,attributeFilter:['class']})" v4-preview/ktak-v4-alpha4.js
           git fetch origin archive/pre-v4-alpha6-input-20260911
           git diff --exit-code origin/archive/pre-v4-alpha6-input-20260911 -- index.html config.js manifest.webmanifest sw.js README.md
           echo 'V3.5 production root unchanged.'
 
-      - name: Wait for deployed alpha6 revision
+      - name: Wait for deployed alpha6 performance revision
         shell: bash
         run: |
           set -euo pipefail
@@ -43,7 +47,8 @@ jobs:
           for i in $(seq 1 36); do
             INDEX="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}?alpha6-run=${GITHUB_RUN_ID}-${i}" || true)"
             INPUT="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}ktak-v4-alpha6.js?alpha6-run=${GITHUB_RUN_ID}-${i}" || true)"
-            if grep -Fq '20260911e' <<<"$INDEX" && grep -Fq 'ktak-v4-alpha6-input' <<<"$INDEX" && grep -Fq '4.0.0-alpha.6-input' <<<"$INPUT"; then
+            SHELL="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}app-shell-alpha4.html?alpha6-run=${GITHUB_RUN_ID}-${i}" || true)"
+            if grep -Fq '20260911f' <<<"$INDEX" && grep -Fq 'ktak-v4-alpha6-input' <<<"$INDEX" && grep -Fq '4.0.0-alpha.6-input' <<<"$INPUT" && grep -Fq 'ktak-v4-alpha4.js?v=20260911f' <<<"$SHELL"; then
               ok=1
               break
             fi
@@ -102,5 +107,43 @@ jobs:
             if(!result.mapTriangle||!result.boardTriangle)throw new Error('triangle parity menu missing');
             if(pageErrors.length)throw new Error('page errors: '+JSON.stringify(pageErrors));
             console.log(JSON.stringify(result));
+          } finally {await browser.close()}
+          NODE
+
+      - name: Verify Google DOM class churn no longer retriggers page sync
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import puppeteer from 'puppeteer-core';
+          const exe=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'].find(fs.existsSync);
+          const browser=await puppeteer.launch({headless:true,executablePath:exe,args:['--no-sandbox','--disable-dev-shm-usage']});
+          const page=await browser.newPage();
+          page.setDefaultTimeout(40000);
+          try{
+            await page.setViewport({width:1365,height:900});
+            await page.goto('https://walther-p.github.io/KTAK-DEV/v4-preview/?perf-live='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
+            await page.waitForFunction(()=>document.getElementById('ktakAppFrame')?.contentWindow?.__KTAK_V4_INPUT?.version==='4.0.0-alpha.6-input');
+            const result=await page.evaluate(async()=>{
+              const f=document.getElementById('ktakAppFrame'),w=f.contentWindow,d=f.contentDocument;
+              const bridge=w.__KTAK_V4_BRIDGE;
+              const original=bridge.ensureGoogle;
+              let calls=0;
+              bridge.ensureGoogle=function(...args){calls++;return original.apply(this,args)};
+              d.querySelectorAll('.page.active').forEach(x=>x.classList.remove('active'));
+              d.getElementById('mapPage')?.classList.add('active');
+              await new Promise(r=>setTimeout(r,450));
+              const baseline=calls;
+              const probe=d.createElement('div');d.getElementById('map')?.append(probe);
+              for(let i=0;i<18;i++){
+                probe.classList.toggle('google-internal-'+(i%2));
+                await new Promise(r=>setTimeout(r,18));
+              }
+              await new Promise(r=>setTimeout(r,450));
+              probe.remove();bridge.ensureGoogle=original;
+              return {baseline,calls,delta:calls-baseline};
+            });
+            console.log(JSON.stringify(result));
+            if(result.delta>2)throw new Error('map subtree mutation storm still retriggers page sync: '+JSON.stringify(result));
           } finally {await browser.close()}
           NODE
