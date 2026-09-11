@@ -17,11 +17,11 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#0a1014;col
 </head>
 <body>
 <div class="boot" id="boot"><div class="card"><div class="mark">K</div><div class="title">KTAK V4</div><div class="sub" id="bootText">載入工作區…</div><button class="retry" id="retryBtn" type="button">重新載入</button></div></div>
-<iframe id="ktakAppFrame" title="KTAK V4 工作區" src="./app-shell-alpha4.html?boot=20260911d" allow="geolocation; camera; microphone; clipboard-read; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<iframe id="ktakAppFrame" title="KTAK V4 工作區" src="./app-shell-alpha4.html?boot=20260911e" allow="geolocation; camera; microphone; clipboard-read; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 <script>
 (()=>{
   'use strict';
-  const BUILD='20260911d';
+  const BUILD='20260911e';
   const frame=document.getElementById('ktakAppFrame');
   const boot=document.getElementById('boot');
   const text=document.getElementById('bootText');
@@ -35,13 +35,19 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#0a1014;col
       if(!doc.getElementById('ktak-v4-alpha5-style')){
         const link=doc.createElement('link');link.id='ktak-v4-alpha5-style';link.rel='stylesheet';link.href='./ktak-v4-alpha5.css?v='+BUILD;doc.head.append(link);
       }
+      if(!doc.getElementById('ktak-v4-alpha6-style')){
+        const link=doc.createElement('link');link.id='ktak-v4-alpha6-style';link.rel='stylesheet';link.href='./ktak-v4-alpha6.css?v='+BUILD;doc.head.append(link);
+      }
       if(!doc.getElementById('ktak-v4-alpha5-refine')){
         const script=doc.createElement('script');script.id='ktak-v4-alpha5-refine';script.src='./ktak-v4-alpha5.js?v='+BUILD;doc.body.append(script);
+      }
+      if(!doc.getElementById('ktak-v4-alpha6-input')){
+        const script=doc.createElement('script');script.id='ktak-v4-alpha6-input';script.src='./ktak-v4-alpha6.js?v='+BUILD;doc.body.append(script);
       }
       clearTimeout(watchdog);
       const started=Date.now();
       const poll=()=>{
-        if(win.__KTAK_V4?.version==='4.0.0-alpha.4'&&win.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine'){
+        if(win.__KTAK_V4?.version==='4.0.0-alpha.4'&&win.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine'&&win.__KTAK_V4_INPUT?.version==='4.0.0-alpha.6-input'){
           boot.classList.add('ready');
           window.__KTAK_APP_FRAME=frame;
           return;
