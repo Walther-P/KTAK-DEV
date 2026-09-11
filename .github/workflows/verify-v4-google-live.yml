@@ -36,7 +36,7 @@ jobs:
             curl -fsS --retry 2 --retry-delay 1 "${BASE}?google-run=${GITHUB_RUN_ID}-${i}" -o /tmp/index.html || true
             curl -fsS --retry 2 --retry-delay 1 "${BASE}ktak-v4-alpha6.js?google-run=${GITHUB_RUN_ID}-${i}" -o /tmp/alpha6.js || true
             curl -fsS --retry 2 --retry-delay 1 "${BASE}app-shell-alpha4.html?google-run=${GITHUB_RUN_ID}-${i}" -o /tmp/app-shell.html || true
-            if grep -Fq 'id="ktakAppFrame"' /tmp/index.html && grep -Fq '20260911f' /tmp/index.html && grep -Fq '4.0.0-alpha.6-input' /tmp/alpha6.js && grep -Fq 'ktak-v4-alpha4.js?v=20260911f' /tmp/app-shell.html; then
+            if grep -Fq 'id="ktakAppFrame"' /tmp/index.html && grep -Fq '20260911g' /tmp/index.html && grep -Fq '4.0.0-alpha.6-input' /tmp/alpha6.js && grep -Fq 'new MutationObserver(syncMap).observe(mapPage' /tmp/alpha6.js && grep -Fq 'ktak-v4-alpha4.js?v=20260911f' /tmp/app-shell.html; then
               ok=1
               break
             fi
@@ -110,7 +110,7 @@ jobs:
             if(!result.ok||googleErrors.length)throw new Error('Google Maps live authorization/render failed: '+JSON.stringify({result,googleErrors,pageErrors}));
             if(result.mapType!=='roadmap'||!result.configuredStyles)throw new Error('Dark roadmap configuration test failed: '+JSON.stringify(result));
             console.log(JSON.stringify(result));
-            console.log('Google Maps renders successfully on the live V4 GitHub Pages origin with alpha6 performance hotfix loaded.');
+            console.log('Google Maps renders successfully on the live V4 GitHub Pages origin with alpha6 page-scoped performance hotfix loaded.');
           } finally {await browser.close()}
           NODE
 
