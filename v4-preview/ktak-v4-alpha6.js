@@ -372,16 +372,14 @@ async function ensureGoogleDark(attempt=0){
   }catch(error){if(attempt<5)googleRetryTimer=setTimeout(()=>ensureGoogleDark(attempt+1),650)}
 }
 function watchPageChanges(){
-  document.addEventListener('click',e=>{
-    const target=e.target?.closest?.('[data-page="mapPage"],.navBtn[data-page="mapPage"]');
-    if(target)setTimeout(()=>ensureGoogleDark(0),180);
-  },true);
-  const bodyObserver=new MutationObserver(()=>{
-    if(document.body.classList.contains('v4MapActive'))setTimeout(()=>ensureGoogleDark(0),180);
+  const mapPage=$('mapPage'),boardPage=$('boardPage');
+  const syncMap=()=>{
+    if(mapPage?.classList.contains('active'))setTimeout(()=>ensureGoogleDark(0),180);
     else{clearRoutePreview();clearMapGesture(true)}
-    if(!document.body.classList.contains('v4BoardActive'))clearBoardGesture(true);
-  });
-  bodyObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+  };
+  const syncBoard=()=>{if(!boardPage?.classList.contains('active'))clearBoardGesture(true)};
+  if(mapPage)new MutationObserver(syncMap).observe(mapPage,{attributes:true,attributeFilter:['class']});
+  if(boardPage)new MutationObserver(syncBoard).observe(boardPage,{attributes:true,attributeFilter:['class']});
 }
 
 function installGuards(){
