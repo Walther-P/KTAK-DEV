@@ -129,21 +129,21 @@ jobs:
               const bridge=w.__KTAK_V4_BRIDGE;
               const original=bridge.ensureGoogle;
               let calls=0;
-              bridge.ensureGoogle=function(...args){calls++;return original.apply(this,args)};
+              bridge.ensureGoogle=async function(){calls++;return {ready:true,provider:'google'}};
               d.querySelectorAll('.page.active').forEach(x=>x.classList.remove('active'));
               d.getElementById('mapPage')?.classList.add('active');
-              await new Promise(r=>setTimeout(r,450));
-              const baseline=calls;
+              await new Promise(r=>setTimeout(r,1600));
+              calls=0;
               const probe=d.createElement('div');d.getElementById('map')?.append(probe);
               for(let i=0;i<18;i++){
                 probe.classList.toggle('google-internal-'+(i%2));
                 await new Promise(r=>setTimeout(r,18));
               }
-              await new Promise(r=>setTimeout(r,450));
+              await new Promise(r=>setTimeout(r,650));
               probe.remove();bridge.ensureGoogle=original;
-              return {baseline,calls,delta:calls-baseline};
+              return {calls};
             });
             console.log(JSON.stringify(result));
-            if(result.delta>2)throw new Error('map subtree mutation storm still retriggers page sync: '+JSON.stringify(result));
+            if(result.calls!==0)throw new Error('map subtree mutations still retrigger page sync: '+JSON.stringify(result));
           } finally {await browser.close()}
           NODE
