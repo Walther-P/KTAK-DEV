@@ -31,7 +31,7 @@ jobs:
           ok=0
           for i in $(seq 1 30); do
             INDEX="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}?google-run=${GITHUB_RUN_ID}-${i}" || true)"
-            if grep -Fq 'id="ktakAppFrame"' <<<"$INDEX" && grep -Fq '20260911c' <<<"$INDEX"; then
+            if grep -Fq 'id="ktakAppFrame"' <<<"$INDEX" && grep -Fq '20260911d' <<<"$INDEX"; then
               ok=1
               break
             fi
