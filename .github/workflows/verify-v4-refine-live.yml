@@ -1,0 +1,93 @@
+name: Verify KTAK V4 refinement live
+
+on:
+  push:
+    paths:
+      - 'v4-preview/ktak-v4-alpha5.js'
+      - 'v4-preview/ktak-v4-alpha5.css'
+      - 'v4-preview/ktak-v35-ui-v359.js'
+      - 'v4-preview/KTAK_BUILD.json'
+      - '.github/workflows/verify-v4-refine-live.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-refinement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Wait for GitHub Pages refinement assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://walther-p.github.io/KTAK-DEV/v4-preview/'
+          ok=0
+          for i in $(seq 1 24); do
+            if curl -fsS --retry 2 --retry-delay 1 "${BASE}ktak-v4-alpha5.js?run=${GITHUB_RUN_ID}-${i}" | grep -Fq "4.0.0-alpha.5-refine"; then
+              ok=1
+              break
+            fi
+            sleep 3
+          done
+          test "$ok" -eq 1
+          curl -fsS "${BASE}ktak-v4-alpha5.css?run=${GITHUB_RUN_ID}" | grep -Fq "workspace-first"
+          curl -fsS "${BASE}ktak-v35-ui-v359.js?run=${GITHUB_RUN_ID}" | grep -Fq "ktak-v4-alpha5-refine"
+
+      - name: Install browser dependency
+        run: npm install --no-save --package-lock=false puppeteer-core@24
+
+      - name: Verify refinement loads and workspace expands
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import puppeteer from 'puppeteer-core';
+          const exe=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'].find(fs.existsSync);
+          if(!exe) throw new Error('No Chrome/Chromium executable found');
+          const browser=await puppeteer.launch({headless:true,executablePath:exe,args:['--no-sandbox','--disable-dev-shm-usage']});
+          const page=await browser.newPage();
+          page.setDefaultTimeout(30000);
+          try {
+            await page.setViewport({width:390,height:844,deviceScaleFactor:3,isMobile:true,hasTouch:true});
+            await page.goto('https://walther-p.github.io/KTAK-DEV/v4-preview/?refine-live='+Date.now(),{waitUntil:'networkidle2',timeout:45000});
+            await page.waitForFunction(()=>window.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine');
+            await page.evaluate(()=>{
+              const b=document.querySelector('.navBtn[data-page="mapPage"]');
+              b?.click();
+              window.__KTAK_V4?.syncPage?.();
+            });
+            await page.waitForFunction(()=>document.body.classList.contains('v4MapActive'));
+            await page.waitForFunction(()=>document.querySelector('.v4Guide5')?.classList.contains('open'));
+            const result=await page.evaluate(()=>({
+              refine:window.__KTAK_V4_REFINEMENT?.version,
+              uiRevision:window.__KTAK_V4?.uiRevision,
+              headerDisplay:getComputedStyle(document.querySelector('header')).display,
+              mapTop:getComputedStyle(document.querySelector('#mapPage.active')).top,
+              roomChip:!!document.querySelector('.v4RoomChip5:not([hidden])'),
+              guide:!!document.querySelector('.v4Guide5.open'),
+              settingsHelpPatched:document.getElementById('v4SettingsBtn')?.dataset.v4HelpPatched==='1'
+            }));
+            if(result.refine!=='4.0.0-alpha.5-refine')throw new Error('refinement missing');
+            if(result.uiRevision!=='4.0.0-alpha.5-refine')throw new Error('ui revision missing');
+            if(result.headerDisplay!=='none')throw new Error('workspace header still visible');
+            if(!result.roomChip)throw new Error('room chip missing');
+            if(!result.guide)throw new Error('first-use guide missing');
+            if(!result.settingsHelpPatched)throw new Error('settings help not patched');
+            console.log(JSON.stringify(result));
+          } finally { await browser.close(); }
+          NODE
+
+      - name: Verify V3.5 production root stayed byte-identical
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin archive/pre-v4-preview-20260910
+          git diff --exit-code origin/archive/pre-v4-preview-20260910 -- index.html config.js manifest.webmanifest sw.js README.md
+          echo 'V3.5 production root unchanged.'

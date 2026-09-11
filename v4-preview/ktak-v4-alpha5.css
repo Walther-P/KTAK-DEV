@@ -1,0 +1,63 @@
+/* KTAK V4 alpha.5 refinement — workspace-first */
+:root{--v4dock:56px;--v4ui-font:12px}
+
+/* Give map and board the pixels back: room status becomes a compact floating chip. */
+body.ktakV4A4.v4MapActive header,
+body.ktakV4A4.v4BoardActive header{display:none!important}
+body.ktakV4A4.v4MapActive #mapPage.active,
+body.ktakV4A4.v4BoardActive #boardPage.active{top:env(safe-area-inset-top,0px)!important}
+body.ktakV4A4.v4MapActive .v4Mode4,
+body.ktakV4A4.v4BoardActive .v4Mode4{top:calc(env(safe-area-inset-top,0px) + 8px)!important}
+
+.v4RoomChip5{position:fixed;z-index:9250;right:8px;top:calc(env(safe-area-inset-top,0px) + 7px);max-width:104px;height:36px;min-height:36px;padding:0 9px!important;border-radius:999px!important;background:#08151be8!important;border:1px solid #456473!important;box-shadow:0 4px 14px #0008;backdrop-filter:blur(8px);font-size:11px!important;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v4RoomChip5[hidden]{display:none!important}
+
+/* Consistent compact typography and touch targets. */
+.v4Dock4{min-height:calc(var(--v4dock) + env(safe-area-inset-bottom,0px))!important}
+.v4Dock4 button{min-height:44px!important;font-size:10px!important;line-height:1.1}
+.v4Dock4 button b{font-size:19px!important}
+.v4MapSearch4 input{font-size:13px!important}
+.v4MapSearch4 button{font-size:17px!important}
+.v4TeamChip4{font-size:11px!important}
+.v4Radial4 button{font-size:11px!important}
+.v4Radial4 .cancel{font-size:10px!important}
+.v4MenuHead strong{font-size:13px!important}
+.v4MenuHead button{min-width:36px;min-height:36px!important;font-size:18px}
+.v4MenuList button{min-height:44px!important;font-size:12px!important;line-height:1.25}
+.v4MenuInput input,.v4MenuInput button{min-height:44px!important;font-size:12px!important}
+.v4Mode4{font-size:11px!important;min-height:36px!important}
+.v4ModeActions button{font-size:11px!important;min-height:30px!important}
+
+/* Leave enough room for the room chip without bringing back a toolbar. */
+body.ktakV4A4.v4MapActive .v4MapHud4{top:calc(env(safe-area-inset-top,0px) + 7px)!important;width:min(350px,calc(100vw - 124px))!important}
+
+/* First-use discoverability: one small hint, never a permanent tutorial banner. */
+.v4Guide5{position:fixed;z-index:9400;left:50%;bottom:calc(var(--v4dock) + env(safe-area-inset-bottom,0px) + 10px);transform:translate(-50%,10px);width:min(560px,calc(100vw - 18px));display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid #4b6d7c;border-radius:13px;background:#08151bf2;box-shadow:0 8px 24px #000b;backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .16s ease,transform .16s ease}
+.v4Guide5.open{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.v4GuideIcon5{flex:0 0 auto;width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:#173b4d;font-size:16px}
+.v4GuideText5{min-width:0;flex:1;font-size:12px;font-weight:750;line-height:1.35}
+.v4Guide5 button{flex:0 0 auto;min-height:34px;padding:0 9px;font-size:11px;border-radius:9px}
+
+/* Short help is always recoverable from Settings. */
+.v4Help5{position:fixed;z-index:20000;inset:0;display:none;place-items:center;padding:16px;background:#02070ab8;backdrop-filter:blur(6px)}
+.v4Help5.open{display:grid}
+.v4HelpCard5{width:min(520px,100%);max-height:min(700px,calc(100dvh - 30px));overflow:auto;border:1px solid #456473;border-radius:16px;background:#0b171dfb;box-shadow:0 18px 50px #000d;padding:12px}
+.v4HelpHead5{display:grid;grid-template-columns:1fr 38px;align-items:center;gap:8px;margin-bottom:8px}.v4HelpHead5 strong{font-size:16px}.v4HelpHead5 button{height:38px;min-height:38px;padding:0;font-size:20px}
+.v4HelpSteps5{display:grid;gap:7px}.v4HelpSteps5>div{display:grid;grid-template-columns:34px 1fr;gap:9px;align-items:start;padding:9px;border:1px solid #2f4652;border-radius:11px;background:#0f2027}.v4HelpSteps5>div>b{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#173b4d;font-size:13px}.v4HelpSteps5 strong{display:block;font-size:13px;margin-bottom:2px}.v4HelpSteps5 small{display:block;color:#b7c7cf;font-size:12px;line-height:1.4}
+.v4HelpActions5{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.v4HelpActions5 button{min-height:44px;font-size:12px}
+
+@media(max-width:600px){
+  .v4RoomChip5{right:6px;top:calc(env(safe-area-inset-top,0px) + 6px);max-width:98px;height:34px;min-height:34px;font-size:10px!important}
+  body.ktakV4A4.v4MapActive .v4MapHud4{left:6px!important;top:calc(env(safe-area-inset-top,0px) + 6px)!important;width:calc(100vw - 116px)!important}
+  .v4MapSearch4{grid-template-columns:minmax(0,1fr) 34px 34px 34px!important}
+  .v4Dock4 button{font-size:10px!important}
+  .v4MenuList button{font-size:12px!important}
+  .v4Guide5{bottom:calc(var(--v4dock) + env(safe-area-inset-bottom,0px) + 7px);padding:7px 8px;gap:6px}.v4GuideText5{font-size:11px}.v4Guide5 button{font-size:10px}
+  .v4HelpActions5{grid-template-columns:1fr}
+}
+
+@media(orientation:landscape) and (max-height:600px){
+  .v4RoomChip5{right:7px;top:calc(env(safe-area-inset-top,0px) + 6px)}
+  body.ktakV4A4.v4MapActive .v4MapHud4{left:7px!important;width:min(330px,50vw)!important}
+  .v4Guide5{left:calc(var(--v4rail) + env(safe-area-inset-left,0px) + 50%);bottom:7px;width:min(520px,calc(100vw - var(--v4rail) - 28px))}
+}

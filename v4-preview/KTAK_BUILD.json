@@ -1,6 +1,7 @@
 {
   "version": "4.0.0-alpha.4",
   "baseVersion": "3.5.11",
+  "uiRevision": "4.0.0-alpha.5-refine",
   "interaction": "persistent-long-press-compact-hierarchy",
   "fixes": [
     "google-init-after-room-auth",
@@ -13,9 +14,14 @@
     "board-draw-layout-merged",
     "floorplan-only-layout-entry",
     "board-map-gesture-parity",
-    "ios-longpress-stability"
+    "ios-longpress-stability",
+    "first-use-longpress-discovery",
+    "map-board-workspace-maximized",
+    "compact-room-status-chip",
+    "consistent-v4-control-typography",
+    "settings-help-entry"
   ],
-  "commit": "465cb0909e4cdc62fd64b3e4f121e5003aafd786",
+  "commit": "d449ddd2254cd87765a0d53f953d7227f352c65e",
   "hostingOrigin": "github-pages-v35-origin",
   "previewPath": "/KTAK-DEV/v4-preview/"
 }
