@@ -1,0 +1,31 @@
+/* KTAK V4 alpha.6 — mobile compositor/performance pass */
+body.v4Alpha6 .v4Radial4 button{touch-action:manipulation}
+body.v4Alpha6 #map,body.v4Alpha6 #boardCanvas{touch-action:none}
+
+/* Fixed translucent blur layers are disproportionately expensive on iOS over
+   Google Maps and a large canvas. Keep the same visual hierarchy with opaque
+   surfaces on coarse/mobile devices instead of live backdrop blur. */
+@media (pointer:coarse),(max-width:820px){
+  body.v4Alpha6 header,
+  body.v4Alpha6 .v4Dock4,
+  body.v4Alpha6 .v4MapSearch4,
+  body.v4Alpha6 .v4RoomChip5,
+  body.v4Alpha6 .v4Guide5,
+  body.v4Alpha6 .v4Mode4,
+  body.v4Alpha6 .v4Help5,
+  body.v4Alpha6 .v4Menu4{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+  body.v4Alpha6 .v4Dock4{background:#081014!important}
+  body.v4Alpha6 .v4MapSearch4{background:#09151b!important}
+  body.v4Alpha6 .v4RoomChip5{background:#08151b!important}
+  body.v4Alpha6 .v4Guide5,body.v4Alpha6 .v4Mode4{background:#08151b!important}
+  body.v4Alpha6 .v4Menu4{background:#09161b!important}
+  body.v4Alpha6 .v4Radial4 button{box-shadow:0 3px 10px #0009!important}
+  body.v4Alpha6 .v4PlacementGhost4{filter:none!important}
+  body.v4Alpha6 #boardCanvas{will-change:auto!important}
+}
+
+/* Drawing cursors / feedback stay consistent between map and board. */
+body.v4Alpha6 #map.alpha6-drawing,body.v4Alpha6 #boardCanvas.alpha6-drawing{cursor:crosshair!important}
