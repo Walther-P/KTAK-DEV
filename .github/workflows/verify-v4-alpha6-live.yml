@@ -34,6 +34,11 @@ jobs:
           grep -Fq "4.0.0-alpha.6-input" v4-preview/ktak-v4-alpha6.js
           grep -Fq "map-line-rect-circle-drag-release" v4-preview/KTAK_BUILD.json
           grep -Fq "pageObserver.observe(page,{attributes:true,attributeFilter:['class']})" v4-preview/ktak-v4-alpha4.js
+          grep -Fq "new MutationObserver(syncMap).observe(mapPage" v4-preview/ktak-v4-alpha6.js
+          if grep -Fq "bodyObserver.observe(document.body" v4-preview/ktak-v4-alpha6.js; then
+            echo 'Legacy body Google watcher still present.' >&2
+            exit 1
+          fi
           git fetch origin archive/pre-v4-alpha6-input-20260911
           git diff --exit-code origin/archive/pre-v4-alpha6-input-20260911 -- index.html config.js manifest.webmanifest sw.js README.md
           echo 'V3.5 production root unchanged.'
@@ -48,7 +53,7 @@ jobs:
             curl -fsS --retry 2 --retry-delay 1 "${BASE}?alpha6-run=${GITHUB_RUN_ID}-${i}" -o /tmp/index.html || true
             curl -fsS --retry 2 --retry-delay 1 "${BASE}ktak-v4-alpha6.js?alpha6-run=${GITHUB_RUN_ID}-${i}" -o /tmp/alpha6.js || true
             curl -fsS --retry 2 --retry-delay 1 "${BASE}app-shell-alpha4.html?alpha6-run=${GITHUB_RUN_ID}-${i}" -o /tmp/app-shell.html || true
-            if grep -Fq '20260911f' /tmp/index.html && grep -Fq 'ktak-v4-alpha6-input' /tmp/index.html && grep -Fq '4.0.0-alpha.6-input' /tmp/alpha6.js && grep -Fq 'ktak-v4-alpha4.js?v=20260911f' /tmp/app-shell.html; then
+            if grep -Fq '20260911g' /tmp/index.html && grep -Fq 'ktak-v4-alpha6-input' /tmp/index.html && grep -Fq '4.0.0-alpha.6-input' /tmp/alpha6.js && grep -Fq 'new MutationObserver(syncMap).observe(mapPage' /tmp/alpha6.js && grep -Fq 'ktak-v4-alpha4.js?v=20260911f' /tmp/app-shell.html; then
               ok=1
               break
             fi
