@@ -25,7 +25,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Wait for deployed V4 bootstrap and refinement assets
+      - name: Wait for deployed V4 frame bootstrap and refinement assets
         shell: bash
         run: |
           set -euo pipefail
@@ -34,7 +34,7 @@ jobs:
           for i in $(seq 1 30); do
             INDEX="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}?run=${GITHUB_RUN_ID}-${i}" || true)"
             REFINE="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}ktak-v4-alpha5.js?run=${GITHUB_RUN_ID}-${i}" || true)"
-            if grep -Fq 'app-shell-alpha4.html?boot=' <<<"$INDEX" && grep -Fq '20260911b' <<<"$INDEX" && grep -Fq '4.0.0-alpha.5-refine' <<<"$REFINE"; then
+            if grep -Fq 'id="ktakAppFrame"' <<<"$INDEX" && grep -Fq '20260911c' <<<"$INDEX" && grep -Fq '4.0.0-alpha.5-refine' <<<"$REFINE"; then
               ok=1
               break
             fi
@@ -47,7 +47,7 @@ jobs:
       - name: Install browser dependency
         run: npm install --no-save --package-lock=false puppeteer-core@24
 
-      - name: Verify refinement loads and workspace expands
+      - name: Verify refinement loads and workspace expands inside live app frame
         shell: bash
         run: |
           node --input-type=module <<'NODE'
@@ -64,31 +64,39 @@ jobs:
           try {
             await page.setViewport({width:390,height:844,deviceScaleFactor:3,isMobile:true,hasTouch:true});
             await page.goto('https://walther-p.github.io/KTAK-DEV/v4-preview/?refine-live='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
-            await page.waitForFunction(()=>window.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine');
-            await page.waitForFunction(()=>window.__KTAK_V4?.version==='4.0.0-alpha.4');
+            await page.waitForFunction(()=>{
+              const w=document.getElementById('ktakAppFrame')?.contentWindow;
+              return w?.__KTAK_V4?.version==='4.0.0-alpha.4'&&w?.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine';
+            });
             await page.evaluate(()=>{
-              const b=document.querySelector('.navBtn[data-page="mapPage"]');
+              const f=document.getElementById('ktakAppFrame'),w=f.contentWindow,d=f.contentDocument;
+              const b=d.querySelector('.navBtn[data-page="mapPage"]');
               if(!b)throw new Error('map nav missing');
               b.click();
-              window.__KTAK_V4?.syncPage?.();
+              w.__KTAK_V4?.syncPage?.();
             });
-            await page.waitForFunction(()=>document.body.classList.contains('v4MapActive'));
-            await page.waitForFunction(()=>document.querySelector('.v4Guide5')?.classList.contains('open'));
-            const result=await page.evaluate(()=>({
-              base:window.__KTAK_V4?.version,
-              refine:window.__KTAK_V4_REFINEMENT?.version,
-              uiRevision:window.__KTAK_V4?.uiRevision,
-              headerDisplay:getComputedStyle(document.querySelector('header')).display,
-              roomChip:!!document.querySelector('.v4RoomChip5:not([hidden])'),
-              guide:!!document.querySelector('.v4Guide5.open'),
-              settingsHelpPatched:document.getElementById('v4SettingsBtn')?.dataset.v4HelpPatched==='1'
-            }));
+            await page.waitForFunction(()=>document.getElementById('ktakAppFrame')?.contentDocument?.body?.classList.contains('v4MapActive'));
+            await page.waitForFunction(()=>document.getElementById('ktakAppFrame')?.contentDocument?.querySelector('.v4Guide5')?.classList.contains('open'));
+            const result=await page.evaluate(()=>{
+              const f=document.getElementById('ktakAppFrame'),w=f.contentWindow,d=f.contentDocument;
+              return{
+                base:w.__KTAK_V4?.version,
+                refine:w.__KTAK_V4_REFINEMENT?.version,
+                uiRevision:w.__KTAK_V4?.uiRevision,
+                headerDisplay:w.getComputedStyle(d.querySelector('header')).display,
+                roomChip:!!d.querySelector('.v4RoomChip5:not([hidden])'),
+                guide:!!d.querySelector('.v4Guide5.open'),
+                settingsHelpPatched:d.getElementById('v4SettingsBtn')?.dataset.v4HelpPatched==='1',
+                frameReady:document.getElementById('boot')?.classList.contains('ready')
+              };
+            });
             if(result.base!=='4.0.0-alpha.4')throw new Error('alpha4 base missing');
             if(result.refine!=='4.0.0-alpha.5-refine'||result.uiRevision!=='4.0.0-alpha.5-refine')throw new Error('refinement missing');
             if(result.headerDisplay!=='none')throw new Error('workspace header still visible');
             if(!result.roomChip)throw new Error('room chip missing');
             if(!result.guide)throw new Error('first-use guide missing');
             if(!result.settingsHelpPatched)throw new Error('settings help not patched');
+            if(!result.frameReady)throw new Error('top bootstrap did not finish');
             console.log(JSON.stringify({result,nonFatalConsoleErrors:errors.slice(0,5)}));
           } finally { await browser.close(); }
           NODE

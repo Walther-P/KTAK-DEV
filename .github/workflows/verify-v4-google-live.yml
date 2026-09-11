@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Wait for live preview identity
+      - name: Wait for live frame bootstrap identity
         shell: bash
         run: |
           set -euo pipefail
@@ -31,7 +31,7 @@ jobs:
           ok=0
           for i in $(seq 1 30); do
             INDEX="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}?google-run=${GITHUB_RUN_ID}-${i}" || true)"
-            if grep -Fq 'app-shell-alpha4.html?boot=' <<<"$INDEX" && grep -Fq '20260911b' <<<"$INDEX"; then
+            if grep -Fq 'id="ktakAppFrame"' <<<"$INDEX" && grep -Fq '20260911c' <<<"$INDEX"; then
               ok=1
               break
             fi
@@ -61,35 +61,38 @@ jobs:
           try{
             await page.setViewport({width:390,height:844,deviceScaleFactor:3,isMobile:true,hasTouch:true});
             await page.goto('https://walther-p.github.io/KTAK-DEV/v4-preview/?google-live-check='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
-            await page.waitForFunction(()=>window.__KTAK_V4?.version==='4.0.0-alpha.4'&&window.__KTAK_V4_BRIDGE?.baseVersion==='3.5.11');
-            await page.waitForFunction(()=>window.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine');
+            await page.waitForFunction(()=>{
+              const w=document.getElementById('ktakAppFrame')?.contentWindow;
+              return w?.__KTAK_V4?.version==='4.0.0-alpha.4'&&w?.__KTAK_V4_BRIDGE?.baseVersion==='3.5.11'&&w?.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine';
+            });
             const result=await page.evaluate(async()=>{
-              const key=window.KTAK_CONFIG?.GOOGLE_MAPS_API_KEY;
+              const f=document.getElementById('ktakAppFrame'),w=f.contentWindow,d=f.contentDocument;
+              const key=w.KTAK_CONFIG?.GOOGLE_MAPS_API_KEY;
               if(!key)return{ok:false,reason:'missing-key'};
-              if(!window.google?.maps){
+              if(!w.google?.maps){
                 await new Promise((resolve,reject)=>{
-                  let settled=false;const done=f=>{if(settled)return;settled=true;f()};
+                  let settled=false;const done=fn=>{if(settled)return;settled=true;fn()};
                   const cb='__ktakGoogleLive'+Date.now();
-                  window[cb]=()=>done(()=>{delete window[cb];resolve()});
-                  const s=document.createElement('script');
+                  w[cb]=()=>done(()=>{delete w[cb];resolve()});
+                  const s=d.createElement('script');
                   s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+'&callback='+cb+'&v=weekly&language=zh-TW&region=TW';
                   s.onerror=()=>done(()=>reject(new Error('script-load')));
-                  document.head.appendChild(s);
+                  d.head.appendChild(s);
                   setTimeout(()=>done(()=>reject(new Error('timeout'))),12000);
                 });
               }
-              const d=document.createElement('div');
-              d.style.cssText='position:fixed;left:0;top:0;width:390px;height:500px;z-index:999999';
-              document.body.append(d);
-              new google.maps.Map(d,{center:{lat:23.0,lng:120.21},zoom:16,disableDefaultUI:true});
+              const box=d.createElement('div');
+              box.style.cssText='position:fixed;left:0;top:0;width:390px;height:500px;z-index:999999';
+              d.body.append(box);
+              new w.google.maps.Map(box,{center:{lat:23.0,lng:120.21},zoom:16,disableDefaultUI:true});
               await new Promise(r=>setTimeout(r,2200));
-              const authErr=!!d.querySelector('.gm-err-container,.gm-err-content');
-              const rendered=!!d.querySelector('.gm-style');
-              d.remove();
-              return{ok:!!window.google?.maps&&rendered&&!authErr,authErr,rendered};
+              const authErr=!!box.querySelector('.gm-err-container,.gm-err-content');
+              const rendered=!!box.querySelector('.gm-style');
+              box.remove();
+              return{ok:!!w.google?.maps&&rendered&&!authErr,authErr,rendered};
             }).catch(e=>({ok:false,reason:String(e?.message||e)}));
             if(!result.ok||googleErrors.length)throw new Error('Google Maps live authorization/render failed: '+JSON.stringify({result,googleErrors}));
-            console.log('Google Maps renders successfully on the live V4 GitHub Pages origin with alpha.5 refinement.');
+            console.log('Google Maps renders successfully on the live V4 framed GitHub Pages origin with alpha.5 refinement.');
           } finally {await browser.close()}
           NODE
 

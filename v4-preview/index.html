@@ -5,38 +5,55 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="theme-color" content="#0b1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KTAK V4">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <title>KTAK V4</title>
 <style>
-html,body{height:100%;margin:0;background:#0a1014;color:#eff6f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}.boot{height:100%;display:grid;place-items:center;padding:24px;box-sizing:border-box}.card{width:min(420px,100%);padding:18px;border:1px solid #30424d;border-radius:16px;background:#111a20;text-align:center;box-sizing:border-box}.mark{width:44px;height:44px;margin:0 auto 12px;display:grid;place-items:center;border-radius:12px;background:#173548;border:1px solid #38749b;font-weight:900}.title{font-size:17px;font-weight:850}.sub{margin-top:7px;color:#98aab4;font-size:12px;line-height:1.5}.retry{display:none;margin:14px auto 0;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #38505e;background:#1b2a33;color:white;font-weight:800}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#0a1014;color:#eff6f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}#ktakAppFrame{position:fixed;inset:0;width:100%;height:100dvh;border:0;display:block;background:#0a1014}.boot{position:fixed;inset:0;z-index:2;display:grid;place-items:center;padding:24px;box-sizing:border-box;background:#0a1014}.boot.ready{display:none}.card{width:min(420px,100%);padding:18px;border:1px solid #30424d;border-radius:16px;background:#111a20;text-align:center;box-sizing:border-box}.mark{width:44px;height:44px;margin:0 auto 12px;display:grid;place-items:center;border-radius:12px;background:#173548;border:1px solid #38749b;font-weight:900}.title{font-size:17px;font-weight:850}.sub{margin-top:7px;color:#98aab4;font-size:12px;line-height:1.5}.retry{display:none;margin:14px auto 0;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #38505e;background:#1b2a33;color:white;font-weight:800}
 </style>
 </head>
 <body>
-<div class="boot"><div class="card"><div class="mark">K</div><div class="title">KTAK V4</div><div class="sub" id="bootText">載入工作區…</div><button class="retry" id="retryBtn" type="button">重新載入</button></div></div>
+<div class="boot" id="boot"><div class="card"><div class="mark">K</div><div class="title">KTAK V4</div><div class="sub" id="bootText">載入工作區…</div><button class="retry" id="retryBtn" type="button">重新載入</button></div></div>
+<iframe id="ktakAppFrame" title="KTAK V4 工作區" src="./app-shell-alpha4.html?boot=20260911c" allow="geolocation; camera; microphone; clipboard-read; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 <script>
-(async()=>{
+(()=>{
   'use strict';
-  const BUILD='20260911b';
+  const BUILD='20260911c';
+  const frame=document.getElementById('ktakAppFrame');
+  const boot=document.getElementById('boot');
   const text=document.getElementById('bootText');
   const retry=document.getElementById('retryBtn');
-  try{
-    const res=await fetch('./app-shell-alpha4.html?boot='+BUILD,{cache:'no-store'});
-    if(!res.ok)throw new Error('shell '+res.status);
-    let html=await res.text();
-    if(!html.includes('ktak-v4-alpha4.js'))throw new Error('unexpected shell');
-    const css='<link id="ktak-v4-alpha5-style" rel="stylesheet" href="./ktak-v4-alpha5.css?v='+BUILD+'">';
-    const js='<scr'+'ipt id="ktak-v4-alpha5-refine" src="./ktak-v4-alpha5.js?v='+BUILD+'"></scr'+'ipt>';
-    html=html.replace('</head>',css+'</head>');
-    html=html.replace('</body>',js+'</body>');
-    html=html.replace('apple-mobile-web-app-title" content="KTAK 3.5"','apple-mobile-web-app-title" content="KTAK V4"');
-    document.open();
-    document.write(html);
-    document.close();
-  }catch(err){
-    console.error('[KTAK V4 bootstrap]',err);
-    text.textContent='工作區載入失敗，請重新載入。';
-    retry.style.display='inline-block';
-    retry.onclick=()=>location.reload();
+  let watchdog=0;
+  function fail(message){text.textContent=message||'工作區載入失敗，請重新載入。';retry.style.display='inline-block';retry.onclick=()=>location.reload()}
+  function inject(){
+    try{
+      const doc=frame.contentDocument,win=frame.contentWindow;
+      if(!doc||!win)throw new Error('frame unavailable');
+      if(!doc.getElementById('ktak-v4-alpha5-style')){
+        const link=doc.createElement('link');link.id='ktak-v4-alpha5-style';link.rel='stylesheet';link.href='./ktak-v4-alpha5.css?v='+BUILD;doc.head.append(link);
+      }
+      if(!doc.getElementById('ktak-v4-alpha5-refine')){
+        const script=doc.createElement('script');script.id='ktak-v4-alpha5-refine';script.src='./ktak-v4-alpha5.js?v='+BUILD;doc.body.append(script);
+      }
+      clearTimeout(watchdog);
+      const started=Date.now();
+      const poll=()=>{
+        if(win.__KTAK_V4?.version==='4.0.0-alpha.4'&&win.__KTAK_V4_REFINEMENT?.version==='4.0.0-alpha.5-refine'){
+          boot.classList.add('ready');
+          window.__KTAK_APP_FRAME=frame;
+          return;
+        }
+        if(Date.now()-started>20000)return fail('工作區啟動失敗，請重新載入。');
+        setTimeout(poll,100);
+      };
+      poll();
+    }catch(err){console.error('[KTAK V4 frame bootstrap]',err);fail()}
   }
+  frame.addEventListener('load',inject);
+  watchdog=setTimeout(()=>fail('工作區載入時間過久，請重新載入。'),25000);
 })();
 </script>
 </body>
