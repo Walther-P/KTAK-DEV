@@ -33,10 +33,10 @@ jobs:
           BASE='https://walther-p.github.io/KTAK-DEV/v4-preview/'
           ok=0
           for i in $(seq 1 36); do
-            INDEX="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}?google-run=${GITHUB_RUN_ID}-${i}" || true)"
-            INPUT="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}ktak-v4-alpha6.js?google-run=${GITHUB_RUN_ID}-${i}" || true)"
-            SHELL="$(curl -fsS --retry 2 --retry-delay 1 "${BASE}app-shell-alpha4.html?google-run=${GITHUB_RUN_ID}-${i}" || true)"
-            if grep -Fq 'id="ktakAppFrame"' <<<"$INDEX" && grep -Fq '20260911f' <<<"$INDEX" && grep -Fq '4.0.0-alpha.6-input' <<<"$INPUT" && grep -Fq 'ktak-v4-alpha4.js?v=20260911f' <<<"$SHELL"; then
+            curl -fsS --retry 2 --retry-delay 1 "${BASE}?google-run=${GITHUB_RUN_ID}-${i}" -o /tmp/index.html || true
+            curl -fsS --retry 2 --retry-delay 1 "${BASE}ktak-v4-alpha6.js?google-run=${GITHUB_RUN_ID}-${i}" -o /tmp/alpha6.js || true
+            curl -fsS --retry 2 --retry-delay 1 "${BASE}app-shell-alpha4.html?google-run=${GITHUB_RUN_ID}-${i}" -o /tmp/app-shell.html || true
+            if grep -Fq 'id="ktakAppFrame"' /tmp/index.html && grep -Fq '20260911f' /tmp/index.html && grep -Fq '4.0.0-alpha.6-input' /tmp/alpha6.js && grep -Fq 'ktak-v4-alpha4.js?v=20260911f' /tmp/app-shell.html; then
               ok=1
               break
             fi
@@ -45,7 +45,6 @@ jobs:
           test "$ok" -eq 1
           curl -fsS --retry 4 --retry-delay 2 "${BASE}KTAK_BUILD.json?run=${GITHUB_RUN_ID}" >/tmp/build.json
           jq -e '.version=="4.0.0-alpha.4" and .baseVersion=="3.5.11" and .inputRevision=="4.0.0-alpha.6-input" and .hostingOrigin=="github-pages-v35-origin"' /tmp/build.json >/dev/null
-          curl -fsS "${BASE}ktak-v4-alpha6.js?run=${GITHUB_RUN_ID}" >/tmp/alpha6.js
           grep -Fq 'DARK_GOOGLE_STYLES' /tmp/alpha6.js
 
       - name: Install browser dependency
