@@ -20,37 +20,15 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-
           index = Path('v4-preview/index.html')
           s = index.read_text(encoding='utf-8')
           if '20260911f' not in s and '20260911g' not in s:
               raise SystemExit('preview build revision not found')
           index.write_text(s.replace('20260911f', '20260911g'), encoding='utf-8')
-
           a6 = Path('v4-preview/ktak-v4-alpha6.js')
           s = a6.read_text(encoding='utf-8')
-          old = '''function watchPageChanges(){
-  document.addEventListener('click',e=>{
-    const target=e.target?.closest?.('[data-page="mapPage"],.navBtn[data-page="mapPage"]');
-    if(target)setTimeout(()=>ensureGoogleDark(0),180);
-  },true);
-  const bodyObserver=new MutationObserver(()=>{
-    if(document.body.classList.contains('v4MapActive'))setTimeout(()=>ensureGoogleDark(0),180);
-    else{clearRoutePreview();clearMapGesture(true)}
-    if(!document.body.classList.contains('v4BoardActive'))clearBoardGesture(true);
-  });
-  bodyObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
-}'''
-          new = '''function watchPageChanges(){
-  const mapPage=$('mapPage'),boardPage=$('boardPage');
-  const syncMap=()=>{
-    if(mapPage?.classList.contains('active'))setTimeout(()=>ensureGoogleDark(0),180);
-    else{clearRoutePreview();clearMapGesture(true)}
-  };
-  const syncBoard=()=>{if(!boardPage?.classList.contains('active'))clearBoardGesture(true)};
-  if(mapPage)new MutationObserver(syncMap).observe(mapPage,{attributes:true,attributeFilter:['class']});
-  if(boardPage)new MutationObserver(syncBoard).observe(boardPage,{attributes:true,attributeFilter:['class']});
-}'''
+          old = "function watchPageChanges(){\n  document.addEventListener('click',e=>{\n    const target=e.target?.closest?.('[data-page=\"mapPage\"],.navBtn[data-page=\"mapPage\"]');\n    if(target)setTimeout(()=>ensureGoogleDark(0),180);\n  },true);\n  const bodyObserver=new MutationObserver(()=>{\n    if(document.body.classList.contains('v4MapActive'))setTimeout(()=>ensureGoogleDark(0),180);\n    else{clearRoutePreview();clearMapGesture(true)}\n    if(!document.body.classList.contains('v4BoardActive'))clearBoardGesture(true);\n  });\n  bodyObserver.observe(document.body,{attributes:true,attributeFilter:['class']});\n}"
+          new = "function watchPageChanges(){\n  const mapPage=$('mapPage'),boardPage=$('boardPage');\n  const syncMap=()=>{\n    if(mapPage?.classList.contains('active'))setTimeout(()=>ensureGoogleDark(0),180);\n    else{clearRoutePreview();clearMapGesture(true)}\n  };\n  const syncBoard=()=>{if(!boardPage?.classList.contains('active'))clearBoardGesture(true)};\n  if(mapPage)new MutationObserver(syncMap).observe(mapPage,{attributes:true,attributeFilter:['class']});\n  if(boardPage)new MutationObserver(syncBoard).observe(boardPage,{attributes:true,attributeFilter:['class']});\n}"
           if old in s:
               s = s.replace(old, new)
           elif new not in s:
