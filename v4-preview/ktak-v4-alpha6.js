@@ -297,7 +297,7 @@ function patchRouteMode(){
   if(bridge()?.mapTool?.()!=='route')return;
   const mode=document.querySelector('.v4Mode4');if(!mode?.classList.contains('open'))return;
   const label=mode.querySelector('.v4ModeLabel span:last-child');
-  if(label)label.textContent=coarse?'導航路線：拖一段，放開成節點，再繼續拖':'導航路線：點地圖加入節點';
+  const nextLabel=coarse?'導航路線：拖一段，放開成節點，再繼續拖':'導航路線：點地圖加入節點';if(label&&label.textContent!==nextLabel)label.textContent=nextLabel;
   const finish=[...mode.querySelectorAll('.v4ModeActions button')].find(b=>b.textContent.includes('完成'));
   if(!finish||finish.dataset.alpha6Save==='1')return;
   const replacement=finish.cloneNode(true);replacement.dataset.alpha6Save='1';replacement.textContent='完成共享';finish.replaceWith(replacement);
@@ -399,7 +399,7 @@ function installGuards(){
 
 function installMenuObservers(){
   const panel=document.querySelector('.v4Menu4');if(panel)new MutationObserver(patchDrawMenu).observe(panel,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
-  const mode=document.querySelector('.v4Mode4');if(mode)new MutationObserver(patchRouteMode).observe(mode,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  const mode=document.querySelector('.v4Mode4');if(mode)new MutationObserver(()=>{if(bridge()?.mapTool?.()==='route')patchRouteMode()}).observe(mode,{attributes:true,attributeFilter:['class']});
 }
 
 function boot(){
