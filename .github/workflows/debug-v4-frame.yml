@@ -1,0 +1,64 @@
+name: Debug KTAK V4 frame
+
+on:
+  push:
+    paths:
+      - '.github/workflows/debug-v4-frame.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  debug-frame:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --no-save --package-lock=false puppeteer-core@24
+      - name: Inspect live V4 frame
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import puppeteer from 'puppeteer-core';
+          const exe=['/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'].find(fs.existsSync);
+          const browser=await puppeteer.launch({headless:true,executablePath:exe,args:['--no-sandbox','--disable-dev-shm-usage']});
+          const page=await browser.newPage();
+          const events=[];
+          page.on('console',m=>events.push({type:'console:'+m.type(),text:m.text()}));
+          page.on('pageerror',e=>events.push({type:'pageerror',text:e.message,stack:e.stack}));
+          page.on('requestfailed',r=>events.push({type:'requestfailed',text:r.url()+' :: '+r.failure()?.errorText}));
+          await page.setViewport({width:390,height:844,deviceScaleFactor:3,isMobile:true,hasTouch:true});
+          await page.goto('https://walther-p.github.io/KTAK-DEV/v4-preview/?debug-frame='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
+          await new Promise(r=>setTimeout(r,12000));
+          const state=await page.evaluate(()=>{
+            const f=document.getElementById('ktakAppFrame');
+            const d=f?.contentDocument,w=f?.contentWindow;
+            return {
+              parentUrl:location.href,
+              bootClass:document.getElementById('boot')?.className,
+              bootText:document.getElementById('bootText')?.textContent,
+              frameSrc:f?.src,
+              frameUrl:w?.location?.href,
+              frameReadyState:d?.readyState,
+              frameTitle:d?.title,
+              frameBodyClass:d?.body?.className,
+              frameBodyText:d?.body?.innerText?.slice(0,240),
+              globals:{
+                v4:w?.__KTAK_V4||null,
+                bridge:!!w?.__KTAK_V4_BRIDGE,
+                core:!!w?.__KTAK35_CORE,
+                refine:w?.__KTAK_V4_REFINEMENT||null,
+                v3511:w?.__KTAK35_V3511||null
+              },
+              scripts:d?[...d.scripts].slice(-18).map(s=>({src:s.src,id:s.id})):[],
+              refineNode:!!d?.getElementById('ktak-v4-alpha5-refine'),
+              alpha4Node:[...d?.scripts||[]].some(s=>/ktak-v4-alpha4\.js/.test(s.src))
+            };
+          }).catch(e=>({evaluateError:String(e)}));
+          console.log('STATE='+JSON.stringify(state,null,2));
+          console.log('EVENTS='+JSON.stringify(events.slice(-80),null,2));
+          console.log('FRAMES='+JSON.stringify(page.frames().map(f=>f.url()),null,2));
+          await browser.close();
+          NODE
