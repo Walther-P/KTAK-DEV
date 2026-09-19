@@ -1,0 +1,11 @@
+{
+  "name": "GeoDeck",
+  "short_name": "GeoDeck",
+  "description": "全球即時地圖資訊與 FIELD 工具",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#091015",
+  "theme_color": "#0b1117"
+}
