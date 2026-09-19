@@ -1,0 +1,34 @@
+name: Verify GeoDeck live
+
+on:
+  push:
+    paths:
+      - 'geodeck/**'
+      - '.github/workflows/verify-geodeck-live.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify published page
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://walther-p.github.io/KTAK-DEV/geodeck/'
+          ok=0
+          for i in $(seq 1 50); do
+            if curl -fsS --retry 2 --retry-delay 1 "$URL?probe=${GITHUB_RUN_ID}-$i" >/tmp/page.html; then
+              if grep -Fq '<title>GeoDeck</title>' /tmp/page.html && grep -Fq 'FIELD MODE' /tmp/page.html; then
+                ok=1
+                break
+              fi
+            fi
+            sleep 3
+          done
+          test "$ok" = 1
+          echo "GeoDeck live page verified."
