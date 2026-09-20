@@ -1,4 +1,4 @@
-import {normalizeCameras,cloudSource,aqiInfo,finite} from './core.js?v=0.2.0';
+import {normalizeCameras,cloudSource,aqiInfo,finite} from './core.js?v=0.3.0';
 export async function jsonFetch(url,timeout=15000,externalSignal){const c=new AbortController(),timer=setTimeout(()=>c.abort(),timeout),abort=()=>c.abort();externalSignal?.addEventListener('abort',abort,{once:true});try{if(externalSignal?.aborted)throw new DOMException('Aborted','AbortError');const r=await fetch(url,{signal:c.signal,cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(timer);externalSignal?.removeEventListener('abort',abort)}}
 const cache=new Map();
 function tileImage(url){if(cache.has(url))return cache.get(url);const p=new Promise((resolve,reject)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>resolve(i);i.onerror=()=>reject(Error('影像圖塊無法載入'));i.src=url});cache.set(url,p);p.catch(()=>cache.delete(url));if(cache.size>180)cache.delete(cache.keys().next().value);return p}

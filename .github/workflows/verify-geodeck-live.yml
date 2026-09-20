@@ -40,7 +40,7 @@ jobs:
             sleep 3
           done
           test "$ok" = 1
-          for file in app.js core.js layers.js styles.css sw.js manifest.webmanifest icon-192.png icon-512.png data/cameras-tw.json.gz; do
+          for file in app.js core.js layers.js drive.js drive-core.js data/enforcement-tw.json styles.css sw.js manifest.webmanifest icon-192.png icon-512.png data/cameras-tw.json.gz; do
             curl -fsS --retry 2 --max-time 30 "$URL/$file?verify=${GITHUB_RUN_ID}" -o /tmp/geodeck-asset
             cmp "geodeck/$file" /tmp/geodeck-asset
           done

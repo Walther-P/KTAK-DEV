@@ -8,11 +8,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GeoDeck">
 <meta name="description" content="在一張地圖查看天氣、雷達、雲圖、空氣品質與台灣公開影像，收藏地點並規劃路線。">
-<meta name="geodeck-version" content="0.2.0">
+<meta name="geodeck-version" content="0.3.0">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<link rel="stylesheet" href="./styles.css?v=0.2.0">
+<link rel="stylesheet" href="./styles.css?v=0.3.0">
 <title>GeoDeck</title>
 </head>
 <body>
@@ -27,6 +27,13 @@
   <button id="centerWeather" class="weather-chip" aria-label="查看地圖中心天氣"><span aria-hidden="true">◉</span><span id="centerLabel">點地圖，查看這裡的天氣</span></button>
   <div id="layerBadges" class="layer-badges" aria-live="polite"></div>
   <aside class="map-actions"><button id="field" class="map-button" aria-label="附近設施"><span aria-hidden="true">✚</span><small>附近</small></button><button id="locate" class="map-button" aria-label="回到我的位置"><span aria-hidden="true">◎</span><small>定位</small></button></aside>
+  <section id="drivePanel" class="drive-panel hidden" aria-label="Drive Mode">
+    <header><span>DRIVE · 前景導航</span><button id="exitDrive" class="button">結束駕駛</button></header>
+    <div class="drive-turn"><strong id="driveDistance">—</strong><h1 id="driveInstruction">等待 GPS 定位</h1><p>Lane Guidance · unavailable</p></div>
+    <div class="drive-metrics"><div><strong id="driveSpeed">—</strong><small>GPS km/h</small></div><div><strong id="driveEta">—</strong><small>預估 ETA</small></div><div><strong id="driveRemaining">—</strong><small>剩餘距離</small></div></div>
+    <div class="drive-alert"><strong id="driveEnforcement">等待執法資料</strong><p>執法點速限 <b id="drivePointLimit">—</b> · 目前道路速限未知</p><small id="driveSource">官方資料快照</small></div>
+    <p class="drive-note">Route Risk 尚未接入 · 鎖屏／背景會暫停定位<br>ETA 為路線估算，未持續更新交通；偏航後請停妥再規劃。<br><a href="https://data.gov.tw/dataset/7320" target="_blank" rel="noopener noreferrer">警政署資料來源與授權 ↗</a></p>
+  </section>
   <section id="speedHud" class="speed-hud hidden" aria-label="GPS 速度"><div><strong id="speedValue">—</strong><small>km/h</small></div><span id="speedMeta">等待定位</span></section>
   <section id="radarControl" class="radar-control hidden" aria-label="雷達時間軸"><div class="radar-heading"><button id="radarPlay" class="icon-button" aria-label="播放雷達">▶</button><div><strong id="radarTime">雷達回波</strong><small id="radarSource">RainViewer · 觀測合成</small></div><button id="radarLatest" class="text-button">最新</button></div><input id="radarRange" type="range" min="0" max="0" value="0" aria-label="選擇雷達時間"><p class="micro">灰黑遮罩：資料未涵蓋。透明不保證沒有下雨。</p></section>
   <nav class="bottom-nav" aria-label="主要功能"><button id="layers" aria-expanded="false"><span aria-hidden="true">▱</span>圖層<span id="layerCount" class="count hidden">0</span></button><button id="routes" aria-expanded="false"><span aria-hidden="true">↗</span>路線</button><button id="favorites" aria-expanded="false"><span aria-hidden="true">☆</span>收藏</button></nav>
@@ -37,6 +44,6 @@
   <noscript><div class="map-state">請啟用 JavaScript，以使用地圖及天氣功能。</div></noscript>
 </main>
 <script src="../config.js"></script>
-<script type="module" src="./app.js?v=0.2.0"></script>
+<script type="module" src="./app.js?v=0.3.0"></script>
 </body>
 </html>
