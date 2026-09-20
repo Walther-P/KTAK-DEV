@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseCoordinates,gpsSpeed,aqiInfo,navigationUrl,normalizedSaved,escapeHtml,normalizeCameras,wgsToGcj} from '../core.js';
+const fix=(coords={},timestamp=1000)=>({timestamp,coords:{latitude:23,longitude:120,accuracy:8,speed:null,...coords}});
+test('null GPS speed does not become a stationary vehicle reading',()=>{assert.equal(gpsSpeed(fix(),null),null);assert.equal(gpsSpeed(fix({speed:0}),null),0);assert.equal(gpsSpeed(fix({speed:10}),null),36)});
+test('inaccurate GPS and long gaps cannot trigger speed warnings',()=>{assert.equal(gpsSpeed(fix({speed:25,accuracy:120}),null),null);assert.equal(gpsSpeed(fix({latitude:23.003},30000),fix()),null);assert.equal(gpsSpeed(fix({},5000),fix()),0)});
+test('coordinate input validates world bounds and avoids treating names as coordinates',()=>{assert.deepEqual(parseCoordinates('22.99, 120.21'),{lat:22.99,lng:120.21});assert.equal(parseCoordinates('91, 120'),null);assert.equal(parseCoordinates('台南車站'),null)});
+test('missing AQI is not good air quality',()=>{assert.equal(aqiInfo(null).label,'無資料');assert.equal(aqiInfo(151).label,'不健康')});
+test('transit remains transit in all regional navigation links',()=>{const args={destination:{lat:37.5,lng:127,title:'目的地'},origin:{lat:37.4,lng:127.1},mode:'transit'};assert.equal(new URL(navigationUrl(args)).searchParams.get('travelmode'),'transit');assert.match(navigationUrl({...args,provider:'naver'}),/^nmap:\/\/route\/public\?/);assert.equal(new URL(navigationUrl({...args,provider:'amap'})).searchParams.get('mode'),'bus')});
+test('Amap coordinate conversion matches a Beijing reference',()=>{const bj=wgsToGcj({lat:39.9,lng:116.4});assert.ok(Math.abs(bj.lng-116.40624)<.0002);assert.ok(Math.abs(bj.lat-39.9014)<.0002)});
+test('favorites migration preserves notes and removes duplicate coordinates',()=>{const list=normalizedSaved([{lat:23,lng:120,title:'原名',note:'集合點'},{lat:23,lng:120,title:'重複'},{lat:NaN,lng:120}]);assert.equal(list.length,1);assert.equal(list[0].note,'集合點')});
+test('user labels cannot inject HTML and invalid camera rows are omitted',()=>{assert.equal(escapeHtml('<img onerror="x">'),'&lt;img onerror=&quot;x&quot;&gt;');assert.equal(normalizeCameras([{id:'x',lat:0,lon:0,cam_url:'https://example.com/a.jpg'},{id:'y',lat:23,lon:120,name:'Road',cam_url:'https://example.com/a.jpg'}]).length,1)});

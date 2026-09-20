@@ -1,29 +1,38 @@
 name: Verify GeoDeck live
-
 on:
   push:
+    branches: [main]
     paths:
       - 'geodeck/**'
       - '.github/workflows/verify-geodeck-live.yml'
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
-      - name: Verify published page
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate location, navigation and saved-place logic
+        run: |
+          node --test geodeck/tests/*.test.js
+          node --check geodeck/app.js
+          node --check geodeck/layers.js
+          node --check geodeck/sw.js
+      - name: Verify published version and files
         shell: bash
         run: |
           set -euo pipefail
-          URL='https://walther-p.github.io/KTAK-DEV/geodeck/'
+          URL='https://walther-p.github.io/KTAK-DEV/geodeck'
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('geodeck/package.json')).version")
           ok=0
           for i in $(seq 1 50); do
-            if curl -fsS --retry 2 --retry-delay 1 "$URL?probe=${GITHUB_RUN_ID}-$i" >/tmp/page.html; then
-              if grep -Fq '<title>GeoDeck</title>' /tmp/page.html && grep -Fq 'FIELD MODE' /tmp/page.html; then
+            if curl -fsS --max-time 15 "$URL/?probe=${GITHUB_RUN_ID}-$i" >/tmp/geodeck-page.html; then
+              if grep -Fq "content=\"$VERSION\"" /tmp/geodeck-page.html; then
                 ok=1
                 break
               fi
@@ -31,4 +40,8 @@ jobs:
             sleep 3
           done
           test "$ok" = 1
-          echo "GeoDeck live page verified."
+          for file in app.js core.js layers.js styles.css sw.js manifest.webmanifest icon-192.png icon-512.png data/cameras-tw.json.gz; do
+            curl -fsS --retry 2 --max-time 30 "$URL/$file?verify=${GITHUB_RUN_ID}" -o /tmp/geodeck-asset
+            cmp "geodeck/$file" /tmp/geodeck-asset
+          done
+          echo "GeoDeck $VERSION publication verified."

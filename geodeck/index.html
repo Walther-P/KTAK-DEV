@@ -2,193 +2,41 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0b1117">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#11171e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GeoDeck">
+<meta name="description" content="在一張地圖查看天氣、雷達、雲圖、空氣品質與台灣公開影像，收藏地點並規劃路線。">
+<meta name="geodeck-version" content="0.2.0">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="stylesheet" href="./styles.css?v=0.2.0">
 <title>GeoDeck</title>
-<style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#eef5f7;background:#091015}
-*{box-sizing:border-box}html,body,#app,#map{width:100%;height:100%;margin:0}body{overflow:hidden;background:#091015}
-button,input{font:inherit}.hidden{display:none!important}.glass{background:rgba(11,17,23,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 28px rgba(0,0,0,.24)}
-#map{position:fixed;inset:0}.top{position:fixed;z-index:20;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top));display:flex;gap:8px}
-.search{height:48px;flex:1;border-radius:16px;display:flex;align-items:center;padding:0 10px}
-.search input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font-size:16px}.search input::placeholder{color:#9eabb2}
-.pill{border:0;border-radius:13px;padding:8px 11px;background:#23313a;color:#dce9ed;font-weight:800}.pill.field{background:#d9f99d;color:#15220a}
-.fabcol{position:fixed;z-index:20;right:14px;top:calc(76px + env(safe-area-inset-top));display:grid;gap:9px}
-.fab{width:46px;height:46px;border-radius:15px;color:#fff;border:0;font-size:20px}.fab:active{transform:scale(.96)}
-.sheet{position:fixed;z-index:40;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));max-height:min(72vh,680px);overflow:auto;border-radius:24px;padding:10px 14px 16px;background:rgba(10,16,21,.96);border:1px solid rgba(255,255,255,.13);box-shadow:0 -14px 46px rgba(0,0,0,.35)}
-.handle{width:38px;height:4px;border-radius:99px;background:#52616a;margin:1px auto 10px}.head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.head h2{font-size:21px;margin:2px 0 10px}.eyebrow{font-size:10px;letter-spacing:.14em;color:#91a3ac;font-weight:800}.close{border:0;background:transparent;color:#cdd9de;font-size:28px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.card{border:1px solid #253740;background:#111d23;color:#f1f7f8;border-radius:17px;padding:13px;text-align:left;min-height:78px}.card span{font-size:22px;display:block;margin-bottom:5px}.card b{display:block}.card small{display:block;color:#91a3ac;margin-top:2px}.card.active{border-color:#9be8b1;background:#153126}.card.dim{opacity:.62}
-.note{margin-top:11px;color:#9caab0;font-size:12px;line-height:1.45}.info2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.info{border:1px solid #22343d;background:#101b21;border-radius:17px;padding:12px}.label{font-size:11px;color:#90a1a9}.big{font-size:22px;font-weight:900;margin-top:5px}.meta{font-size:12px;color:#a5b2b8;margin-top:5px;line-height:1.4}
-.coords{font-size:12px;color:#91a3ac;margin-top:-5px;margin-bottom:11px}.hourly{display:flex;overflow:auto;gap:8px;padding:12px 0 4px}.hour{min-width:72px;border:1px solid #21323a;border-radius:14px;padding:9px;text-align:center;background:#0e181d}.hour div{margin:2px 0}.hour .t{font-size:11px;color:#9aa9af}.hour .e{font-size:19px}.hour .r{font-size:11px;color:#9bb7c3}
-.actions{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin-top:12px}.btn{border:0;border-radius:14px;padding:12px;font-weight:850}.primary{background:#d9f99d;color:#14210b}.secondary{background:#1b2a32;color:#edf4f6}
-.fieldgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.fieldbtn{border:1px solid #263942;background:#111d23;color:#fff;border-radius:14px;padding:12px 8px}.fieldbtn.active{border-color:#d9f99d;color:#d9f99d}
-.setting{display:grid;gap:7px;margin:12px 0}.setting label{font-size:13px;color:#b7c3c8}.setting input{width:100%;background:#0c151a;color:#fff;border:1px solid #263943;border-radius:12px;padding:11px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toggle{display:flex;align-items:center;justify-content:space-between;border:1px solid #263943;border-radius:14px;padding:12px}.toggle input{width:auto}
-.speed{position:fixed;z-index:25;left:14px;bottom:calc(16px + env(safe-area-inset-bottom));width:94px;border-radius:20px;padding:9px;text-align:center}.speed .v{font-size:32px;font-weight:950;line-height:1}.speed .u{font-size:10px;color:#aab8bd}.speed .lim{margin:7px auto 0;width:38px;height:38px;border:4px solid #e65d5d;border-radius:50%;display:grid;place-items:center;background:#fff;color:#111;font-weight:900}.speed.over{box-shadow:0 0 0 3px rgba(255,72,72,.5),0 0 30px rgba(255,72,72,.3)}
-.stamp{position:fixed;z-index:22;left:14px;bottom:calc(18px + env(safe-area-inset-bottom));padding:8px 10px;border-radius:12px;font-size:11px}.toast{position:fixed;z-index:70;left:50%;transform:translateX(-50%);bottom:calc(26px + env(safe-area-inset-bottom));background:#122028;color:white;border:1px solid #334650;border-radius:14px;padding:10px 13px;font-size:13px;max-width:86%;box-shadow:0 12px 32px rgba(0,0,0,.4)}
-@media(max-width:380px){.fieldgrid{grid-template-columns:repeat(2,1fr)}.actions{grid-template-columns:1fr 1fr}.actions .primary{grid-column:1/-1}.row{grid-template-columns:1fr}}
-</style>
 </head>
 <body>
-<div id="app">
-<div id="map"></div>
-<div class="top">
-  <div class="search glass"><input id="search" type="search" placeholder="搜尋地點"><button id="mode" class="pill">一般</button></div>
-</div>
-<div class="fabcol">
-  <button id="locate" class="fab glass">◎</button>
-  <button id="layers" class="fab glass">▱</button>
-  <button id="settings" class="fab glass">⚙</button>
-</div>
-
-<div id="speed" class="speed glass hidden"><div id="speedValue" class="v">0</div><div class="u">km/h</div><div id="limitBadge" class="lim">—</div></div>
-<div id="radarStamp" class="stamp glass hidden"></div>
-
-<section id="layerSheet" class="sheet hidden">
-<div class="handle"></div><div class="head"><div><div class="eyebrow">MAP LAYERS</div><h2>資訊圖層</h2></div><button class="close" data-close="layerSheet">×</button></div>
-<div class="grid">
-<button class="card" data-layer="traffic"><span>🚗</span><b>即時路況</b><small>Google Traffic</small></button>
-<button class="card" data-layer="radar"><span>🌧️</span><b>雷達回波</b><small>RainViewer 最新回波</small></button>
-<button class="card" data-layer="satellite"><span>🛰️</span><b>衛星圖</b><small>Google Hybrid</small></button>
-<button class="card dim" data-layer="aqi"><span>🌫️</span><b>AQI</b><small>點地圖即可查看</small></button>
-<button class="card dim" data-layer="camera"><span>📷</span><b>即時影像</b><small>下一版接入</small></button>
-<button class="card dim" data-layer="disaster"><span>⚠️</span><b>災害</b><small>下一版接入</small></button>
-</div><div class="note">點地圖任一位置，可查看該位置現在天氣、未來逐時預報與空氣品質。</div>
-</section>
-
-<section id="placeSheet" class="sheet hidden">
-<div class="handle"></div><div class="head"><div><div class="eyebrow">SELECTED LOCATION</div><h2 id="placeTitle">選取位置</h2></div><button class="close" data-close="placeSheet">×</button></div>
-<div id="coords" class="coords">—</div>
-<div class="info2"><div class="info"><div class="label">現在天氣</div><div id="weather" class="big">—</div><div id="weatherMeta" class="meta">—</div></div>
-<div class="info"><div class="label">空氣品質</div><div id="aqi" class="big">—</div><div id="aqiMeta" class="meta">—</div></div></div>
-<div id="hourly" class="hourly"></div>
-<div class="actions"><button id="nav" class="btn primary">導航</button><button id="share" class="btn secondary">分享</button><button id="save" class="btn secondary">收藏</button></div>
-</section>
-
-<section id="fieldSheet" class="sheet hidden">
-<div class="handle"></div><div class="head"><div><div class="eyebrow">FIELD MODE</div><h2>陌生區域快速掌握</h2></div><button class="close" data-close="fieldSheet">×</button></div>
-<div class="fieldgrid">
-<button class="fieldbtn" data-poi="hospital">🏥 醫院</button><button class="fieldbtn" data-poi="police">👮 警察</button><button class="fieldbtn" data-poi="fire_station">🚒 消防</button><button class="fieldbtn" data-poi="pharmacy">💊 藥局</button><button class="fieldbtn" data-poi="gas_station">⛽ 加油站</button><button class="fieldbtn" data-poi="embassy">🏛 使領館</button>
-</div><div id="fieldStatus" class="note">以目前地圖中心為基準搜尋。</div><button id="clearPoi" class="btn secondary" style="width:100%;margin-top:10px">清除 FIELD 標記</button>
-</section>
-
-<section id="settingsSheet" class="sheet hidden">
-<div class="handle"></div><div class="head"><div><div class="eyebrow">SETTINGS</div><h2>速度與警報</h2></div><button class="close" data-close="settingsSheet">×</button></div>
-<div class="toggle"><span><b>速度 HUD</b><div class="note" style="margin:2px 0 0">讀取手機 GPS 速度</div></span><input id="speedToggle" type="checkbox"></div>
-<div class="row"><div class="setting"><label>測試速限 km/h</label><input id="manualLimit" type="number" min="0" max="180" step="10" placeholder="例如 60"></div>
-<div class="setting"><label>超速容許值 km/h</label><input id="buffer" type="number" min="0" max="30" value="5"></div></div>
-<div class="setting"><label>前方警報距離 m（速限資料源接入後使用）</label><input id="lead" type="number" min="50" max="3000" step="50" value="300"></div>
-<button id="saveSettings" class="btn primary" style="width:100%">儲存</button>
-<div class="note">v0.1 先驗證 GPS 與警報介面；全球速限／測速點資料尚未接入。</div>
-</section>
-
-<div id="toast" class="toast hidden"></div>
-</div>
-
+<main id="app">
+  <div id="map" aria-label="Google 地圖"></div>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="GeoDeck 首頁"><img src="./icon.svg" alt="" width="32" height="32"><span>GeoDeck</span></a>
+    <form id="searchForm" class="searchbar" role="search"><span aria-hidden="true" class="search-symbol">⌕</span><input id="search" type="search" placeholder="搜尋地點、地址或座標" aria-label="搜尋地點、地址或座標" autocomplete="off"><button class="icon-button" type="submit" aria-label="搜尋">↵</button></form>
+    <button id="settings" class="icon-button round-button" aria-label="設定與出勤工具">☷</button>
+  </header>
+  <div id="mapState" class="map-state" role="status"><span class="spinner"></span><strong>正在開啟地圖</strong></div>
+  <button id="centerWeather" class="weather-chip" aria-label="查看地圖中心天氣"><span aria-hidden="true">◉</span><span id="centerLabel">點地圖，查看這裡的天氣</span></button>
+  <div id="layerBadges" class="layer-badges" aria-live="polite"></div>
+  <aside class="map-actions"><button id="field" class="map-button" aria-label="附近設施"><span aria-hidden="true">✚</span><small>附近</small></button><button id="locate" class="map-button" aria-label="回到我的位置"><span aria-hidden="true">◎</span><small>定位</small></button></aside>
+  <section id="speedHud" class="speed-hud hidden" aria-label="GPS 速度"><div><strong id="speedValue">—</strong><small>km/h</small></div><span id="speedMeta">等待定位</span></section>
+  <section id="radarControl" class="radar-control hidden" aria-label="雷達時間軸"><div class="radar-heading"><button id="radarPlay" class="icon-button" aria-label="播放雷達">▶</button><div><strong id="radarTime">雷達回波</strong><small id="radarSource">RainViewer · 觀測合成</small></div><button id="radarLatest" class="text-button">最新</button></div><input id="radarRange" type="range" min="0" max="0" value="0" aria-label="選擇雷達時間"><p class="micro">灰黑遮罩：資料未涵蓋。透明不保證沒有下雨。</p></section>
+  <nav class="bottom-nav" aria-label="主要功能"><button id="layers" aria-expanded="false"><span aria-hidden="true">▱</span>圖層<span id="layerCount" class="count hidden">0</span></button><button id="routes" aria-expanded="false"><span aria-hidden="true">↗</span>路線</button><button id="favorites" aria-expanded="false"><span aria-hidden="true">☆</span>收藏</button></nav>
+  <div id="offlineBanner" class="offline-banner hidden" role="status">目前離線 · 可查看收藏與備註</div>
+  <div id="updateBanner" class="update-banner hidden"><span>新版本已備妥</span><button id="applyUpdate" class="text-button">更新</button></div>
+  <section id="panel" class="panel hidden" role="dialog" aria-modal="false" aria-labelledby="panelTitle"><div class="panel-handle" aria-hidden="true"></div><header class="panel-head"><div><p id="panelEyebrow" class="eyebrow">GEODECK</p><h1 id="panelTitle">資訊圖層</h1></div><button id="closePanel" class="icon-button close-button" aria-label="關閉面板">×</button></header><div id="panelBody" class="panel-body"></div></section>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <noscript><div class="map-state">請啟用 JavaScript，以使用地圖及天氣功能。</div></noscript>
+</main>
 <script src="../config.js"></script>
-<script>
-(function(){
-'use strict';
-var map,traffic,radar,selected,selectedMarker,placesService,autocomplete,watchId=null,lastPoint=null,lastAlert=0,poiMarkers=[];
-var active=new Set();
-var key=(window.KTAK_CONFIG&&window.KTAK_CONFIG.GOOGLE_MAPS_API_KEY)||'';
-var settings=loadSettings();
-var mode='normal';
-var $=function(id){return document.getElementById(id)};
-var sheets=['layerSheet','placeSheet','fieldSheet','settingsSheet'];
-function toast(s){var e=$('toast');e.textContent=s;e.classList.remove('hidden');clearTimeout(window.__gdToast);window.__gdToast=setTimeout(function(){e.classList.add('hidden')},2700)}
-function loadSettings(){try{return Object.assign({speed:false,limit:null,buffer:5,lead:300},JSON.parse(localStorage.getItem('geodeck.settings')||'{}'))}catch(e){return{speed:false,limit:null,buffer:5,lead:300}}}
-function saveSettings(){localStorage.setItem('geodeck.settings',JSON.stringify(settings))}
-function closeSheets(){sheets.forEach(function(id){$(id).classList.add('hidden')})}
-function openSheet(id){closeSheets();$(id).classList.remove('hidden')}
-document.querySelectorAll('[data-close]').forEach(function(b){b.onclick=function(){$(b.dataset.close).classList.add('hidden')}})
-$('layers').onclick=function(){openSheet('layerSheet')};$('settings').onclick=function(){reflect();openSheet('settingsSheet')};
-$('mode').onclick=function(){mode=mode==='normal'?'field':'normal';$('mode').textContent=mode==='field'?'FIELD':'一般';$('mode').classList.toggle('field',mode==='field');if(mode==='field')openSheet('fieldSheet');else{closeSheets();toast('已切回一般模式')}};
-$('locate').onclick=function(){locate(true)};
-function loadGoogle(){
- if(!key){toast('找不到 Google Maps 設定');return}
- window.__gdInit=function(){delete window.__gdInit;initMap()};
- var s=document.createElement('script');
- s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+'&libraries=places&language=zh-TW&region=TW&v=weekly&callback=__gdInit';
- s.async=true;s.defer=true;s.onerror=function(){toast('Google 地圖載入失敗')};document.head.appendChild(s)
-}
-function initMap(){
- map=new google.maps.Map($('map'),{center:{lat:23.6978,lng:120.9605},zoom:7,disableDefaultUI:true,clickableIcons:false,gestureHandling:'greedy',mapTypeId:'roadmap'});
- traffic=new google.maps.TrafficLayer();
- placesService=google.maps.places?new google.maps.places.PlacesService(map):null;
- map.addListener('click',function(e){selectLocation(e.latLng.lat(),e.latLng.lng(),'選取位置')});
- if(google.maps.places&&google.maps.places.Autocomplete){autocomplete=new google.maps.places.Autocomplete($('search'),{fields:['geometry','name','formatted_address']});autocomplete.addListener('place_changed',function(){var p=autocomplete.getPlace(),l=p&&p.geometry&&p.geometry.location;if(!l)return toast('找不到這個地點');map.panTo(l);map.setZoom(15);selectLocation(l.lat(),l.lng(),p.name||p.formatted_address||'搜尋位置')})}
- locate(false);if(settings.speed)startSpeed();toast('GeoDeck 已載入')
-}
-async function selectLocation(lat,lng,title){
- selected={lat:lat,lng:lng,title:title};
- if(selectedMarker)selectedMarker.setMap(null);
- selectedMarker=new google.maps.Marker({map:map,position:{lat:lat,lng:lng}});
- $('placeTitle').textContent=title;$('coords').textContent=lat.toFixed(5)+', '+lng.toFixed(5);
- $('weather').textContent='讀取中…';$('weatherMeta').textContent='Open-Meteo';$('aqi').textContent='讀取中…';$('aqiMeta').textContent='Open-Meteo';$('hourly').innerHTML='';
- openSheet('placeSheet');
- try{await Promise.all([loadWeather(lat,lng),loadAqi(lat,lng)])}catch(e){console.warn(e)}
-}
-async function loadWeather(lat,lng){
- var u='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lng+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&forecast_hours=12&timezone=auto';
- var r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error('weather');var d=await r.json(),c=d.current||{};
- $('weather').textContent=Math.round(c.temperature_2m)+'° · '+weatherText(c.weather_code);
- $('weatherMeta').textContent='體感 '+Math.round(c.apparent_temperature)+'° · 濕度 '+Math.round(c.relative_humidity_2m)+'% · 風 '+Math.round(c.wind_speed_10m)+' km/h';
- var h=d.hourly||{},out='';for(var i=0;i<(h.time||[]).length;i++){var dt=new Date(h.time[i]);out+='<div class="hour"><div class="t">'+String(dt.getHours()).padStart(2,'0')+':00</div><div class="e">'+weatherEmoji(h.weather_code[i])+'</div><div><b>'+Math.round(h.temperature_2m[i])+'°</b></div><div class="r">雨 '+Math.round(h.precipitation_probability[i]||0)+'%</div></div>'}$('hourly').innerHTML=out
-}
-async function loadAqi(lat,lng){
- var u='https://air-quality-api.open-meteo.com/v1/air-quality?latitude='+lat+'&longitude='+lng+'&current=us_aqi,pm2_5,pm10&timezone=auto';
- var r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error('aqi');var d=await r.json(),c=d.current||{},v=Math.round(c.us_aqi);
- $('aqi').textContent=isFinite(v)?v:'—';$('aqiMeta').textContent=aqiText(v)+' · PM2.5 '+round(c.pm2_5)+' · PM10 '+round(c.pm10)
-}
-function weatherText(c){if(c===0)return'晴';if(c<=3)return'多雲';if(c===45||c===48)return'霧';if(c>=51&&c<=67)return'雨';if(c>=71&&c<=77)return'雪';if(c>=80&&c<=82)return'陣雨';if(c>=95)return'雷雨';return'天氣'}
-function weatherEmoji(c){if(c===0)return'☀️';if(c<=3)return'⛅';if(c===45||c===48)return'🌫️';if(c>=51&&c<=67)return'🌧️';if(c>=71&&c<=77)return'🌨️';if(c>=95)return'⛈️';return'☁️'}
-function aqiText(v){if(!isFinite(v))return'無資料';if(v<=50)return'良好';if(v<=100)return'普通';if(v<=150)return'對敏感族群不健康';if(v<=200)return'不健康';if(v<=300)return'非常不健康';return'危害'}
-function round(v){return isFinite(v)?Math.round(v):'—'}
-document.querySelectorAll('[data-layer]').forEach(function(b){b.onclick=async function(){
- var n=b.dataset.layer;if(n==='camera'||n==='disaster')return toast('這個圖層下一版接入');if(n==='aqi')return toast('目前點地圖即可查看 AQI');
- var on=!active.has(n);if(on)active.add(n);else active.delete(n);b.classList.toggle('active',on);
- if(n==='traffic')traffic.setMap(on?map:null);
- if(n==='satellite')map.setMapTypeId(on?'hybrid':'roadmap');
- if(n==='radar'){if(on){try{await enableRadar()}catch(e){active.delete(n);b.classList.remove('active');toast('雷達載入失敗')}}else disableRadar()}
- }}
-)
-async function enableRadar(){
- disableRadar();var r=await fetch('https://api.rainviewer.com/public/weather-maps.json',{cache:'no-store'});if(!r.ok)throw Error('radar');var d=await r.json(),f=(d.radar&&d.radar.past||[]).slice(-1)[0];if(!f)throw Error('no frame');
- radar=new google.maps.ImageMapType({getTileUrl:function(c,z){return d.host+f.path+'/256/'+z+'/'+c.x+'/'+c.y+'/2/1_1.png'},tileSize:new google.maps.Size(256,256),opacity:.66,maxZoom:7,minZoom:1});
- map.overlayMapTypes.push(radar);$('radarStamp').textContent='雷達 '+new Date(f.time*1000).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})+' · RainViewer';$('radarStamp').classList.remove('hidden')
-}
-function disableRadar(){if(!radar)return;for(var i=map.overlayMapTypes.getLength()-1;i>=0;i--)if(map.overlayMapTypes.getAt(i)===radar)map.overlayMapTypes.removeAt(i);radar=null;$('radarStamp').classList.add('hidden')}
-document.querySelectorAll('[data-poi]').forEach(function(b){b.onclick=function(){loadPoi(b.dataset.poi,b)}})
-function clearPoi(){poiMarkers.forEach(function(m){m.setMap(null)});poiMarkers=[];document.querySelectorAll('[data-poi]').forEach(function(x){x.classList.remove('active')})}
-$('clearPoi').onclick=function(){clearPoi();$('fieldStatus').textContent='FIELD 標記已清除'}
-function loadPoi(type,b){
- if(!placesService)return toast('Places API 尚未可用');clearPoi();b.classList.add('active');$('fieldStatus').textContent='搜尋中…';var center=map.getCenter();
- var req=type==='embassy'?{location:center,radius:12000,keyword:'embassy consulate representative office'}:{location:center,radius:7000,type:type};
- placesService.nearbySearch(req,function(results,status){if(status!==google.maps.places.PlacesServiceStatus.OK||!results||!results.length){$('fieldStatus').textContent='附近沒有結果，或 Places API 未啟用';return}
- results.slice(0,20).forEach(function(p){var m=new google.maps.Marker({map:map,position:p.geometry.location,title:p.name,label:{text:poiLabel(type),fontSize:'15px'}});m.addListener('click',function(){var l=p.geometry.location;selectLocation(l.lat(),l.lng(),p.name||'FIELD POI')});poiMarkers.push(m)});$('fieldStatus').textContent='已顯示 '+Math.min(results.length,20)+' 個結果'
- })
-}
-function poiLabel(t){return({hospital:'H',police:'P',fire_station:'F',pharmacy:'+',gas_station:'G',embassy:'E'})[t]||'•'}
-$('nav').onclick=function(){if(!selected)return;window.open('https://www.google.com/maps/dir/?api=1&destination='+selected.lat+','+selected.lng+'&travelmode=driving&dir_action=navigate','_blank')}
-$('share').onclick=async function(){if(!selected)return;var u='https://www.google.com/maps/search/?api=1&query='+selected.lat+','+selected.lng;try{if(navigator.share)await navigator.share({title:selected.title,url:u});else{await navigator.clipboard.writeText(u);toast('位置連結已複製')}}catch(e){}}
-$('save').onclick=function(){if(!selected)return;var a=[];try{a=JSON.parse(localStorage.getItem('geodeck.saved')||'[]')}catch(e){}a.unshift(Object.assign({savedAt:new Date().toISOString()},selected));localStorage.setItem('geodeck.saved',JSON.stringify(a.slice(0,100)));toast('已收藏此位置')}
-function locate(zoom){if(!navigator.geolocation)return toast('此裝置不支援定位');navigator.geolocation.getCurrentPosition(function(p){var x={lat:p.coords.latitude,lng:p.coords.longitude};map.panTo(x);if(zoom)map.setZoom(16);if(zoom)toast('定位精度約 '+Math.round(p.coords.accuracy)+' m')},function(){toast('無法取得定位，請檢查 Safari 定位權限')},{enableHighAccuracy:true,timeout:9000,maximumAge:10000})}
-function reflect(){$('speedToggle').checked=!!settings.speed;$('manualLimit').value=settings.limit==null?'':settings.limit;$('buffer').value=settings.buffer;$('lead').value=settings.lead}
-$('saveSettings').onclick=function(){settings.speed=$('speedToggle').checked;settings.limit=$('manualLimit').value===''?null:Number($('manualLimit').value);settings.buffer=Math.max(0,Math.min(30,Number($('buffer').value)||5));settings.lead=Math.max(50,Math.min(3000,Number($('lead').value)||300));saveSettings();if(settings.speed)startSpeed();else stopSpeed();closeSheets();toast('設定已儲存')}
-function startSpeed(){if(watchId!==null)return;$('speed').classList.remove('hidden');watchId=navigator.geolocation.watchPosition(function(p){var sp=deriveSpeed(p);$('speedValue').textContent=Math.max(0,Math.round(sp));$('limitBadge').textContent=settings.limit==null?'—':settings.limit;var over=settings.limit!=null&&sp>Number(settings.limit)+Number(settings.buffer);$('speed').classList.toggle('over',over);if(over)alertSpeed(sp)},function(){},{enableHighAccuracy:true,maximumAge:1200,timeout:12000})}
-function stopSpeed(){if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;lastPoint=null;$('speed').classList.add('hidden')}
-function deriveSpeed(p){if(isFinite(p.coords.speed)&&p.coords.speed>=0){lastPoint={lat:p.coords.latitude,lng:p.coords.longitude,t:p.timestamp};return p.coords.speed*3.6}var n={lat:p.coords.latitude,lng:p.coords.longitude,t:p.timestamp};if(!lastPoint){lastPoint=n;return 0}var m=haversine(lastPoint,n),sec=Math.max(.5,(n.t-lastPoint.t)/1000);lastPoint=n;return m/sec*3.6}
-function haversine(a,b){var R=6371000,rad=Math.PI/180,dlat=(b.lat-a.lat)*rad,dlon=(b.lng-a.lng)*rad,x=Math.sin(dlat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dlon/2)**2;return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
-function alertSpeed(sp){var now=Date.now();if(now-lastAlert<8000)return;lastAlert=now;if(navigator.vibrate)navigator.vibrate([120,80,180]);beep();toast('速度 '+Math.round(sp)+' km/h，已超過設定門檻')}
-function beep(){try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;var c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=880;g.gain.value=.05;o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+.15);o.onended=function(){c.close()}}catch(e){}}
-reflect();loadGoogle();
-})();
-</script>
+<script type="module" src="./app.js?v=0.2.0"></script>
 </body>
 </html>
