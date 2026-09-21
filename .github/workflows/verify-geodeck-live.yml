@@ -44,7 +44,7 @@ jobs:
           assets_ok=0
           for attempt in $(seq 1 40); do
             assets_ok=1
-            for file in app.js core.js layers.js drive.js drive-core.js routes-provider.js enforcement-provider.js parking-provider.js parking-ui.js data/enforcement-tw.json data/enforcement-sections-ntpc.json styles.css sw.js manifest.webmanifest icon-192.png icon-512.png data/cameras-tw.json.gz; do
+            for file in app.js places-provider.js core.js layers.js drive.js drive-core.js routes-provider.js enforcement-provider.js parking-provider.js parking-ui.js data/enforcement-tw.json data/enforcement-sections-ntpc.json styles.css sw.js manifest.webmanifest icon-192.png icon-512.png data/cameras-tw.json.gz; do
               if ! curl -fsS --retry 2 --max-time 15 "$URL/$file?verify=${GITHUB_RUN_ID}-$attempt" -o /tmp/geodeck-asset || ! cmp -s "geodeck/$file" /tmp/geodeck-asset; then
                 echo "Waiting for current $file"
                 assets_ok=0

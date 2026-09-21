@@ -1,4 +1,19 @@
-# GeoDeck 0.4.1 — foreground Drive Mode and parking checkpoint
+# GeoDeck 0.5.0 — foreground Drive Mode and parking checkpoint
+
+## 0.5.0 basic-use repair checkpoint
+
+Resumed clean ab762539c4ee9e161b787d9bea011e528616a518. Nearby now uses Places New and explicitly distinguishes service failure from successful empty results. Default center is current GPS, with selected-point/map-center choices and stale-request suppression. Routes have an explicit current-location origin, map-picked endpoints and saved endpoint selectors. Search/route fields use debounced Places New suggestions with session tokens; selected coordinates bypass geocoding. Place resolution and routing errors are separated. 44 tests pass.
+
+Direct official REST diagnostics using the existing public browser key and public Tainan coordinates returned:
+- Routes: HTTP 403 PERMISSION_DENIED / API_KEY_SERVICE_BLOCKED for routes.googleapis.com.
+- Places New: HTTP 403 PERMISSION_DENIED / SERVICE_DISABLED for places.googleapis.com in project 260981316953.
+- Existing browser Geocoding reports API not activated; legacy Directions reports legacy API not enabled. Modern RPC's generic XHR error alone previously concealed the service restriction.
+
+Google Cloud owner action: enable Places API (New), Routes API and Geocoding API in the key's project; under the existing key's API restrictions allow these APIs plus Maps JavaScript API. Keep Website/HTTP-referrer restrictions for https://walther-p.github.io/*; do not make the key unrestricted. Check project billing and quotas if enablement is refused. Re-test names, Nearby and routing after propagation. No account settings or keys were changed by this release.
+
+Status: Nearby Search PARTIAL, Geocoding PARTIAL, Current Location origin PARTIAL (device GPS permission required), In-map Routing BLOCKED, Taiwan Parking PARTIAL, Tainan Parking NOT STARTED, Prepare to Park NOT STARTED, Road Speed Limit BLOCKED, Section Average Speed NOT STARTED, Enforcement Classification PARTIAL, CCTV Coverage/FOV PARTIAL (nearby coordinates only), Route Weather NOT STARTED, Route Risk NOT STARTED, Lane Guidance BLOCKED (schema/UI only). Background/lock-screen navigation NATIVE ONLY. Phase 1 is not complete.
+
+Next: integrate verified Tainan official feed behind extensible Taiwan parking routing, retain Taipei; verify East and West Central districts. Rollback: ab762539c4ee9e161b787d9bea011e528616a518. Revert release commits; never reset unrelated work.
 
 Test on iPhone Safari: https://walther-p.github.io/KTAK-DEV/geodeck/
 

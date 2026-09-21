@@ -1,5 +1,5 @@
-import {loadNearbyParking} from './parking-provider.js?v=0.4.1';
-import {finite,escapeHtml as esc} from './core.js?v=0.4.1';
+import {loadNearbyParking} from './parking-provider.js?v=0.5.0';
+import {finite,escapeHtml as esc} from './core.js?v=0.5.0';
 
 export function createParkingUI({map,openPanel,isOpen,selected,getPosition,routeTo}){
   const $=id=>document.getElementById(id);let sequence=0,markers=[],current=null,center=null,timer=null;

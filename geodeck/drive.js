@@ -1,6 +1,6 @@
-import {loadEnforcement,enforcementSummary} from './enforcement-provider.js?v=0.4.1';
-import {finite,gpsSpeed} from './core.js?v=0.4.1';
-import {navigationModel,routeProgress,aheadEnforcement,gpsHeading,AlertGate} from './drive-core.js?v=0.4.1';
+import {loadEnforcement,enforcementSummary} from './enforcement-provider.js?v=0.5.0';
+import {finite,gpsSpeed} from './core.js?v=0.5.0';
+import {navigationModel,routeProgress,aheadEnforcement,gpsHeading,AlertGate} from './drive-core.js?v=0.5.0';
 
 export function createDrive({map,stripHtml,closePanel,unlockAudio,notify,onStop=()=>{}}){
   const $=id=>document.getElementById(id),gate=new AlertGate();
