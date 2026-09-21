@@ -1,4 +1,4 @@
-const VERSION='0.4.0',CACHE='geodeck-shell-'+VERSION;
+const VERSION='0.4.1',CACHE='geodeck-shell-'+VERSION;
 const SHELL=['./','./index.html','./styles.css?v='+VERSION,'./app.js?v='+VERSION,'./core.js?v='+VERSION,'./layers.js?v='+VERSION,'./drive.js?v='+VERSION,'./enforcement-provider.js?v='+VERSION,'./parking-provider.js?v='+VERSION,'./parking-ui.js?v='+VERSION,'./routes-provider.js?v='+VERSION,'./drive-core.js?v='+VERSION,'./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith('geodeck-shell-')&&key!==CACHE)await caches.delete(key);await self.clients.claim()})()));

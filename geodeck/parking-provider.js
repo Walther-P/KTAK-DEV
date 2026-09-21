@@ -1,4 +1,4 @@
-import {haversine,validPoint} from './core.js?v=0.4.0';
+import {haversine,validPoint} from './core.js?v=0.4.1';
 
 // Taipei Parking Management and Development Office; Government Open Data License v1.
 export const PARKING_SOURCE='https://data.gov.tw/dataset/128435';
@@ -53,6 +53,8 @@ export async function loadNearbyParking(center,{fetcher=fetch,now=Date.now()}={}
   const byId=new Map((dynamic?.rows||[]).map(row=>[String(row.id),row]));
   const seen=new Set();
   const lots=info.rows.flatMap(row=>{
+    // This is a car-parking search; a published zero capacity cannot serve cars.
+    if(count(row.totalcar)===0)return[];
     const point=coordinate(row),id=String(row.id??'').trim();
     if(!point||!id||seen.has(id))return[];seen.add(id);
     const distance=haversine(center,point);if(distance>3000)return[];

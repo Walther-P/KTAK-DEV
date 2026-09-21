@@ -1,4 +1,4 @@
-# GeoDeck 0.4.0 — foreground Drive Mode checkpoint
+# GeoDeck 0.4.1 — foreground Drive Mode and parking checkpoint
 
 Test on iPhone Safari: https://walther-p.github.io/KTAK-DEV/geodeck/
 
@@ -12,7 +12,7 @@ Test on iPhone Safari: https://walther-p.github.io/KTAK-DEV/geodeck/
 
 ## Test on a phone
 
-1. Open the public URL in Safari; in Settings confirm **GeoDeck 0.4.0**, using Check for updates if necessary.
+1. Open the public URL in Safari; in Settings confirm **GeoDeck 0.4.1**, using Check for updates if necessary.
 2. In Settings choose an enforcement distance. Speech follows the saved voice toggle; vibration only works on supporting devices. Distance/vibration save immediately.
 3. Choose Routes, driving, origin/destination and Show route, then **開始 Drive Mode**. Alternatively use **自由駕駛 · 測速提醒** without routing.
 4. Allow foreground location. Keep the screen on. While stationary or without heading, reminders are paused. Test as a passenger; use road signs for the applicable limit.
@@ -68,3 +68,12 @@ Rollback for this small adapter patch: `4f9c771ebb896697d56cf7b53ff8cc496d5acaa8
 - Adds independent nearby-parking shortcut, official Taipei availability, fees/capacity/hours when provided, map markers, GPS/map-position search and destination selection. Static metadata and dynamic response caching preserve official update times; markers age to unknown after five minutes, without background API polling. No nationwide coverage claim.
 - Includes modern Routes capability check and failure logging for the unresolved public routing blocker. No Google account changes.
 - Preserves both prior shipped checkpoints. Rollback for 0.4.0 is c4e029c2851c46630809503be9add6d34d442dcf (0.3.1).
+
+## 0.4.1 resume handoff
+
+- Resumed from clean 9d69ebd (0.4.0); no pending files were discarded. Public parking results exposed zero-car-capacity lots, now excluded while full lots (zero available spaces) and unknown capacities remain distinct. All 39 Node tests pass.
+- Public 0.4.0 checks: Taipei Station parking metadata/markers loaded; stale official availability showed P ?; selecting a parking lot populated the route destination and external Google navigation link correctly. No real-device road drive was performed.
+- Public routing remains blocked: legacy Directions reports API not enabled; modern Routes reports an RPC/XHR failure (code 6). Its root cause is not established. Do not claim successful in-map routing or change Google credentials/restrictions without an actual diagnosis.
+- Publication verification now waits for exact asset bytes as well as the version, avoiding a premature failure when a same-version patch is still deploying. PWA assets move together to 0.4.1.
+- Next work: diagnose routing provider availability, then prepare-to-park destination preservation/walking handoff. Technology/red-light classification, nationwide parking/section coverage, average-speed tracking, road limits, CCTV heading/FOV, Route Weather and Route Risk remain incomplete. Lane Guidance stays schema/UI only; background/lock-screen navigation requires Native integration.
+- Rollback for this patch: 9d69ebd7840acf1cea882bdf3e113275b1c7f90a. Rollback before parking/sections: c4e029c2851c46630809503be9add6d34d442dcf. Revert commits rather than resetting unrelated work.

@@ -1,4 +1,4 @@
-import {escapeHtml, finite, validPoint} from './core.js?v=0.4.0';
+import {escapeHtml, finite, validPoint} from './core.js?v=0.4.1';
 
 // Official schema: https://developers.google.com/maps/documentation/javascript/reference/route
 const point = value => {

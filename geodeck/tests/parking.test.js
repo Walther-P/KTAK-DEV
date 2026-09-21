@@ -20,6 +20,12 @@ test('uses WGS84 entrance coordinates and skips TWD97-only or invalid coordinate
   const {fetcher}=fixture([row('ok'),row('tw97',{EntranceCoord:null,tw97x:302864,tw97y:2771988}),row('bad',{EntranceCoord:{EntrancecoordInfo:[{Xcod:302864,Ycod:2771988}]}})],[]);
   const result=await loadNearbyParking(center,{fetcher,now});assert.deepEqual(result.lots.map(l=>l.id),['ok']);assert.equal(result.lots[0].distance,0);
 });
+test('excludes zero car capacity while retaining full lots and unknown capacity',async()=>{
+  const {fetcher}=fixture([row('motorcycle',{totalcar:'0'}),row('full'),row('unknown',{totalcar:null})],[{id:'full',availablecar:0}]);
+  const result=await loadNearbyParking(center,{fetcher,now});
+  assert.deepEqual(result.lots.map(l=>l.id),['full','unknown']);
+  assert.equal(result.lots[0].available,0);assert.equal(result.lots[1].total,null);
+});
 test('official stale and future timestamps never become live from a fresh fetch',async()=>{
   for(const [time,expected] of [['Mon Sep 21 08:00:00 CST 2026','stale'],['Mon Sep 21 08:09:00 CST 2026','unknown'],['invalid','unknown']]){
     const {fetcher}=fixture([row('a')],[{id:'a',availablecar:1}],time);

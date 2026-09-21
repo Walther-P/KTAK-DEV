@@ -1,5 +1,5 @@
-import {finite,validPoint} from './core.js?v=0.4.0';
-import {freshness} from './drive-core.js?v=0.4.0';
+import {finite,validPoint} from './core.js?v=0.4.1';
+import {freshness} from './drive-core.js?v=0.4.1';
 
 const sources=[
   {file:'enforcement-tw.json',label:'警政署測速'},

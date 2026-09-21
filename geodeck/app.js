@@ -1,8 +1,8 @@
-import {createParkingUI} from './parking-ui.js?v=0.4.0';
-import {computeModernRoute,createModernRenderer} from './routes-provider.js?v=0.4.0';
-import {createDrive} from './drive.js?v=0.4.0';
-import {VERSION,finite,escapeHtml as esc,validPoint,parseCoordinates,weatherInfo,aqiInfo,gpsSpeed,navigationUrl,regionalProvider,normalizedSaved} from './core.js?v=0.4.0';
-import {createLayers,jsonFetch} from './layers.js?v=0.4.0';
+import {createParkingUI} from './parking-ui.js?v=0.4.1';
+import {computeModernRoute,createModernRenderer} from './routes-provider.js?v=0.4.1';
+import {createDrive} from './drive.js?v=0.4.1';
+import {VERSION,finite,escapeHtml as esc,validPoint,parseCoordinates,weatherInfo,aqiInfo,gpsSpeed,navigationUrl,regionalProvider,normalizedSaved} from './core.js?v=0.4.1';
+import {createLayers,jsonFetch} from './layers.js?v=0.4.1';
 const $=id=>document.getElementById(id),fmt=(v,suffix='')=>finite(v)?Math.round(v)+suffix:'—';
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true}catch{toast('此瀏覽器無法儲存資料，請確認儲存空間');return false}};
