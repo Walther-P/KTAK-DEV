@@ -1,4 +1,4 @@
-# GeoDeck 0.3.0 — foreground Drive Mode checkpoint
+# GeoDeck 0.3.1 — foreground Drive Mode checkpoint
 
 Test on iPhone Safari: https://walther-p.github.io/KTAK-DEV/geodeck/
 
@@ -7,12 +7,12 @@ Test on iPhone Safari: https://walther-p.github.io/KTAK-DEV/geodeck/
 - Charcoal/slate/blue-gray controls, route line and PWA icons replace the lime accent. Existing search, favorites, weather, radar, CCTV, transit and maps remain.
 - 1,895 official NPA enforcement points, bundled as a dated snapshot. Coordinates, original direction, point speed limit, provider and source are retained. Official record update time is unknown; acquisition time never claims to be a live update. Snapshots older than 30 days show STALE. See [data provenance and refresh](data/ENFORCEMENT.md).
 - Settings offer 300/500/800/1000 m enforcement range, speech and device-supported vibration. Candidates use foreground GPS, heading, travel direction when explicit, and route geometry when available. Same point has a ten-minute reminder cooldown. Accuracy worse than 30 m, stale fixes, missing direction of travel, low speed, background or off-route state suppress enforcement reminders.
-- Drive Mode shows the next maneuver/distance, estimated arrival/remaining distance, GPS speed, next enforcement candidate and its published point speed limit. Other map tools and non-traffic layers are hidden/suspended until exit. A route requires the existing Google Directions entitlement; free driving works without a route.
+- Drive Mode shows the next maneuver/distance, estimated arrival/remaining distance, GPS speed, next enforcement candidate and its published point speed limit. Other map tools and non-traffic layers are hidden/suspended until exit. Driving first tries the existing Directions service, then the modern Google Routes API when legacy authorization is denied. The modern fallback requests traffic-unaware routes to avoid additional traffic features; Google API authorization/billing still applies. Free driving works without routing entitlement.
 - Pure route/enforcement logic and typed provider contracts are separate from the UI. Lane schema includes maneuver, instruction, distanceToManeuver, roadName, exitNumber, junction, fork and lanes with direction[], recommended and active. No lane metadata is fabricated.
 
 ## Test on a phone
 
-1. Open the public URL in Safari; in Settings confirm **GeoDeck 0.3.0**, using Check for updates if necessary.
+1. Open the public URL in Safari; in Settings confirm **GeoDeck 0.3.1**, using Check for updates if necessary.
 2. In Settings choose an enforcement distance. Speech follows the saved voice toggle; vibration only works on supporting devices. Distance/vibration save immediately.
 3. Choose Routes, driving, origin/destination and Show route, then **開始 Drive Mode**. Alternatively use **自由駕駛 · 測速提醒** without routing.
 4. Allow foreground location. Keep the screen on. While stationary or without heading, reminders are paused. Test as a passenger; use road signs for the applicable limit.
@@ -42,3 +42,21 @@ Serve the repository root for local preview: browser Google configuration is rea
 ## Checkpoint and rollback
 
 Baseline inspected: `0cbae5c725eef84a1568eddc06b74a416a67b8e1` (GeoDeck 0.2.0); its 8 tests passed and public Pages served 0.2.0 before these changes. No unfinished newer commit existed in the remote checkout. Keep this as the rollback reference. Revert the 0.3.0 release commit to undo this checkpoint without rewriting repository history. The root KTAK application and its configuration are not changed.
+
+## 2026-09-21 resume checkpoint
+
+Remote/local starting commit: `4f9c771ebb896697d56cf7b53ff8cc496d5acaa8`, deployed 0.3.0. No tracked unstaged/staged changes; two unfinished untracked files (`routes-provider.js` and its tests) were preserved and integrated. The parent `KTAK-Native-V3` working tree is a different project and was not overwritten.
+
+0.3.1 connects the pending modern Routes adapter to driving requests after legacy REQUEST_DENIED, including its own map renderer, alternative-route switching, versioned service-worker shell and publication checks. It retains external Google navigation and free driving if the modern API is also unavailable. No Google account permissions or API restrictions were changed.
+
+Public 0.3.0 verification: maps, Drive Mode entry/exit, official snapshot, missing-GPS state and PWA update all worked. The Taipei Station → Taipei 101 coordinate query returned legacy API not enabled; this was a real provider blocker, not a completed navigation test. The new fallback requires fresh public verification after this commit.
+
+Current Phase 1 status:
+- Complete checkpoint: gray/slate theme, official enforcement snapshot, conservative heading/ahead candidate filter, GPS speed, foreground Drive Mode, stale snapshot label and GPS expiration handling.
+- Partial: driving route integration (provider authorization dependent), device speech/vibration (real iPhone validation pending), generalized freshness (only enforcement is standardized here).
+- Schema/UI only: lane guidance; no reliable lane provider.
+- Unavailable: current-road speed limits and limit+X alert; camera limits are not road limits. Existing manual-threshold warning remains separate.
+- Next priority: official technology/red-light and section-speed data, then nearby parking shortcut with official real-time occupancy, then prepare-to-park destination handoff.
+- Not started: confirmed CCTV heading/FOV coverage (existing cameras are Nearby Only), ETA-aligned route weather and route-specific risk alerts.
+
+Rollback for this small adapter patch: `4f9c771ebb896697d56cf7b53ff8cc496d5acaa8`. Earlier pre-Drive baseline remains `0cbae5c725eef84a1568eddc06b74a416a67b8e1`. Revert the relevant release commit; do not reset unrelated work.

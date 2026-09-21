@@ -1,5 +1,5 @@
-import {finite,gpsSpeed} from './core.js?v=0.3.0';
-import {navigationModel,routeProgress,aheadEnforcement,gpsHeading,freshness,AlertGate} from './drive-core.js?v=0.3.0';
+import {finite,gpsSpeed} from './core.js?v=0.3.1';
+import {navigationModel,routeProgress,aheadEnforcement,gpsHeading,freshness,AlertGate} from './drive-core.js?v=0.3.1';
 
 export function createDrive({map,stripHtml,closePanel,unlockAudio,notify,onStop=()=>{}}){
   const $=id=>document.getElementById(id),gate=new AlertGate();
