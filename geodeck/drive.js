@@ -1,9 +1,10 @@
-import {finite,gpsSpeed} from './core.js?v=0.3.1';
-import {navigationModel,routeProgress,aheadEnforcement,gpsHeading,freshness,AlertGate} from './drive-core.js?v=0.3.1';
+import {loadEnforcement,enforcementSummary} from './enforcement-provider.js?v=0.4.0';
+import {finite,gpsSpeed} from './core.js?v=0.4.0';
+import {navigationModel,routeProgress,aheadEnforcement,gpsHeading,AlertGate} from './drive-core.js?v=0.4.0';
 
 export function createDrive({map,stripHtml,closePanel,unlockAudio,notify,onStop=()=>{}}){
   const $=id=>document.getElementById(id),gate=new AlertGate();
-  let active=false,watch=null,timer=null,last=null,lastAt=0,model=null,catalog=null,wake=null,marker=null,sequence=0,options={},lastSpeech=0;
+  let active=false,watch=null,timer=null,last=null,lastAt=0,model=null,catalog=null,catalogLoading=false,wake=null,marker=null,sequence=0,options={},lastSpeech=0;
   const distance=m=>finite(m)?m>=1000?(m/1000).toFixed(1)+' km':Math.round(m/10)*10+' m':'—';
   const say=text=>{if(!options.voice||Date.now()-lastSpeech<8000)return;lastSpeech=Date.now();notify(text)};
   function clearFix(message){
@@ -39,20 +40,20 @@ export function createDrive({map,stripHtml,closePanel,unlockAudio,notify,onStop=
     const candidates=catalog&&progress?.status!=='off-route'?aheadEnforcement(catalog.points,{position,heading,speed,accuracy:p.coords.accuracy,distance:options.distance,path:model?.path}):[];
     const next=candidates[0];$('drivePanel').classList.remove('over');
     $('drivePointLimit').textContent=next&&finite(next.speedLimit)?next.speedLimit+' km/h':'—';
-    if(!catalog)$('driveEnforcement').textContent='執法資料無法載入 · 不代表沒有執法';
+    if(!catalog)$('driveEnforcement').textContent=catalogLoading?'執法資料載入中 · 提醒尚未啟用':'執法資料無法載入 · 不代表沒有執法';
     else if(next){
       const kind={'fixed-speed':'測速','red-light':'闖紅燈','technology':'科技執法','section-start':'區間測速起點','section-end':'區間測速終點'}[next.kind]||'執法';
       $('driveEnforcement').textContent=`前方候選 ${distance(next.distance)} · ${kind} · ${next.name} · ${next.confidence==='direction-match'?'方向符合':'方向未知'}`;
       if(gate.allow(next.id)){say('前方執法候選，請注意道路標誌');if(options.vibrate)navigator.vibrate?.([150,80,150])}
     }else $('driveEnforcement').textContent=heading===null||speed<5?'等待行進方向 · 提醒暫停':progress?.status==='off-route'?'偏離路線 · 執法提醒暫停':'此範圍無符合候選 · 不代表沒有執法';
     // A nearby camera limit is not the current road limit. No automatic road-speed warning without road metadata.
-    $('driveSource').textContent=catalog?`${catalog.provider} · ${freshness(catalog)}`:'執法資料尚未取得';
+    $('driveSource').textContent=catalog?enforcementSummary(catalog,next):'執法資料尚未取得';
   }
   async function start(leg,settings){
     if(active)return;active=true;options={distance:500,voice:true,vibrate:true,awake:true,...settings};model=leg?navigationModel(leg,stripHtml):null;last=null;lastAt=0;
     closePanel();unlockAudio();document.body.classList.add('driving');$('drivePanel').classList.remove('hidden');$('exitDrive').focus();clearFix('等待 GPS 定位');map()?.setZoom(17);
     resume();timer=setInterval(()=>{if(active&&lastAt&&Date.now()-lastAt>15000)clearFix('GPS 已過期 · 提醒暫停')},3000);
-    if(!catalog)try{const response=await fetch('./data/enforcement-tw.json',{cache:'no-cache',signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('data');const data=await response.json();if(!Array.isArray(data.points))throw Error('schema');catalog=data;if(active)$('driveSource').textContent=`${data.provider} · ${freshness(data)}`}catch{if(active)$('driveSource').textContent='官方資料快照載入失敗 · 可稍後重新進入'}
+    if(!catalog||catalog.errors.length)try{catalogLoading=true;catalog=await loadEnforcement();if(active)$('driveSource').textContent=enforcementSummary(catalog)}catch{if(active)$('driveSource').textContent='官方資料快照載入失敗 · 可稍後重新進入'}finally{catalogLoading=false}
   }
   function stop(){active=false;pause('導航已結束');clearInterval(timer);marker?.setMap(null);$('drivePanel').classList.add('hidden');document.body.classList.remove('driving');$('routes').focus();onStop()}
   $('exitDrive').onclick=stop;

@@ -1,4 +1,4 @@
-import {finite,validPoint,haversine} from './core.js?v=0.3.1';
+import {finite,validPoint,haversine} from './core.js?v=0.4.0';
 
 export const angleDifference=(a,b)=>Math.abs(((a-b+540)%360)-180);
 export function bearing(a,b){const r=Math.PI/180,x=Math.sin((b.lng-a.lng)*r)*Math.cos(b.lat*r),y=Math.cos(a.lat*r)*Math.sin(b.lat*r)-Math.sin(a.lat*r)*Math.cos(b.lat*r)*Math.cos((b.lng-a.lng)*r);return(Math.atan2(x,y)/r+360)%360}

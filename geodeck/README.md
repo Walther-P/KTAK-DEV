@@ -1,4 +1,4 @@
-# GeoDeck 0.3.1 — foreground Drive Mode checkpoint
+# GeoDeck 0.4.0 — foreground Drive Mode checkpoint
 
 Test on iPhone Safari: https://walther-p.github.io/KTAK-DEV/geodeck/
 
@@ -12,7 +12,7 @@ Test on iPhone Safari: https://walther-p.github.io/KTAK-DEV/geodeck/
 
 ## Test on a phone
 
-1. Open the public URL in Safari; in Settings confirm **GeoDeck 0.3.1**, using Check for updates if necessary.
+1. Open the public URL in Safari; in Settings confirm **GeoDeck 0.4.0**, using Check for updates if necessary.
 2. In Settings choose an enforcement distance. Speech follows the saved voice toggle; vibration only works on supporting devices. Distance/vibration save immediately.
 3. Choose Routes, driving, origin/destination and Show route, then **開始 Drive Mode**. Alternatively use **自由駕駛 · 測速提醒** without routing.
 4. Allow foreground location. Keep the screen on. While stationary or without heading, reminders are paused. Test as a passenger; use road signs for the applicable limit.
@@ -29,11 +29,11 @@ Serve the repository root for local preview: browser Google configuration is rea
 
 ## Honest limits and next work
 
-- **Enforcement: Partial.** Official 7320 does not identify device function per row. `fixed-speed` is the current schema tag, not proof of hardware type. Separate red-light/technology enforcement and section-speed endpoints remain unconnected. Only explicit origin-to-destination direction text is parsed; other descriptions remain unknown. Candidate matching cannot distinguish all parallel/stacked roads, loops, temporary closures or GPS ambiguity. No claim of complete coverage or absence of enforcement.
+- **Enforcement: Partial.** Official 7320 does not identify device function per row. `fixed-speed` is the current schema tag, not proof of hardware type. Separate red-light/technology enforcement classification remains unconnected. New Taipei contributes 25 published section pairs (50 endpoints); other regions and average-speed tracking remain unconnected. Only explicit origin-to-destination direction text is parsed; other descriptions remain unknown. Candidate matching cannot distinguish all parallel/stacked roads, loops, temporary closures or GPS ambiguity. No claim of complete coverage or absence of enforcement.
 - **Road speed limit: Provider unavailable.** A camera point limit is not the current road's limit. No automatic road-limit + X warning. Existing manually set speed threshold remains a separate general-map tool.
 - **Navigation: Partial.** Foreground geometric route tracking, no automatic rerouting. ETA is proportional to the originally requested route duration, not continuously refreshed traffic. No spoken turn-by-turn. Stop safely and replan after deviating.
 - **Lane Guidance: Schema/UI only / Provider unavailable.** Normal maneuvers work when Google returns a route; this Directions adapter supplies no reliable lane metadata, road/exit/junction fields stay null. Native navigation integration remains future work.
-- **Parking: Not connected.** Existing generic nearby-facility search does not provide official real-time spaces/rates. Nearby parking, prepare-to-park and preserved-destination walking handoff remain next work.
+- **Parking: Taipei first version.** The dedicated P shortcut queries official Taipei parking metadata and availability within 3 km, using published WGS84 entrances only. Missing/negative counts remain unknown; data over five minutes old shows STALE and marker P ?. Map-position and GPS search work without navigation. No coverage elsewhere is explicit. Prepare-to-park and preserved-destination walking handoff remain next work.
 - **CCTV Coverage: Nearby Only.** Existing twipcam coordinate catalog is retained. No reliable heading/FOV, no visibility claims or invented view cones. Coverage metadata contract is reserved.
 - **Route Risk / Route Weather: Not connected.** Existing point weather/earthquakes are not route risk or ETA weather analysis. No false all-clear status.
 - **PWA:** foreground/screen-on only. Background GPS, lock-screen guidance, continuous navigation and iOS vibration are not guaranteed. Wake Lock is best effort. Internet required for maps/routes and data loading. Service worker caches the versioned shell, never live external APIs; this is not offline Google Maps.
@@ -56,7 +56,15 @@ Current Phase 1 status:
 - Partial: driving route integration (provider authorization dependent), device speech/vibration (real iPhone validation pending), generalized freshness (only enforcement is standardized here).
 - Schema/UI only: lane guidance; no reliable lane provider.
 - Unavailable: current-road speed limits and limit+X alert; camera limits are not road limits. Existing manual-threshold warning remains separate.
-- Next priority: official technology/red-light and section-speed data, then nearby parking shortcut with official real-time occupancy, then prepare-to-park destination handoff.
+- Next priority after 0.4.0: official technology/red-light coverage, improve routing availability, then prepare-to-park destination handoff. Taipei nearby parking and New Taipei section endpoints are now connected.
 - Not started: confirmed CCTV heading/FOV coverage (existing cameras are Nearby Only), ETA-aligned route weather and route-specific risk alerts.
 
 Rollback for this small adapter patch: `4f9c771ebb896697d56cf7b53ff8cc496d5acaa8`. Earlier pre-Drive baseline remains `0cbae5c725eef84a1568eddc06b74a416a67b8e1`. Revert the relevant release commit; do not reset unrelated work.
+
+
+## 0.4.0 second checkpoint
+
+- Integrates official New Taipei section-speed endpoint snapshot with independent provenance/freshness and partial-source failure handling. Endpoint reminders only: no inferred section road geometry, average-speed measurement or fabricated travel direction. See data/SECTIONS.md for actual counts and rejected rows.
+- Adds independent nearby-parking shortcut, official Taipei availability, fees/capacity/hours when provided, map markers, GPS/map-position search and destination selection. Static metadata and dynamic response caching preserve official update times; markers age to unknown after five minutes, without background API polling. No nationwide coverage claim.
+- Includes modern Routes capability check and failure logging for the unresolved public routing blocker. No Google account changes.
+- Preserves both prior shipped checkpoints. Rollback for 0.4.0 is c4e029c2851c46630809503be9add6d34d442dcf (0.3.1).

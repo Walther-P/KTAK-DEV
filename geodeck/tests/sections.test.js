@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {parseSections} from '../scripts/import-enforcement-sections.mjs';
+import {readFile} from 'node:fs/promises';
+const header='location,limit,start latitude,start longitude,end latitude,end longitude,direct,length\n';
+test('official parallel coordinate columns retain endpoint pairing without invented bearings or road length',()=>{const data=parseSections(header+'Road,40公里,25 25.01,121 121.02,25.02 25.03,121.04 121.05,雙向,往甲：1000公尺 往乙：1100公尺');assert.equal(data.points.length,4);assert.equal(data.points[0].directionText,'雙向');assert.equal(data.points[0].publishedLength,null);assert.deepEqual(data.points[0].counterpart,{lat:25.02,lng:121.04});assert.equal(data.points[0].speedLimit,40);assert.equal(data.points[0].lastUpdated,null)});
+test('mismatched coordinate lists never create guessed sections',()=>assert.throws(()=>parseSections(header+'Road,40公里,25 25.01,121,25.02,121.04,雙向,1000公尺'),/No valid/));
+test('shipped official section snapshot has paired endpoints and unique identifiers',async()=>{const d=JSON.parse(await readFile(new URL('../data/enforcement-sections-ntpc.json',import.meta.url),'utf8'));assert.ok(d.points.length>0);assert.equal(new Set(d.points.map(p=>p.id)).size,d.points.length);for(const p of d.points){assert.ok(d.points.some(q=>q.sectionId===p.sectionId&&q.kind!==p.kind));assert.equal(p.lastUpdated,null);assert.match(p.source,/data.gov.tw/)} });

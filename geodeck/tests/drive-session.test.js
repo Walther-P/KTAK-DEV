@@ -17,7 +17,7 @@ function setup(t) {
       vibrate: pattern => vibrations.push(pattern),
     },
     google: {maps: {SymbolPath: {CIRCLE: 0}, Marker: class { constructor() { markers.push(this); } setMap(value) { this.map = value; } setPosition(value) { this.position = value; } }}},
-    fetch: async () => ({ok: true, json: async () => ({provider: 'test', fetchedAt: new Date(now).toISOString(), lastUpdated: null, points: [{id: 'north', lat: 25.002, lng: 121, kind: 'fixed-speed', name: 'test camera', directionText: '南往北', speedLimit: 50}]})}),
+    fetch: async () => ({ok: true, json: async () => ({provider: 'test', source: 'https://example.test/data', fetchedAt: new Date(now).toISOString(), lastUpdated: null, points: [{id: 'north', lat: 25.002, lng: 121, kind: 'fixed-speed', name: 'test camera', directionText: '南往北', speedLimit: 50}]})}),
     setInterval: callback => { const id = ++timerId; timers.set(id, callback); return id; },
     clearInterval: id => timers.delete(id),
   };

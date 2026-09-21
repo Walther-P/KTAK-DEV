@@ -1,0 +1,966 @@
+{
+  "provider": "新北市政府警察局",
+  "source": "https://data.gov.tw/dataset/126156",
+  "download": "https://data.ntpc.gov.tw/api/datasets/27b97ad9-9dba-4ca9-b0ed-14b29000ffec/csv/file",
+  "lastUpdated": null,
+  "fetchedAt": "2026-09-21T05:01:54.400Z",
+  "license": "政府資料開放授權條款-第1版",
+  "statistics": {
+    "segments": 25,
+    "points": 50,
+    "skipped": 0
+  },
+  "points": [
+    {
+      "sectionId": "ntpc-05aecc9a1a5be567",
+      "name": "臺9線19K至23.1K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：3946.7公尺 往宜蘭方向：3938.1公尺",
+      "id": "ntpc-05aecc9a1a5be567-start",
+      "lat": 24.9569297,
+      "lng": 121.6236371,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9531792,
+        "lng": 121.5981891
+      }
+    },
+    {
+      "sectionId": "ntpc-05aecc9a1a5be567",
+      "name": "臺9線19K至23.1K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：3946.7公尺 往宜蘭方向：3938.1公尺",
+      "id": "ntpc-05aecc9a1a5be567-end",
+      "lat": 24.9531792,
+      "lng": 121.5981891,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9569297,
+        "lng": 121.6236371
+      }
+    },
+    {
+      "sectionId": "ntpc-3fcba318181d0fd4",
+      "name": "臺9線19K至23.1K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：3946.7公尺 往宜蘭方向：3938.1公尺",
+      "id": "ntpc-3fcba318181d0fd4-start",
+      "lat": 24.953133,
+      "lng": 121.5981016,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9570178,
+        "lng": 121.6236044
+      }
+    },
+    {
+      "sectionId": "ntpc-3fcba318181d0fd4",
+      "name": "臺9線19K至23.1K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：3946.7公尺 往宜蘭方向：3938.1公尺",
+      "id": "ntpc-3fcba318181d0fd4-end",
+      "lat": 24.9570178,
+      "lng": 121.6236044,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.953133,
+        "lng": 121.5981016
+      }
+    },
+    {
+      "sectionId": "ntpc-691bac2b3fc1c3e9",
+      "name": "臺9線26.2K至32.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：5830.5公尺 往宜蘭方向：5835.3公尺",
+      "id": "ntpc-691bac2b3fc1c3e9-start",
+      "lat": 24.9430715,
+      "lng": 121.6708954,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9503516,
+        "lng": 121.6478697
+      }
+    },
+    {
+      "sectionId": "ntpc-691bac2b3fc1c3e9",
+      "name": "臺9線26.2K至32.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：5830.5公尺 往宜蘭方向：5835.3公尺",
+      "id": "ntpc-691bac2b3fc1c3e9-end",
+      "lat": 24.9503516,
+      "lng": 121.6478697,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9430715,
+        "lng": 121.6708954
+      }
+    },
+    {
+      "sectionId": "ntpc-a68b16ce82f5f5f4",
+      "name": "臺9線26.2K至32.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：5830.5公尺 往宜蘭方向：5835.3公尺",
+      "id": "ntpc-a68b16ce82f5f5f4-start",
+      "lat": 24.9504174,
+      "lng": 121.6477995,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9429879,
+        "lng": 121.6708659
+      }
+    },
+    {
+      "sectionId": "ntpc-a68b16ce82f5f5f4",
+      "name": "臺9線26.2K至32.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：5830.5公尺 往宜蘭方向：5835.3公尺",
+      "id": "ntpc-a68b16ce82f5f5f4-end",
+      "lat": 24.9429879,
+      "lng": 121.6708659,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9504174,
+        "lng": 121.6477995
+      }
+    },
+    {
+      "sectionId": "ntpc-2801c483901bbc17",
+      "name": "臺9線33.3K至37.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：3862.5公尺 往宜蘭方向：3876.8公尺",
+      "id": "ntpc-2801c483901bbc17-start",
+      "lat": 24.9360445,
+      "lng": 121.7035178,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9384678,
+        "lng": 121.6770967
+      }
+    },
+    {
+      "sectionId": "ntpc-2801c483901bbc17",
+      "name": "臺9線33.3K至37.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：3862.5公尺 往宜蘭方向：3876.8公尺",
+      "id": "ntpc-2801c483901bbc17-end",
+      "lat": 24.9384678,
+      "lng": 121.6770967,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9360445,
+        "lng": 121.7035178
+      }
+    },
+    {
+      "sectionId": "ntpc-f72f2f4ab410ec8e",
+      "name": "臺9線33.3K至37.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：3862.5公尺 往宜蘭方向：3876.8公尺",
+      "id": "ntpc-f72f2f4ab410ec8e-start",
+      "lat": 24.938322,
+      "lng": 121.6772214,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9359628,
+        "lng": 121.7036968
+      }
+    },
+    {
+      "sectionId": "ntpc-f72f2f4ab410ec8e",
+      "name": "臺9線33.3K至37.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往新店方向：3862.5公尺 往宜蘭方向：3876.8公尺",
+      "id": "ntpc-f72f2f4ab410ec8e-end",
+      "lat": 24.9359628,
+      "lng": 121.7036968,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.938322,
+        "lng": 121.6772214
+      }
+    },
+    {
+      "sectionId": "ntpc-e73fecc04984024e",
+      "name": "臺64線快速公路25.2k至28.2k(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 70,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "東向25.2k主線至28.2k：2955.4公尺  東向25.2k錦和路匝道至28.2k：2859.3公尺  西向26.6k至28.2k：1563.3公尺",
+      "id": "ntpc-e73fecc04984024e-start",
+      "lat": 24.9940327,
+      "lng": 121.4912557,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9911521,
+        "lng": 121.520327
+      }
+    },
+    {
+      "sectionId": "ntpc-e73fecc04984024e",
+      "name": "臺64線快速公路25.2k至28.2k(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 70,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "東向25.2k主線至28.2k：2955.4公尺  東向25.2k錦和路匝道至28.2k：2859.3公尺  西向26.6k至28.2k：1563.3公尺",
+      "id": "ntpc-e73fecc04984024e-end",
+      "lat": 24.9911521,
+      "lng": 121.520327,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9940327,
+        "lng": 121.4912557
+      }
+    },
+    {
+      "sectionId": "ntpc-ebb7262a4f369b7c",
+      "name": "臺64線快速公路25.2k至28.2k(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 70,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "東向25.2k主線至28.2k：2955.4公尺  東向25.2k錦和路匝道至28.2k：2859.3公尺  西向26.6k至28.2k：1563.3公尺",
+      "id": "ntpc-ebb7262a4f369b7c-start",
+      "lat": 24.9939131,
+      "lng": 121.4912819,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9911521,
+        "lng": 121.520327
+      }
+    },
+    {
+      "sectionId": "ntpc-ebb7262a4f369b7c",
+      "name": "臺64線快速公路25.2k至28.2k(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 70,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "東向25.2k主線至28.2k：2955.4公尺  東向25.2k錦和路匝道至28.2k：2859.3公尺  西向26.6k至28.2k：1563.3公尺",
+      "id": "ntpc-ebb7262a4f369b7c-end",
+      "lat": 24.9911521,
+      "lng": 121.520327,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9939131,
+        "lng": 121.4912819
+      }
+    },
+    {
+      "sectionId": "ntpc-b70dd730fa7fe0bb",
+      "name": "臺64線快速公路25.2k至28.2k(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 70,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "東向25.2k主線至28.2k：2955.4公尺  東向25.2k錦和路匝道至28.2k：2859.3公尺  西向26.6k至28.2k：1563.3公尺",
+      "id": "ntpc-b70dd730fa7fe0bb-start",
+      "lat": 24.9906839,
+      "lng": 121.5223483,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9932551,
+        "lng": 121.5070838
+      }
+    },
+    {
+      "sectionId": "ntpc-b70dd730fa7fe0bb",
+      "name": "臺64線快速公路25.2k至28.2k(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 70,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "東向25.2k主線至28.2k：2955.4公尺  東向25.2k錦和路匝道至28.2k：2859.3公尺  西向26.6k至28.2k：1563.3公尺",
+      "id": "ntpc-b70dd730fa7fe0bb-end",
+      "lat": 24.9932551,
+      "lng": 121.5070838,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9906839,
+        "lng": 121.5223483
+      }
+    },
+    {
+      "sectionId": "ntpc-f66ca922ef354ca1",
+      "name": "台64線快速公路東向21.4K主線至23.2K",
+      "directionText": "西向東",
+      "speedLimit": 70,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": 1755.7,
+      "lengthText": "1755.7公尺",
+      "id": "ntpc-f66ca922ef354ca1-start",
+      "lat": 25.0189783,
+      "lng": 121.4707713,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.0078907,
+        "lng": 121.4828569
+      }
+    },
+    {
+      "sectionId": "ntpc-f66ca922ef354ca1",
+      "name": "台64線快速公路東向21.4K主線至23.2K",
+      "directionText": "西向東",
+      "speedLimit": 70,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": 1755.7,
+      "lengthText": "1755.7公尺",
+      "id": "ntpc-f66ca922ef354ca1-end",
+      "lat": 25.0078907,
+      "lng": 121.4828569,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.0189783,
+        "lng": 121.4707713
+      }
+    },
+    {
+      "sectionId": "ntpc-bfd82161b775576d",
+      "name": "台65線快速公路北向7.9K主線至4.5K",
+      "directionText": "南向北",
+      "speedLimit": 80,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": 3280.9,
+      "lengthText": "3280.9公尺",
+      "id": "ntpc-bfd82161b775576d-start",
+      "lat": 24.9991346,
+      "lng": 121.451254,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.0262879,
+        "lng": 121.4425386
+      }
+    },
+    {
+      "sectionId": "ntpc-bfd82161b775576d",
+      "name": "台65線快速公路北向7.9K主線至4.5K",
+      "directionText": "南向北",
+      "speedLimit": 80,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": 3280.9,
+      "lengthText": "3280.9公尺",
+      "id": "ntpc-bfd82161b775576d-end",
+      "lat": 25.0262879,
+      "lng": 121.4425386,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9991346,
+        "lng": 121.451254
+      }
+    },
+    {
+      "sectionId": "ntpc-16b4670b6b5f9710",
+      "name": "新店區環河路(中央路至白馬寺，雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往碧潭方向：1293.1公尺 往臺北方向：1138.6公尺",
+      "id": "ntpc-16b4670b6b5f9710-start",
+      "lat": 24.9718199,
+      "lng": 121.5292394,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9641247,
+        "lng": 121.5367909
+      }
+    },
+    {
+      "sectionId": "ntpc-16b4670b6b5f9710",
+      "name": "新店區環河路(中央路至白馬寺，雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往碧潭方向：1293.1公尺 往臺北方向：1138.6公尺",
+      "id": "ntpc-16b4670b6b5f9710-end",
+      "lat": 24.9641247,
+      "lng": 121.5367909,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9718199,
+        "lng": 121.5292394
+      }
+    },
+    {
+      "sectionId": "ntpc-39005b1b242d12df",
+      "name": "新店區環河路(中央路至白馬寺，雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往碧潭方向：1293.1公尺 往臺北方向：1138.6公尺",
+      "id": "ntpc-39005b1b242d12df-start",
+      "lat": 24.9639108,
+      "lng": 121.5369783,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9712441,
+        "lng": 121.5309406
+      }
+    },
+    {
+      "sectionId": "ntpc-39005b1b242d12df",
+      "name": "新店區環河路(中央路至白馬寺，雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往碧潭方向：1293.1公尺 往臺北方向：1138.6公尺",
+      "id": "ntpc-39005b1b242d12df-end",
+      "lat": 24.9712441,
+      "lng": 121.5309406,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9639108,
+        "lng": 121.5369783
+      }
+    },
+    {
+      "sectionId": "ntpc-e55f136cdf5325bf",
+      "name": "省道台64線西向1.6K至5.4K",
+      "directionText": "東向西",
+      "speedLimit": null,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": 3788.7,
+      "lengthText": "3788.7公尺",
+      "id": "ntpc-e55f136cdf5325bf-start",
+      "lat": 25.1116139,
+      "lng": 121.4221989,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.1369385,
+        "lng": 121.3985554
+      }
+    },
+    {
+      "sectionId": "ntpc-e55f136cdf5325bf",
+      "name": "省道台64線西向1.6K至5.4K",
+      "directionText": "東向西",
+      "speedLimit": null,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": 3788.7,
+      "lengthText": "3788.7公尺",
+      "id": "ntpc-e55f136cdf5325bf-end",
+      "lat": 25.1369385,
+      "lng": 121.3985554,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.1116139,
+        "lng": 121.4221989
+      }
+    },
+    {
+      "sectionId": "ntpc-bc49919574f4237e",
+      "name": "新莊區壽山路(北118線0K至1.2K)(往新莊方向)",
+      "directionText": "西向東",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": 1171.6,
+      "lengthText": "1171.6公尺",
+      "id": "ntpc-bc49919574f4237e-start",
+      "lat": 25.043957,
+      "lng": 121.3982646,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.0393101,
+        "lng": 121.4072525
+      }
+    },
+    {
+      "sectionId": "ntpc-bc49919574f4237e",
+      "name": "新莊區壽山路(北118線0K至1.2K)(往新莊方向)",
+      "directionText": "西向東",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": 1171.6,
+      "lengthText": "1171.6公尺",
+      "id": "ntpc-bc49919574f4237e-end",
+      "lat": 25.0393101,
+      "lng": 121.4072525,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.043957,
+        "lng": 121.3982646
+      }
+    },
+    {
+      "sectionId": "ntpc-94575735e81f3d31",
+      "name": "省道台2線73.7K至79.6K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：5961.8公尺 往北：5991.1公尺",
+      "id": "ntpc-94575735e81f3d31-start",
+      "lat": 25.120868,
+      "lng": 121.8230243,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.123813,
+        "lng": 121.874765
+      }
+    },
+    {
+      "sectionId": "ntpc-94575735e81f3d31",
+      "name": "省道台2線73.7K至79.6K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：5961.8公尺 往北：5991.1公尺",
+      "id": "ntpc-94575735e81f3d31-end",
+      "lat": 25.123813,
+      "lng": 121.874765,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.120868,
+        "lng": 121.8230243
+      }
+    },
+    {
+      "sectionId": "ntpc-4ee7127b493ae89b",
+      "name": "省道台2線73.7K至79.6K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：5961.8公尺 往北：5991.1公尺",
+      "id": "ntpc-4ee7127b493ae89b-start",
+      "lat": 25.123813,
+      "lng": 121.874765,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.121013,
+        "lng": 121.8228082
+      }
+    },
+    {
+      "sectionId": "ntpc-4ee7127b493ae89b",
+      "name": "省道台2線73.7K至79.6K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：5961.8公尺 往北：5991.1公尺",
+      "id": "ntpc-4ee7127b493ae89b-end",
+      "lat": 25.121013,
+      "lng": 121.8228082,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.123813,
+        "lng": 121.874765
+      }
+    },
+    {
+      "sectionId": "ntpc-dfb65a5b828f4c7d",
+      "name": "省道台2線79.7K至84K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：4182.7公尺 往北：4178.4公尺",
+      "id": "ntpc-dfb65a5b828f4c7d-start",
+      "lat": 25.1233385,
+      "lng": 121.8755036,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.12391,
+        "lng": 121.9128517
+      }
+    },
+    {
+      "sectionId": "ntpc-dfb65a5b828f4c7d",
+      "name": "省道台2線79.7K至84K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：4182.7公尺 往北：4178.4公尺",
+      "id": "ntpc-dfb65a5b828f4c7d-end",
+      "lat": 25.12391,
+      "lng": 121.9128517,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.1233385,
+        "lng": 121.8755036
+      }
+    },
+    {
+      "sectionId": "ntpc-f7587e57edaaabda",
+      "name": "省道台2線79.7K至84K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：4182.7公尺 往北：4178.4公尺",
+      "id": "ntpc-f7587e57edaaabda-start",
+      "lat": 25.12391,
+      "lng": 121.9128517,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.1233385,
+        "lng": 121.8755036
+      }
+    },
+    {
+      "sectionId": "ntpc-f7587e57edaaabda",
+      "name": "省道台2線79.7K至84K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：4182.7公尺 往北：4178.4公尺",
+      "id": "ntpc-f7587e57edaaabda-end",
+      "lat": 25.1233385,
+      "lng": 121.8755036,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.12391,
+        "lng": 121.9128517
+      }
+    },
+    {
+      "sectionId": "ntpc-db3eef7445587bdb",
+      "name": "省道台2線85.8K至87.5K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 50,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：1551.8公尺 往北：1558.0公尺",
+      "id": "ntpc-db3eef7445587bdb-start",
+      "lat": 25.1129016,
+      "lng": 121.9119988,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.1087712,
+        "lng": 121.9194989
+      }
+    },
+    {
+      "sectionId": "ntpc-db3eef7445587bdb",
+      "name": "省道台2線85.8K至87.5K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 50,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：1551.8公尺 往北：1558.0公尺",
+      "id": "ntpc-db3eef7445587bdb-end",
+      "lat": 25.1087712,
+      "lng": 121.9194989,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.1129016,
+        "lng": 121.9119988
+      }
+    },
+    {
+      "sectionId": "ntpc-b4ee030f8a6a7661",
+      "name": "省道台2線85.8K至87.5K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 50,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：1551.8公尺 往北：1558.0公尺",
+      "id": "ntpc-b4ee030f8a6a7661-start",
+      "lat": 25.1085894,
+      "lng": 121.9194771,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.1128145,
+        "lng": 121.9120353
+      }
+    },
+    {
+      "sectionId": "ntpc-b4ee030f8a6a7661",
+      "name": "省道台2線85.8K至87.5K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 50,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：1551.8公尺 往北：1558.0公尺",
+      "id": "ntpc-b4ee030f8a6a7661-end",
+      "lat": 25.1128145,
+      "lng": 121.9120353,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.1085894,
+        "lng": 121.9194771
+      }
+    },
+    {
+      "sectionId": "ntpc-cbc70326709b7a75",
+      "name": "省道台2線105.8K至113.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：7569.3公尺 往北：7568.8公尺",
+      "id": "ntpc-cbc70326709b7a75-start",
+      "lat": 25.0158013,
+      "lng": 121.9882414,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.9866379,
+        "lng": 121.9694361
+      }
+    },
+    {
+      "sectionId": "ntpc-cbc70326709b7a75",
+      "name": "省道台2線105.8K至113.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：7569.3公尺 往北：7568.8公尺",
+      "id": "ntpc-cbc70326709b7a75-end",
+      "lat": 24.9866379,
+      "lng": 121.9694361,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 25.0158013,
+        "lng": 121.9882414
+      }
+    },
+    {
+      "sectionId": "ntpc-df729a8f04f14931",
+      "name": "省道台2線105.8K至113.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：7569.3公尺 往北：7568.8公尺",
+      "id": "ntpc-df729a8f04f14931-start",
+      "lat": 24.9865575,
+      "lng": 121.9691472,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 25.0156998,
+        "lng": 121.9882264
+      }
+    },
+    {
+      "sectionId": "ntpc-df729a8f04f14931",
+      "name": "省道台2線105.8K至113.2K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 60,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往南：7569.3公尺 往北：7568.8公尺",
+      "id": "ntpc-df729a8f04f14931-end",
+      "lat": 25.0156998,
+      "lng": 121.9882264,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.9865575,
+        "lng": 121.9691472
+      }
+    },
+    {
+      "sectionId": "ntpc-4ef03ba8ae77ffaf",
+      "name": "三峽區台7乙線5.3K至8.1K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往桃園方向：2757.4公尺 往新北方向：2752.2公尺",
+      "id": "ntpc-4ef03ba8ae77ffaf-start",
+      "lat": 24.8705956,
+      "lng": 121.3751827,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.8548211,
+        "lng": 121.3572005
+      }
+    },
+    {
+      "sectionId": "ntpc-4ef03ba8ae77ffaf",
+      "name": "三峽區台7乙線5.3K至8.1K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往桃園方向：2757.4公尺 往新北方向：2752.2公尺",
+      "id": "ntpc-4ef03ba8ae77ffaf-end",
+      "lat": 24.8548211,
+      "lng": 121.3572005,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.8705956,
+        "lng": 121.3751827
+      }
+    },
+    {
+      "sectionId": "ntpc-ea72b5381f9f160f",
+      "name": "三峽區台7乙線5.3K至8.1K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往桃園方向：2757.4公尺 往新北方向：2752.2公尺",
+      "id": "ntpc-ea72b5381f9f160f-start",
+      "lat": 24.8548211,
+      "lng": 121.3572005,
+      "kind": "section-start",
+      "counterpart": {
+        "lat": 24.8705956,
+        "lng": 121.3751827
+      }
+    },
+    {
+      "sectionId": "ntpc-ea72b5381f9f160f",
+      "name": "三峽區台7乙線5.3K至8.1K(雙向)",
+      "directionText": "雙向",
+      "speedLimit": 40,
+      "provider": "新北市政府警察局",
+      "source": "https://data.gov.tw/dataset/126156",
+      "lastUpdated": null,
+      "publishedLength": null,
+      "lengthText": "往桃園方向：2757.4公尺 往新北方向：2752.2公尺",
+      "id": "ntpc-ea72b5381f9f160f-end",
+      "lat": 24.8705956,
+      "lng": 121.3751827,
+      "kind": "section-end",
+      "counterpart": {
+        "lat": 24.8548211,
+        "lng": 121.3572005
+      }
+    }
+  ],
+  "sourceSha256": "acd5ed42e2ebaec6d041a0eeb292359a75392677f116fdaec4d12b251b90d5e8"
+}

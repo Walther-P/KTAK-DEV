@@ -1,4 +1,4 @@
-import {escapeHtml, finite, validPoint} from './core.js?v=0.3.1';
+import {escapeHtml, finite, validPoint} from './core.js?v=0.4.0';
 
 // Official schema: https://developers.google.com/maps/documentation/javascript/reference/route
 const point = value => {
@@ -17,6 +17,7 @@ const duration = millis => {
 
 export async function computeModernRoute(origin, destination) {
   const {Route} = await google.maps.importLibrary('routes');
+  if (!Route?.computeRoutes) throw new Error('Modern Routes class unavailable');
   const response = await Route.computeRoutes({origin, destination, travelMode: 'DRIVING', routingPreference: 'TRAFFIC_UNAWARE', language: 'zh-TW', computeAlternativeRoutes: true,
     fields: ['legs', 'path', 'durationMillis', 'distanceMeters', 'description', 'warnings', 'viewport']});
   if (!response.routes?.length) throw new Error('ZERO_RESULTS');
