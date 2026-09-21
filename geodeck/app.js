@@ -8,7 +8,7 @@ const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fa
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true}catch{toast('此瀏覽器無法儲存資料，請確認儲存空間');return false}};
 const state={map:null,layers:null,panel:'',selected:null,selection:0,placeAbort:null,userPoint:null,saved:normalizedSaved(read('geodeck.saved',[])),settings:{speed:false,limit:null,enforcementDistance:500,vibrate:true,buffer:0,voice:true,awake:true,...read('geodeck.settings',{})},layerStatuses:new Map(),route:null,routeMode:'driving',provider:'auto',routeSequence:0,routeOrigin:null,cameraTimer:null,cameraImage:null,cameraSequence:0,poiMarkers:[]};
 let parkingController;
-$('parking').onclick=()=>renderParking();
+$('parking')?.addEventListener('click',()=>renderParking());
 let driveController,suspendedLayers=[],legacyDirectionsDenied=false;
 let toastTimer,selectionMarker,locationMarker,accuracyCircle,geocoder,placesService,routeRenderer,watchId=null,lastGps=null,lastGpsAt=0,lastAlert=0,wakeLock=null,audioContext=null;
 function toast(text){$('toast').textContent=text;$('toast').classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),4200)}
