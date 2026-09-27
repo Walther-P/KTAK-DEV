@@ -1,4 +1,4 @@
-export const VERSION='0.7.1';
+export const VERSION='0.7.2';
 export function finite(v){return typeof v==='number'&&Number.isFinite(v)}
 export function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 export function validPoint(p){return p&&finite(p.lat)&&finite(p.lng)&&Math.abs(p.lat)<=90&&Math.abs(p.lng)<=180}

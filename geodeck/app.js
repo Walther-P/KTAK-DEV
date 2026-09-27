@@ -1,11 +1,11 @@
-import {rainfallText} from './weather-core.js?v=0.7.1';
-import {createMap,createMarker} from './map-provider.js?v=0.7.1';
-import {createPlaceSearch} from './open-places.js?v=0.7.1';
-import {createNavigationUI} from './navigation-ui.js?v=0.7.1';
-import {parkingHandoff,journeyForSelection} from './journey.js?v=0.7.1';
-import {createParkingUI} from './parking-map-ui.js?v=0.7.1';
-import {VERSION,finite,escapeHtml as esc,validPoint,parseCoordinates,weatherInfo,aqiInfo,normalizedSaved} from './core.js?v=0.7.1';
-import {createLayers,jsonFetch} from './layers.js?v=0.7.1';
+import {rainfallText} from './weather-core.js?v=0.7.2';
+import {createMap,createMarker} from './map-provider.js?v=0.7.2';
+import {createPlaceSearch} from './open-places.js?v=0.7.2';
+import {createNavigationUI} from './navigation-ui.js?v=0.7.2';
+import {parkingHandoff,journeyForSelection} from './journey.js?v=0.7.2';
+import {createParkingUI} from './parking-map-ui.js?v=0.7.2';
+import {VERSION,finite,escapeHtml as esc,validPoint,parseCoordinates,weatherInfo,aqiInfo,normalizedSaved} from './core.js?v=0.7.2';
+import {createLayers,jsonFetch} from './layers.js?v=0.7.2';
 const $=id=>document.getElementById(id),fmt=(v,suffix='')=>finite(v)?Math.round(v)+suffix:'—';
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true}catch{toast('此瀏覽器無法儲存資料，請確認儲存空間');return false}};
@@ -55,10 +55,36 @@ function exportFavorites(){const blob=new Blob([JSON.stringify({app:'GeoDeck',ve
 async function importFavorites(e){const file=e.target.files?.[0];if(!file)return;if(file.size>2*1024*1024)return toast('備份檔案太大');try{const d=JSON.parse(await file.text()),raw=Array.isArray(d)?d:d.places;if(!Array.isArray(raw)||!raw.every(validPoint))throw Error();const next=normalizedSaved([...state.saved,...raw]);if(write('geodeck.saved',next)){state.saved=next;renderFavorites();toast('已合併收藏，重複座標保留原有備註')}}catch{toast('無法讀取這個收藏備份')}}
 async function shareSelected(){const p=state.selected;if(!p)return;const u=new URL('./',location.href);u.searchParams.set('lat',p.lat.toFixed(6));u.searchParams.set('lng',p.lng.toFixed(6));u.searchParams.set('name',p.title.slice(0,120));try{if(navigator.share)await navigator.share({title:p.title,url:u.href});else{await navigator.clipboard.writeText(u.href);toast('地點連結已複製')}}catch(e){if(e.name!=='AbortError')toast('分享未完成，可在收藏中保留座標')}}
 function renderRoutes(){navigationController.render()}
-function showCamera(c,alternatives=[c],catalogTime=''){state.selected={lat:c.lat,lng:c.lng,title:c.name};openPanel('camera',c.name,`${alternatives.length>1?`<label class="form-field">同位置的影像<select id="cameraChoice">${alternatives.map((v,i)=>`<option value="${i}">${esc(v.name)}</option>`).join('')}</select></label>`:''}<div class="camera-frame" id="cameraFrame"><span class="camera-loading" id="cameraLoading">正在連接公開影像…</span></div><p class="micro" id="cameraStatus" role="status">來源連線中</p><div class="actions"><button class="button" data-action="route-selected">前往這裡</button><button class="button" id="refreshCamera">重新整理</button></div><a class="button full" href="${esc(c.source)}" target="_blank" rel="noopener noreferrer">在原站觀看 ↗</a><p class="micro">目錄來源：${sourceLink('https://www.twipcam.com/','台灣即時影像 twipcam')}<br>目錄取得：${esc(String(catalogTime).slice(0,10))}；拍攝時間以影像內標示為準。</p>`,'LIVE CAMERAS');if($('cameraChoice'))$('cameraChoice').onchange=e=>showCamera(alternatives[Number(e.target.value)],alternatives,catalogTime);const reload=()=>{stopCamera();if(document.hidden||state.panel!=='camera')return;const seq=state.cameraSequence;const img=new Image();state.cameraImage=img;img.referrerPolicy='no-referrer';img.alt=c.name+' 公開影像';const url=new URL(c.image);const thumbnail=/i\.ytimg\.com/.test(url.hostname);const snapshot=/\.(jpg|jpeg|png)(\?|$)/i.test(url.href);if(snapshot)url.searchParams.set('_gd',Math.floor(Date.now()/60000));let slow=setTimeout(()=>{if(seq===state.cameraSequence&&$('cameraStatus'))$('cameraStatus').textContent='來源回應較慢，可按「在原站觀看」。'},12000);img.onload=()=>{clearTimeout(slow);if(seq!==state.cameraSequence||state.panel!=='camera')return;$('cameraLoading')?.remove();$('cameraStatus').textContent=thumbnail?'直播縮圖，請按「在原站觀看」播放影片。':`接收於 ${new Date().toLocaleTimeString('zh-TW')} · 拍攝時間以畫面為準。`;if(snapshot)state.cameraTimer=setTimeout(reload,60000)};img.onerror=()=>{clearTimeout(slow);if(seq!==state.cameraSequence||state.panel!=='camera')return;$('cameraLoading')?.remove();img.remove();$('cameraStatus').textContent='影像來源目前無法連線，請稍後重試或前往原站。'};$('cameraFrame').append(img);img.src=url.href};$('refreshCamera').onclick=reload;reload()}
+function showCamera(c,alternatives=[c],catalogTime='',context={}){
+  const parking=context.parking;
+  if(!parking)state.selected={lat:c.lat,lng:c.lng,title:c.name};
+  openPanel('camera',c.name,
+    (parking?'<p class="micro">'+esc(parking.name)+' · 拍攝範圍：'+(c.coverage==='interior'?'內部':'入口')+'<br>'+esc(c.coverageNote||'')+'<br>範圍核對：'+esc(c.verifiedAt?.slice(0,10))+'</p>':'')+
+    (alternatives.length>1?'<label class="form-field">'+(parking?'停車場監視器':'此處的影像')+'<select id="cameraChoice">'+alternatives.map((v,i)=>'<option value="'+i+'">'+esc(v.name)+(parking?' · '+(v.coverage==='interior'?'內部':'入口'):'')+'</option>').join('')+'</select></label>':'')+
+    '<div class="camera-frame" id="cameraFrame"><span class="camera-loading" id="cameraLoading">正在連接公開影像…</span></div><p class="micro" id="cameraStatus" role="status">來源連線中</p>'+
+    '<div class="actions">'+(parking?'<button class="button" id="cameraParkingRoute">前往此停車場</button>':'<button class="button" data-action="route-selected">前往這裡</button>')+'<button class="button" id="refreshCamera">重新整理</button></div>'+
+    (parking?'<button class="button full" id="backToParkingDetails">返回停車場詳情</button>':'')+
+    '<a class="button full" href="'+esc(c.source)+'" target="_blank" rel="noopener noreferrer">在原站觀看 ↗</a><p class="micro">目錄來源：'+sourceLink('https://www.twipcam.com/','台灣即時影像 twipcam')+'<br>目錄取得：'+esc(String(catalogTime).slice(0,10)||'未知')+'；拍攝時間以影像內標示為準。</p>','LIVE CAMERAS');
+  if($('cameraChoice')){
+    $('cameraChoice').value=String(Math.max(0,alternatives.indexOf(c)));
+    $('cameraChoice').onchange=e=>showCamera(alternatives[Number(e.target.value)],alternatives,catalogTime,context);
+  }
+  if(parking){$('backToParkingDetails').onclick=context.back;$('cameraParkingRoute').onclick=context.route}
+  const reload=()=>{
+    stopCamera();if(document.hidden||state.panel!=='camera')return;
+    const seq=state.cameraSequence,img=new Image();state.cameraImage=img;img.referrerPolicy='no-referrer';img.alt=c.name+' 公開影像';
+    const url=new URL(c.image),thumbnail=/i\.ytimg\.com/.test(url.hostname),snapshot=/\.(jpg|jpeg|png)(\?|$)/i.test(url.href);
+    if(snapshot)url.searchParams.set('_gd',Math.floor(Date.now()/60000));
+    const slow=setTimeout(()=>{if(seq===state.cameraSequence&&$('cameraStatus'))$('cameraStatus').textContent='來源回應較慢，可按「在原站觀看」。'},12000);
+    img.onload=()=>{clearTimeout(slow);if(seq!==state.cameraSequence||state.panel!=='camera')return;$('cameraLoading')?.remove();$('cameraStatus').textContent=thumbnail?'直播縮圖，請按「在原站觀看」播放影片。':'接收於 '+new Date().toLocaleTimeString('zh-TW')+' · 拍攝時間以畫面為準。';if(snapshot)state.cameraTimer=setTimeout(reload,60000)};
+    img.onerror=()=>{clearTimeout(slow);if(seq!==state.cameraSequence||state.panel!=='camera')return;$('cameraLoading')?.remove();img.remove();$('cameraStatus').textContent='影像來源目前無法連線，請稍後重試或前往原站。'};
+    $('cameraFrame').append(img);img.src=url.href;
+  };
+  $('refreshCamera').onclick=reload;reload();
+}
 function showQuake(q){state.selected={lat:q.lat,lng:q.lng,title:q.title||'地震位置'};const time=new Date(q.time).toLocaleString('zh-TW');openPanel('quake',q.title||'近期地震',`<div class="weather-summary"><div class="metric"><span class="label">規模</span><div class="value">${esc(q.mag)}</div></div><div class="metric"><span class="label">深度</span><div class="value">${fmt(q.depth)} <span>km</span></div></div></div><p class="subtle">${esc(time)}（手機時區）<br>${esc(q.place||'')}<br>${coords(q)}</p><p class="micro">來源：USGS。此為地震紀錄，不是即時預警。</p>${typeof q.url==='string'&&q.url.startsWith('https://earthquake.usgs.gov/')?sourceLink(q.url,'查看 USGS 地震詳情'):''}<div class="actions"><button class="button" data-action="save-selected">收藏位置</button><button class="button" data-action="share-selected">分享位置</button></div>`,'EARTHQUAKE')}
 const poiTypes=[['hospital','✚','醫院'],['pharmacy','＋','藥局'],['police','◇','警察'],['fire_station','♨','消防'],['gas_station','▣','加油站'],['parking','P','停車場'],['toilet','↔','廁所'],['charging','ϟ','充電站'],['embassy','⚑','使領館']];
-function renderParking(scope='viewport'){if(!mapReady())return;clearPoi();parkingController??=createParkingUI({map:()=>state.map,openPanel,closePanel,isOpen:()=>state.panel==='parking',routeTo:lot=>{journey=parkingHandoff(journeyForSelection(journey,state.selected)?.destination||state.selected,lot);write('geodeck.journey',journey);state.selected=journey.parking;renderRoutes()}});if(scope==='destination')parkingController.enable(state.selected);else parkingController.toggle()}
+function renderParking(scope='viewport'){if(!mapReady())return;clearPoi();parkingController??=createParkingUI({map:()=>state.map,openPanel,closePanel,isOpen:()=>state.panel==='parking',viewCamera:showCamera,routeTo:lot=>{journey=parkingHandoff(journeyForSelection(journey,state.selected)?.destination||state.selected,lot);write('geodeck.journey',journey);state.selected=journey.parking;renderRoutes()}});if(scope==='destination')parkingController.enable(state.selected);else parkingController.toggle()}
 function renderField(scope='gps'){poiScope=scope;openPanel('field','附近設施',`<label class="form-field">搜尋中心<select id="poiScope"><option value="gps">我附近（目前 GPS 位置）</option>${state.selected?'<option value="selected">此位置附近</option>':''}<option value="map">地圖中心附近</option></select></label><p class="micro">半徑 6 km；定位失敗不會偷偷改用其他位置。</p><div class="poi-grid">${poiTypes.map(([id,icon,title])=>`<button data-poi="${id}"><span aria-hidden="true">${icon}</span>${title}</button>`).join('')}</div><div id="poiResults" class="poi-list"></div><button class="text-button" data-action="clear-poi">清除設施標記</button><p class="micro">OpenStreetMap / Photon · 收錄可能不完整，營業與服務以現場及官方資訊為準。</p>`,'FIELD MODE');$('poiScope').value=scope;$('poiScope').onchange=()=>{poiScope=$('poiScope').value;poiSequence++;clearPoi();$('poiResults').textContent='請選擇設施類型。'}}
 function clearPoi(){state.poiMarkers.forEach(m=>m.setMap(null));state.poiMarkers=[]}
 async function loadPoi(type){if(!mapReady())return;const token=++poiSequence;clearPoi();$('poiResults').innerHTML=loading(poiScope==='gps'?'取得目前位置…':'搜尋附近設施…');try{

@@ -1,7 +1,7 @@
-import {boundsOverlap,inBounds,mergeParking,parkingCount} from './parking-core.js?v=0.7.1';
-import {loadNearbyParking} from './parking-provider.js?v=0.7.1';
-import {loadTaiwanParking} from './taiwan-parking.js?v=0.7.1';
-import {normalizeOfficial} from './parking-sources.js?v=0.7.1';
+import {boundsOverlap,inBounds,mergeParking,parkingCount} from './parking-core.js?v=0.7.2';
+import {loadNearbyParking} from './parking-provider.js?v=0.7.2';
+import {loadTaiwanParking} from './taiwan-parking.js?v=0.7.2';
+import {normalizeOfficial} from './parking-sources.js?v=0.7.2';
 
 export function createParkingCatalog({fetcher=fetch,config=()=>globalThis.KTAK_CONFIG}={}){
   let indexPromise;const tiles=new Map(),live=new Map(),pending=new Map();

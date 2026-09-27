@@ -1,4 +1,4 @@
-import {parkingCount as count,inBounds} from './parking-core.js?v=0.7.1';
+import {parkingCount as count,inBounds} from './parking-core.js?v=0.7.2';
 export const SOURCES={
   osm:{name:'OpenStreetMap contributors',url:'https://www.openstreetmap.org/copyright',license:'ODbL 1.0'},
   taipei:{name:'臺北市停車管理工程處',url:'https://data.gov.tw/dataset/128435'},

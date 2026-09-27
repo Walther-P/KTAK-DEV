@@ -1,12 +1,13 @@
-import {createMarker} from './map-provider.js?v=0.7.1';
-import {createParkingCatalog} from './parking-catalog.js?v=0.7.1';
-import {clusterParking,parkingStatus} from './parking-core.js?v=0.7.1';
-import {SOURCES} from './parking-sources.js?v=0.7.1';
-import {escapeHtml as esc,finite} from './core.js?v=0.7.1';
+import {createMarker} from './map-provider.js?v=0.7.2';
+import {createParkingCatalog} from './parking-catalog.js?v=0.7.2';
+import {clusterParking,parkingStatus} from './parking-core.js?v=0.7.2';
+import {SOURCES} from './parking-sources.js?v=0.7.2';
+import {escapeHtml as esc,finite} from './core.js?v=0.7.2';
+import {parkingCameraLookup} from './camera-catalog.js?v=0.7.2';
 
-export function createParkingUI({map,openPanel,closePanel,isOpen,routeTo}){
+export function createParkingUI({map,openPanel,closePanel,isOpen,routeTo,viewCamera}){
   const $=id=>document.getElementById(id),catalog=createParkingCatalog();
-  let active=false,sequence=0,markers=[],current=[],summaries=[],meta,detailId=null,debounce,timer,ageTimer,includeCurb=true;
+  let active=false,sequence=0,markers=[],current=[],summaries=[],meta,detailId=null,detailSequence=0,debounce,timer,ageTimer,includeCurb=true;
   const toolbar=$('parkingToolbar'),status=$('parkingMapStatus');
   function bounds(){const b=map().getBounds(),ne=b.getNorthEast(),sw=b.getSouthWest();return{north:ne.lat(),south:sw.lat(),west:sw.lng(),east:ne.lng()}}
   function clearMarkers(){markers.forEach(m=>m.setMap(null));markers=[]}
@@ -30,16 +31,26 @@ export function createParkingUI({map,openPanel,closePanel,isOpen,routeTo}){
     }
   }
   function details(lot){
-    detailId=lot.id;const fresh=parkingStatus(lot),source=SOURCES[lot.source]||{name:'公開停車資料',url:'https://data.gov.tw/'};
+    detailId=lot.id;const token=++detailSequence,fresh=parkingStatus(lot),source=SOURCES[lot.source]||{name:'公開停車資料',url:'https://data.gov.tw/'};
     const time=lot.lastUpdated?`資料更新：${new Date(lot.lastUpdated).toLocaleString('zh-TW',{hour12:false})}`:lot.fetchedAt?`讀取時間：${new Date(lot.fetchedAt).toLocaleString('zh-TW',{hour12:false})}（來源未提供更新時間）`:'沒有即時車位更新時間';
     openPanel('parking',lot.name,`<article class="parking-detail"><div class="row"><span class="tag">${lot.kind==='curb'?'路邊停車':lot.kind==='space'?'個別停車格':'停車場'}</span><strong class="parking-count">${esc(fresh.label)} <small>格</small></strong></div>
       <p class="${fresh.kind==='live'?'subtle':'micro'}">${esc(fresh.text)}</p><p class="micro">${esc(time)}</p>
+      <div id="parkingCameras" aria-live="polite"><p class="micro">正在查詢停車場監視器…</p></div>
       ${lot.address?`<p>${esc(lot.address)}</p>`:''}<h2>計費方式</h2><p class="parking-rate">${esc(lot.rate||'來源未提供，請依現場公告')}</p>
       <p class="subtle">收費／開放時間：${esc(lot.hours||'來源未提供')}<br>總車位：${finite(lot.total)?lot.total+' 格':'未提供'}${lot.access?'<br>'+esc(lot.access):''}</p>
       <button class="button primary full" data-parking-route>前往此停車場</button><button class="button full" id="backToParking">返回停車地圖</button>
       <p class="micro">來源：<a href="${esc(lot.url||source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.name)}</a>${lot.source==='osm'?' · © OpenStreetMap contributors／ODbL':''}<br>目錄取得：${esc(meta?.fetchedAt?.slice(0,10)||'未知')} · 位置未必是入口，格位與費率依現場公告。</p></article>`,'PARKING');
-    document.querySelector('[data-parking-route]').onclick=()=>{disable();routeTo({...lot,title:lot.name,country:'TW'})};
+    const navigate=()=>{disable();routeTo({...lot,title:lot.name,country:'TW'})};
+    document.querySelector('[data-parking-route]').onclick=navigate;
     $('backToParking').onclick=()=>{detailId=null;closePanel()};
+    const slot=$('parkingCameras'),still=()=>slot.isConnected&&token===detailSequence&&isOpen()&&detailId===lot.id;
+    parkingCameraLookup.find(lot).then(data=>{
+      if(!still())return;const cameras=data.cameras;
+      if(!cameras.length){slot.innerHTML='<p class="micro">附近無拍攝監視器</p><p class="micro">僅列出已確認拍得到停車場入口或內部的鏡頭。</p>';return}
+      const coverage=[...new Set(cameras.map(c=>c.coverage==='interior'?'內部':'入口'))].join('／');
+      slot.innerHTML=`<button class="button full" id="viewParkingCameras">▣ 觀看停車場監視器（${coverage}）</button><p class="micro">${cameras.length} 支已核對鏡頭 · 拍攝範圍：${coverage}</p>`;
+      $('viewParkingCameras').onclick=()=>viewCamera(cameras[0],cameras,data.catalogTime,{parking:lot,back:()=>details(current.find(p=>p.id===lot.id)||lot),route:navigate});
+    }).catch(()=>{if(still())slot.innerHTML='<p class="micro">監視器目錄暫時無法取得，稍後重開詳情可重試。</p>'});
   }
   async function refresh(){
     if(!active||document.hidden)return;const token=++sequence,b=bounds(),zoom=map().getZoom();
