@@ -1,4 +1,5 @@
-import {haversine,validPoint} from './core.js?v=0.6.0';
+import {inBounds} from './parking-core.js?v=0.7.0';
+import {haversine,validPoint} from './core.js?v=0.7.0';
 
 // Taipei Parking Management and Development Office; Government Open Data License v1.
 export const PARKING_SOURCE='https://data.gov.tw/dataset/128435';
@@ -41,7 +42,7 @@ async function read(url,ttl,fetcher,now,cache){
   cache.set(url,result);return result;
 }
 
-export async function loadNearbyParking(center,{fetcher=fetch,now=Date.now()}={}){
+export async function loadNearbyParking(center,{fetcher=fetch,now=Date.now(),bounds=null,limit=20}={}){
   if(!validPoint(center))throw Error('停車搜尋位置無效');
   const base={provider:'臺北市停車管理工程處',source:PARKING_SOURCE,lastUpdated:null,fetchedAt:null,freshness:'unknown',coverage:'none',lots:[]};
   // The Taipei feed cannot establish parking availability elsewhere in Taiwan.
@@ -57,9 +58,9 @@ export async function loadNearbyParking(center,{fetcher=fetch,now=Date.now()}={}
     if(count(row.totalcar)===0)return[];
     const point=coordinate(row),id=String(row.id??'').trim();
     if(!point||!id||seen.has(id))return[];seen.add(id);
-    const distance=haversine(center,point);if(distance>3000)return[];
+    const distance=haversine(center,point);if(bounds?!inBounds(point,bounds):distance>3000)return[];
     const available=count(byId.get(id)?.availablecar),lastUpdated=dynamic?.lastUpdated??null;
     return[{id,...point,name:String(row.name||'停車場'),distance,available,total:count(row.totalcar),rate:String(row.payex||'費率依現場公告'),hours:row.serviceTime?String(row.serviceTime):null,lastUpdated,freshness:available===null?'unknown':status(lastUpdated,now)}];
-  }).sort((a,b)=>a.distance-b.distance).slice(0,20);
+  }).sort((a,b)=>a.distance-b.distance).slice(0,limit);
   return{...base,lastUpdated:dynamic?.lastUpdated??null,fetchedAt:new Date(dynamic?.fetchedAt??info.fetchedAt).toISOString(),freshness:dynamic?status(dynamic.lastUpdated,now):'unknown',coverage:lots.length?'available':'none',lots,...(!dynamic?{failedSource:AVAILABLE}:{})};
 }

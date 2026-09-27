@@ -1,5 +1,5 @@
-import {escapeHtml as esc,validPoint} from './core.js?v=0.6.0';
-import {navigationChoice} from './journey.js?v=0.6.0';
+import {escapeHtml as esc,validPoint} from './core.js?v=0.7.0';
+import {navigationChoice} from './journey.js?v=0.7.0';
 
 export function createNavigationUI({openPanel,isOpen,selected,setSelected,saved,search,country,center,read,write,findParking,journey,parked}){
   const $=id=>document.getElementById(id);

@@ -61,12 +61,12 @@ test('old, future and invalid parking timestamps do not become live; unsupported
   assert.equal(tainanLots({data:[row]},tainan,{now:Date.parse('2026-09-27T12:00:00Z')})[0].freshness,'unknown');
   const result=await loadTaiwanParking({lat:37.56,lng:126.98},{fetcher:()=>{throw Error('should not fetch')}});assert.equal(result.coverage,'none');
 });
-test('shipped companion dependency graph never loads a Google SDK, billing key or old routes adapter',()=>{
+test('Google is isolated to the map adapter; navigation never loads Places or Routes adapters',()=>{
   const base=new URL('../',import.meta.url),seen=new Set();
   function visit(name){if(seen.has(name))return;seen.add(name);const text=fs.readFileSync(new URL(name,base),'utf8');
-    assert.doesNotMatch(text,/maps\.googleapis\.com|KTAK_CONFIG|google\.maps\./,name);
+    if(!['map-provider.js','parking-catalog.js'].includes(name))assert.doesNotMatch(text,/maps\.googleapis\.com|KTAK_CONFIG|google\.maps\./,name);
     for(const m of text.matchAll(/from ['"]\.\/([^'"?]+)(?:\?[^'"]*)?['"]/g))visit(m[1]);
   }
   visit('app.js');assert.equal(seen.has('routes-provider.js'),false);assert.equal(seen.has('places-provider.js'),false);
-  assert.doesNotMatch(fs.readFileSync(new URL('index.html',base),'utf8'),/\.\.\/config\.js/);
+  assert.equal(seen.has('parking-map-ui.js'),true);assert.equal(seen.has('parking-ui.js'),false);
 });

@@ -1,64 +1,65 @@
-import {MAP_STYLE} from './map-config.js?v=0.6.0';
+let googleReady;
 
-// The application depends on this small adapter, not on a map vendor's global API.
-export async function createMap(container, {center, zoom=13}={}) {
-  if (!globalThis.maplibregl) throw Error('地圖元件未載入');
-  const raw = new maplibregl.Map({container, style:MAP_STYLE,
-    center:[center.lng,center.lat], zoom, attributionControl:false, maxZoom:19});
-  raw.addControl(new maplibregl.AttributionControl({compact:false}), 'bottom-left');
-  raw.addControl(new maplibregl.NavigationControl({showCompass:false}), 'top-right');
-  raw.dragRotate.disable(); raw.touchZoomRotate.disableRotation();
-  await new Promise((resolve,reject)=>{
-    const timer=setTimeout(()=>reject(Error('底圖連線逾時，請確認網路後重試')),20000);
-    raw.once('load',()=>{clearTimeout(timer);resolve()});
-    raw.once('error',e=>{if(!raw.isStyleLoaded()){clearTimeout(timer);reject(e.error)}});
+function loadGoogle(){
+  if(globalThis.google?.maps?.Map)return Promise.resolve();
+  if(googleReady)return googleReady;
+  googleReady=new Promise((resolve,reject)=>{
+    const key=globalThis.KTAK_CONFIG?.GOOGLE_MAPS_API_KEY;
+    if(!key){reject(Error('尚未設定 Google 地圖金鑰'));return}
+    const timer=setTimeout(()=>reject(Error('Google 地圖連線逾時')),20000);
+    globalThis.geodeckGoogleReady=()=>{clearTimeout(timer);resolve()};
+    globalThis.gm_authFailure=()=>{clearTimeout(timer);reject(Error('Google 地圖授權失敗，請確認金鑰、網址限制與額度'))};
+    const script=document.createElement('script');
+    const params=new URLSearchParams({key,v:'quarterly',loading:'async',language:'zh-TW',region:'TW',callback:'geodeckGoogleReady'});
+    script.src='https://maps.googleapis.com/maps/api/js?'+params;script.async=true;
+    script.onerror=()=>{clearTimeout(timer);reject(Error('Google 地圖無法載入'))};
+    document.head.append(script);
   });
-  // Keep a dark background while giving road names enough contrast on a phone.
-  for(const layer of raw.getStyle().layers){
-    if(layer.type==='symbol'&&layer.layout?.['text-field']){
-      raw.setPaintProperty(layer.id,'text-color','#c0cbd7');
-      raw.setPaintProperty(layer.id,'text-halo-color','#121b25');
-    }
-    if(layer.type==='background')raw.setPaintProperty(layer.id,'background-color','#141b23');
-  }
-  const rasterErrors=new Map();
+  return googleReady;
+}
+
+export async function createMap(container,{center,zoom=13}={}){
+  await loadGoogle();
+  const raw=new google.maps.Map(container,{center,zoom,colorScheme:google.maps.ColorScheme.DARK,
+    disableDefaultUI:true,zoomControl:true,zoomControlOptions:{position:google.maps.ControlPosition.RIGHT_CENTER},
+    clickableIcons:false,gestureHandling:'greedy',minZoom:3,maxZoom:20});
+  const rasters=new Map();
+  await new Promise(resolve=>google.maps.event.addListenerOnce(raw,'idle',resolve));
   return {raw,
-    getCenter(){const p=raw.getCenter();return {lat:()=>p.lat,lng:()=>p.lng}},
-    getZoom:()=>raw.getZoom(), setZoom:z=>raw.setZoom(z),
-    panTo:p=>raw.panTo([p.lng,p.lat]),
-    getBounds(){const b=raw.getBounds();return {contains:p=>b.contains([p.lng,p.lat]),
-      getNorthEast:()=>({lat:()=>b.getNorth(),lng:()=>b.getEast()}),
-      getSouthWest:()=>({lat:()=>b.getSouth(),lng:()=>b.getWest()})}},
-    addListener(name,fn){const event=name==='idle'?'moveend':name;
-      const listener=name==='click'?e=>fn({latLng:{lat:()=>e.lngLat.lat,lng:()=>e.lngLat.lng}}):fn;
-      raw.on(event,listener);return {remove:()=>raw.off(event,listener)}},
-    addRaster(id,tiles,{opacity=.7,maxzoom=7,onError}={}){
+    getCenter:()=>raw.getCenter(),getZoom:()=>raw.getZoom(),setZoom:z=>raw.setZoom(z),
+    panTo:p=>raw.panTo(p),getBounds:()=>raw.getBounds(),
+    addListener:(event,fn)=>raw.addListener(event,fn),
+    addRaster(id,template,{opacity=.7,maxzoom=7,onError}={}){
       this.removeRaster(id);
-      raw.addSource(id,{type:'raster',tiles:[tiles],tileSize:256,minzoom:0,maxzoom});
-      raw.addLayer({id,type:'raster',source:id,paint:{'raster-opacity':opacity}},
-        raw.getStyle().layers.find(l=>l.type==='symbol')?.id);
-      if(onError){const handler=e=>{if(e.sourceId===id)onError()};rasterErrors.set(id,handler);raw.on('error',handler)}
+      const layer={tileSize:new google.maps.Size(256,256),getTile(coord,zoom,doc){
+        const tile=doc.createElement('div');Object.assign(tile.style,{width:'256px',height:'256px',overflow:'hidden',position:'relative',opacity:String(opacity)});
+        const z=Math.min(zoom,maxzoom),factor=2**(zoom-z),n=2**z,x=((Math.floor(coord.x/factor)%n)+n)%n,y=Math.floor(coord.y/factor);
+        if(y<0||y>=n)return tile;
+        const img=doc.createElement('img');img.alt='';img.draggable=false;
+        Object.assign(img.style,{position:'absolute',width:256*factor+'px',height:256*factor+'px',maxWidth:'none',left:-((coord.x%factor+factor)%factor)*256+'px',top:-(coord.y%factor)*256+'px'});
+        img.onerror=()=>onError?.();img.src=template.replace('{x}',x).replace('{y}',y).replace('{z}',z);tile.append(img);return tile;
+      },releaseTile(tile){tile.querySelector('img')?.remove()}};
+      rasters.set(id,layer);raw.overlayMapTypes.push(layer);
     },
-    removeRaster(id){const handler=rasterErrors.get(id);if(handler){raw.off('error',handler);rasterErrors.delete(id)}if(raw.getLayer(id))raw.removeLayer(id);if(raw.getSource(id))raw.removeSource(id)}
+    removeRaster(id){const layer=rasters.get(id);if(!layer)return;for(let i=raw.overlayMapTypes.getLength()-1;i>=0;i--)if(raw.overlayMapTypes.getAt(i)===layer)raw.overlayMapTypes.removeAt(i);rasters.delete(id)}
   };
 }
 
-export function createMarker({map,position,title='',label,icon={},zIndex=1}) {
-  const el=document.createElement('button');el.type='button';el.className='map-pin';
+export function createMarker({map,position,title='',label,icon={},zIndex=1,className=''}){
+  const el=document.createElement('button');el.type='button';el.className='map-pin '+className;
   el.title=title;el.setAttribute('aria-label',title||'地圖位置');
-  el.style.setProperty('--pin-color',icon.fillColor||'#334c60');
-  el.style.setProperty('--pin-border',icon.strokeColor||'#a9bfd3');
-  el.style.zIndex=String(zIndex);
+  el.style.setProperty('--pin-color',icon.fillColor||'#334c60');el.style.setProperty('--pin-border',icon.strokeColor||'#a9bfd3');
   if(icon.scale)el.style.setProperty('--pin-size',Math.max(18,icon.scale*2)+'px');
+  Object.assign(el.style,{position:'absolute',zIndex:String(zIndex),transform:'translate(-50%,-50%)'});
   const text=document.createElement('span');el.append(text);
-  const marker=new maplibregl.Marker({element:el}).setLngLat([position.lng,position.lat]);
-  if(map)marker.addTo(map.raw);
-  el.addEventListener('click',e=>e.stopPropagation());
-  const adapter={setMap:m=>m?marker.addTo(m.raw):marker.remove(),
-    setPosition:p=>marker.setLngLat([p.lng,p.lat]),
+  let point=position;const overlay=new google.maps.OverlayView();
+  overlay.onAdd=()=>{overlay.getPanes().overlayMouseTarget.append(el);google.maps.OverlayView.preventMapHitsAndGesturesFrom(el)};
+  overlay.draw=()=>{const p=overlay.getProjection()?.fromLatLngToDivPixel(new google.maps.LatLng(point));if(p){el.style.left=p.x+'px';el.style.top=p.y+'px'}};
+  overlay.onRemove=()=>el.remove();
+  const adapter={element:el,setMap:m=>overlay.setMap(m?.raw||null),setPosition:p=>{point=p;overlay.draw()},
     setLabel:l=>{text.textContent=typeof l==='string'?l:l?.text||'';text.style.color=l?.color||'#f1f5fa'},
-    addListener:(name,fn)=>el.addEventListener(name,fn)};
-  adapter.setLabel(label);return adapter;
+    addListener:(name,fn)=>{el.addEventListener(name,fn);return{remove:()=>el.removeEventListener(name,fn)}}};
+  adapter.setLabel(label);if(map)overlay.setMap(map.raw);return adapter;
 }
 
 export function projectPoint(p){
