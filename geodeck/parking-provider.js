@@ -1,5 +1,5 @@
-import {inBounds} from './parking-core.js?v=0.7.0';
-import {haversine,validPoint} from './core.js?v=0.7.0';
+import {inBounds} from './parking-core.js?v=0.7.1';
+import {haversine,validPoint} from './core.js?v=0.7.1';
 
 // Taipei Parking Management and Development Office; Government Open Data License v1.
 export const PARKING_SOURCE='https://data.gov.tw/dataset/128435';

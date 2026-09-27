@@ -1,5 +1,5 @@
-import {createMarker,projectPoint} from './map-provider.js?v=0.7.0';
-import {normalizeCameras,cloudSource,aqiInfo,finite} from './core.js?v=0.7.0';
+import {createMarker,projectPoint} from './map-provider.js?v=0.7.1';
+import {normalizeCameras,cloudSource,aqiInfo,finite} from './core.js?v=0.7.1';
 export async function jsonFetch(url,timeout=15000,externalSignal){const c=new AbortController(),timer=setTimeout(()=>c.abort(),timeout),abort=()=>c.abort();externalSignal?.addEventListener('abort',abort,{once:true});try{if(externalSignal?.aborted)throw new DOMException('Aborted','AbortError');const r=await fetch(url,{signal:c.signal,cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(timer);externalSignal?.removeEventListener('abort',abort)}}
 function canvasTiles({url,nativeZoom=7,opacity=.7,onError}){return {tiles:url('{x}','{y}','{z}'),maxzoom:nativeZoom,opacity,onError}}
 export function createLayers(map,{status,camera,point,quake,radarState}){

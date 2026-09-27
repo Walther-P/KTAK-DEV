@@ -1,6 +1,6 @@
-import {createMarker} from './map-provider.js?v=0.7.0';
-import {loadTaiwanParking} from './taiwan-parking.js?v=0.7.0';
-import {finite,escapeHtml as esc} from './core.js?v=0.7.0';
+import {createMarker} from './map-provider.js?v=0.7.1';
+import {loadTaiwanParking} from './taiwan-parking.js?v=0.7.1';
+import {finite,escapeHtml as esc} from './core.js?v=0.7.1';
 
 export function createParkingUI({map,openPanel,isOpen,selected,getPosition,routeTo}){
   const $=id=>document.getElementById(id);let sequence=0,markers=[],current=null,center=null,timer=null;

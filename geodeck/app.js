@@ -1,11 +1,11 @@
-import {rainfallText} from './weather-core.js?v=0.7.0';
-import {createMap,createMarker} from './map-provider.js?v=0.7.0';
-import {createPlaceSearch} from './open-places.js?v=0.7.0';
-import {createNavigationUI} from './navigation-ui.js?v=0.7.0';
-import {parkingHandoff,journeyForSelection} from './journey.js?v=0.7.0';
-import {createParkingUI} from './parking-map-ui.js?v=0.7.0';
-import {VERSION,finite,escapeHtml as esc,validPoint,parseCoordinates,weatherInfo,aqiInfo,normalizedSaved} from './core.js?v=0.7.0';
-import {createLayers,jsonFetch} from './layers.js?v=0.7.0';
+import {rainfallText} from './weather-core.js?v=0.7.1';
+import {createMap,createMarker} from './map-provider.js?v=0.7.1';
+import {createPlaceSearch} from './open-places.js?v=0.7.1';
+import {createNavigationUI} from './navigation-ui.js?v=0.7.1';
+import {parkingHandoff,journeyForSelection} from './journey.js?v=0.7.1';
+import {createParkingUI} from './parking-map-ui.js?v=0.7.1';
+import {VERSION,finite,escapeHtml as esc,validPoint,parseCoordinates,weatherInfo,aqiInfo,normalizedSaved} from './core.js?v=0.7.1';
+import {createLayers,jsonFetch} from './layers.js?v=0.7.1';
 const $=id=>document.getElementById(id),fmt=(v,suffix='')=>finite(v)?Math.round(v)+suffix:'—';
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true}catch{toast('此瀏覽器無法儲存資料，請確認儲存空間');return false}};
@@ -107,6 +107,7 @@ case'car-save':b.disabled=true;try{rememberCar(await getPosition())}catch{toast(
 navigationController=createNavigationUI({openPanel,isOpen:()=>state.panel==='routes',selected:()=>state.selected,setSelected:p=>state.selected=p,saved:()=>state.saved,
 search:(q,opts)=>placeSearch.search(q,opts),country:p=>placeSearch.country(p),center:()=>{const p=state.map?.getCenter();return p?{lat:p.lat(),lng:p.lng()}:null},read,write,findParking:()=>renderParking('destination'),journey:()=>journeyForSelection(journey,state.selected),parked:rememberCar});
 async function loadMap(){try{
+if(!navigator.onLine){mapFailure('目前離線，連線後可重新載入地圖。收藏與備註仍可使用。');return}
 state.map=await createMap($('map'),{center:{lat:22.9915,lng:120.204},zoom:13});$('mapState').classList.add('hidden');
 state.layers=createLayers(state.map,{status:updateLayerStatus,camera:showCamera,point:selectLocation,quake:showQuake,radarState:renderRadar});
 state.map.addListener('click',e=>selectLocation({lat:e.latLng.lat(),lng:e.latLng.lng(),title:'選取位置'}));

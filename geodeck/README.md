@@ -1,6 +1,6 @@
-# GeoDeck 0.7.0 — Google 地圖與停車輔助
+# GeoDeck 0.7.1 — Google 地圖與停車輔助
 
-網站：https://walther-p.github.io/KTAK-DEV/geodeck/ 。設定頁可確認版本 **0.7.0**；既有主畫面捷徑可按「檢查更新」。
+網站：https://walther-p.github.io/KTAK-DEV/geodeck/ 。設定頁可確認版本 **0.7.1**；既有主畫面捷徑可按「檢查更新」。
 
 GeoDeck 整理地點的環境與停車資訊，再交給導航 App 計算路線。台灣預設 Google Maps、韓國預設 NAVER，也可手動切換。GeoDeck 不計算最快路線或班次，也無法讀取另一個 App 的路線。
 

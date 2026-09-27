@@ -6,6 +6,7 @@ const assert=require('node:assert/strict');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  try{
   await page.goto((process.env.GEODECK_URL||'https://walther-p.github.io/KTAK-DEV/geodeck/')+'?lat=22.9915&lng=120.204&name=offline-check');
+  assert.equal(await page.locator('meta[name=geodeck-version]').getAttribute('content'),require('../package.json').version);
   await page.locator('#mapState').waitFor({state:'hidden',timeout:35000});
   await page.getByRole('button',{name:'☆ 收藏',exact:true}).click();
   await page.locator('#savedName').fill('離線驗證地點');await page.locator('#savedNote').fill('備註保留');
@@ -21,6 +22,7 @@ const assert=require('node:assert/strict');
   await page.locator('[data-layer=radar]').click();await page.locator('[data-layer=camera]').click();
   await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
   await page.reload();await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
+  await page.locator('#mapState').waitFor({state:'hidden',timeout:35000});
   await context.setOffline(true);await page.reload({waitUntil:'domcontentloaded'});
   await page.getByRole('button',{name:'收藏',exact:true}).click();
   await page.getByRole('button',{name:'離線驗證地點',exact:true}).waitFor();
