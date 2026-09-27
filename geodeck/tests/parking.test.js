@@ -52,3 +52,9 @@ test('reports no coverage outside Taipei without fetching, and limits nearby lot
 test('static failure and malformed payload are explicit failures, not an all-clear',async()=>{
   await assert.rejects(()=>loadNearbyParking(center,{fetcher:async()=>({ok:true,json:async()=>({})}),now}),/無法載入/);
 });
+test('viewport parking is not truncated by the old nearby distance or 20-result limit',async()=>{
+  const rows=Array.from({length:30},(_,i)=>row(String(i),{EntranceCoord:{EntrancecoordInfo:[{Xcod:25.2+i*.0001,Ycod:121.5242}]}}));
+  const {fetcher}=fixture(rows,[]);
+  const result=await loadNearbyParking(center,{fetcher,now,bounds:{south:25.19,north:25.21,west:121.5,east:121.55},limit:Infinity});
+  assert.equal(result.lots.length,30);assert.ok(result.lots.every(p=>p.distance>3000));
+});

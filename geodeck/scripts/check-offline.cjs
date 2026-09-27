@@ -5,7 +5,7 @@ const assert=require('node:assert/strict');
  const context=await browser.newContext({viewport:{width:1280,height:800}}),page=await context.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  try{
-  await page.goto('http://127.0.0.1:4173/geodeck/?lat=22.9915&lng=120.204&name=offline-check');
+  await page.goto((process.env.GEODECK_URL||'https://walther-p.github.io/KTAK-DEV/geodeck/')+'?lat=22.9915&lng=120.204&name=offline-check');
   await page.locator('#mapState').waitFor({state:'hidden',timeout:35000});
   await page.getByRole('button',{name:'☆ 收藏',exact:true}).click();
   await page.locator('#savedName').fill('離線驗證地點');await page.locator('#savedNote').fill('備註保留');

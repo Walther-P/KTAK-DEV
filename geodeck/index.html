@@ -8,12 +8,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GeoDeck">
 <meta name="description" content="在一張地圖查看天氣、雷達、雲圖、空氣品質與台灣公開影像，收藏地點、找停車位，交給當地 App 導航。">
-<meta name="geodeck-version" content="0.6.0">
+<meta name="geodeck-version" content="0.7.0">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<link rel="stylesheet" href="./vendor/maplibre-gl.css">
-<link rel="stylesheet" href="./styles.css?v=0.6.0">
+<link rel="stylesheet" href="./styles.css?v=0.7.0">
 <title>GeoDeck</title>
 </head>
 <body>
@@ -27,6 +26,7 @@
   <div id="mapState" class="map-state" role="status"><span class="spinner"></span><strong>正在開啟地圖</strong></div>
   <button id="centerWeather" class="weather-chip" aria-label="查看地圖中心天氣"><span aria-hidden="true">◉</span><span id="centerLabel">點地圖，查看這裡的天氣</span></button>
   <div id="layerBadges" class="layer-badges" aria-live="polite"></div>
+  <section id="parkingToolbar" class="parking-toolbar hidden" aria-label="停車地圖"><div class="row"><strong id="parkingMapStatus" role="status">停車地圖</strong><button id="refreshParking" class="text-button" aria-label="重新整理停車資料">↻</button></div><div class="parking-legend"><label><input id="showCurbParking" type="checkbox" checked>路邊／個別車格</label><span>P 數字＝剩餘格數 · ?＝未知</span></div><small>「~」為來源回報、更新時間未提供；「處」為合併地點數。<br>停車資料：<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a> 與地方政府開放資料</small></section>
   <aside class="map-actions"><button id="parking" class="map-button" aria-label="附近停車"><span aria-hidden="true">P</span><small>停車</small></button><button id="field" class="map-button" aria-label="附近設施"><span aria-hidden="true">✚</span><small>附近</small></button><button id="locate" class="map-button" aria-label="回到我的位置"><span aria-hidden="true">◎</span><small>定位</small></button></aside>
   <section id="radarControl" class="radar-control hidden" aria-label="雷達時間軸"><div class="radar-heading"><button id="radarPlay" class="icon-button" aria-label="播放雷達">▶</button><div><strong id="radarTime">雷達回波</strong><small id="radarSource">RainViewer · 觀測合成</small></div><button id="radarLatest" class="text-button">最新</button></div><input id="radarRange" type="range" min="0" max="0" value="0" aria-label="選擇雷達時間"><p class="micro">灰黑遮罩：資料未涵蓋。透明不保證沒有下雨。</p></section>
   <nav class="bottom-nav" aria-label="主要功能"><button id="layers" aria-expanded="false"><span aria-hidden="true">▱</span>圖層<span id="layerCount" class="count hidden">0</span></button><button id="routes" aria-expanded="false"><span aria-hidden="true">↗</span>前往</button><button id="favorites" aria-expanded="false"><span aria-hidden="true">☆</span>收藏</button></nav>
@@ -36,7 +36,7 @@
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
   <noscript><div class="map-state">請啟用 JavaScript，以使用地圖及天氣功能。</div></noscript>
 </main>
-<script src="./vendor/maplibre-gl.js"></script>
-<script type="module" src="./app.js?v=0.6.0"></script>
+<script src="../config.js"></script>
+<script type="module" src="./app.js?v=0.7.0"></script>
 </body>
 </html>
