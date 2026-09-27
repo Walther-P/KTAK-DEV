@@ -1,8 +1,8 @@
-import {createMarker} from './map-provider.js?v=0.7.0';
-import {createParkingCatalog} from './parking-catalog.js?v=0.7.0';
-import {clusterParking,parkingStatus} from './parking-core.js?v=0.7.0';
-import {SOURCES} from './parking-sources.js?v=0.7.0';
-import {escapeHtml as esc,finite} from './core.js?v=0.7.0';
+import {createMarker} from './map-provider.js?v=0.7.1';
+import {createParkingCatalog} from './parking-catalog.js?v=0.7.1';
+import {clusterParking,parkingStatus} from './parking-core.js?v=0.7.1';
+import {SOURCES} from './parking-sources.js?v=0.7.1';
+import {escapeHtml as esc,finite} from './core.js?v=0.7.1';
 
 export function createParkingUI({map,openPanel,closePanel,isOpen,routeTo}){
   const $=id=>document.getElementById(id),catalog=createParkingCatalog();
