@@ -1,5 +1,5 @@
-const VERSION='0.7.1',CACHE='geodeck-shell-'+VERSION;
-const SHELL=['./','./index.html',...['styles.css','app.js','core.js','layers.js','map-config.js','map-provider.js','open-places.js','journey.js','navigation-ui.js','taiwan-parking.js','parking-provider.js','parking-map-ui.js','parking-core.js','parking-catalog.js','parking-sources.js','weather-core.js'].map(p=>'./'+p+'?v='+VERSION),'./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
+const VERSION='0.7.2',CACHE='geodeck-shell-'+VERSION;
+const SHELL=['./','./index.html',...['styles.css','app.js','core.js','layers.js','map-config.js','map-provider.js','open-places.js','journey.js','navigation-ui.js','taiwan-parking.js','parking-provider.js','parking-map-ui.js','parking-core.js','parking-catalog.js','parking-sources.js','weather-core.js','camera-catalog.js'].map(p=>'./'+p+'?v='+VERSION),'./data/parking-cameras.json?v='+VERSION,'./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith('geodeck-shell-')&&key!==CACHE)await caches.delete(key);await self.clients.claim()})()));
 self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting()});

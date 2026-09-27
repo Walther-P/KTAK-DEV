@@ -1,5 +1,5 @@
-import {validPoint,parseCoordinates,haversine} from './core.js?v=0.7.1';
-import {SEARCH_ENDPOINT} from './map-config.js?v=0.7.1';
+import {validPoint,parseCoordinates,haversine} from './core.js?v=0.7.2';
+import {SEARCH_ENDPOINT} from './map-config.js?v=0.7.2';
 
 export function photonPlaces(data){
   if(!Array.isArray(data?.features))throw Error('搜尋服務回傳格式有誤，請稍後重試');

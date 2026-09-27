@@ -1,4 +1,4 @@
-import {validPoint,navigationUrl,regionalProvider} from './core.js?v=0.7.1';
+import {validPoint,navigationUrl,regionalProvider} from './core.js?v=0.7.2';
 
 export function navigationChoice(destination,{preference='auto',mode='driving',country=''}={}){
   if(!validPoint(destination))return null;

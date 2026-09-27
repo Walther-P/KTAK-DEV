@@ -1,4 +1,4 @@
-import {validPoint,haversine} from './core.js?v=0.7.1';
+import {validPoint,haversine} from './core.js?v=0.7.2';
 
 export const parkingCount=value=>value===null||value===undefined||typeof value==='boolean'||String(value).trim()===''?null:Number.isInteger(Number(value))&&Number(value)>=0?Number(value):null;
 export function inBounds(p,b){return validPoint(p)&&p.lat>=b.south&&p.lat<=b.north&&(b.west<=b.east?p.lng>=b.west&&p.lng<=b.east:p.lng>=b.west||p.lng<=b.east)}
